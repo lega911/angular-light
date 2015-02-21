@@ -1,0 +1,4 @@
+Makefile
+test/*.js
+bin/
+tmp/
