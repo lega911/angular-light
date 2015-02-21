@@ -14,6 +14,8 @@ alight.utilits.parsExpression = (line, cfg) ->
     variable_names = []
     variable_assignment = []
     variable_fn = []
+    simpleVariables = []
+    isSimple = not input.length
     pars = (lvl, stop, convert, is_string) ->
         variable = ''
         variable_index = -1
@@ -100,6 +102,12 @@ alight.utilits.parsExpression = (line, cfg) ->
             variable = variable_names[i]
             assignment = variable_assignment[i]
             is_function = variable_fn[i]
+
+            if not is_function and not assignment
+                simpleVariables.push variable
+            if is_function or assignment
+                isSimple = false
+
             d = variable.split '.'
             conv = false
             if d.length > 1 and not assignment
@@ -137,7 +145,16 @@ alight.utilits.parsExpression = (line, cfg) ->
         result[0] = exp
     if alight.debug.parser
         console.log 'parser', result
-    result
+
+    if result.length > 1  # it has filters
+        isSimple = false
+
+    if cfg.fullResponse
+        result: result
+        simpleVariables: simpleVariables
+        isSimple: isSimple
+    else
+        result
 
 
 alight.utilits.pars_start_tag = '{{'

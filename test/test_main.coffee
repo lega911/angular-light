@@ -1,6 +1,4 @@
 
-alight.directives.ut = {}
-
 stat =
 	started: 0
 	ok: 0
@@ -31,8 +29,19 @@ window.Test = Test = (title) ->
 			else
 				self.error "not equal: #{a} != #{b} / #{msg}"
 		run: (fn) ->
+			alight = buildAlight()
 			try
-			  fn self
+			  fn self, alight
+			catch e
+				err = if typeof(e) is 'string' then e else e.stack
+				self.error()
+				console.error err
+			if not Object.observe
+				return
+			alight = buildAlight()
+			alight.debug.useObserver = true
+			try
+			  fn self, alight
 			catch e
 				err = if typeof(e) is 'string' then e else e.stack
 				self.error()
@@ -54,16 +63,5 @@ setTimeout ->
 		setTimeout ->
 			console.error 'timeout 4 sec'
 			Test().totals()
-		, 3000
-, 1000
-
-
-Test.ajax = {}
-alight.f$.ajax = (cfg) ->
-	setTimeout ->
-		data = Test.ajax[cfg.url]
-		if data
-			cfg.success data
-		else
-			cfg.error
-	, 100
+		, 4000
+, 2000

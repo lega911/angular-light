@@ -1,5 +1,5 @@
 
-Test('utilits.equal').run ($test) ->
+Test('utilits.equal').run ($test, alight) ->
 	$test.start 8
 
 	u = alight.utilits
@@ -39,13 +39,12 @@ Test('utilits.equal').run ($test) ->
 	$test.check not u.equal a, b
 
 
-alight.filters.test0 = (exp, scope) ->
-	(value) ->
-		value + ':' + scope.name
-
-
-Test('$compile + filter').run ($test) ->
+Test('$compile + filter').run ($test, alight) ->
 	$test.start 2
+
+	alight.filters.test0 = (exp, scope) ->
+		(value) ->
+			value + ':' + scope.name
 
 	s0 = alight.Scope()
 	s1 = alight.Scope()

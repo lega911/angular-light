@@ -1,8 +1,8 @@
 (function() {
-	var enableGlobalControllers = false;
-	var alight = {
-		autostart: true
-	};
-	var f$ = {};
-	alight.f$ = f$;	
-	/* next postfix.js */
+	function buildAlight(alightConfig) {
+		alightConfig = alightConfig || {};
+		var enableGlobalControllers = alightConfig.globalControllers;
+		var alight = {};
+		var f$ = {};
+		alight.f$ = f$;
+		/* next postfix.js */

@@ -1,5 +1,5 @@
 
-Test('parsExpression').run ($test) ->
+Test('parsExpression').run ($test, alight) ->
     pars = (line, expected, cfg) ->
         $test.start 1
         result = alight.utilits.parsExpression line, cfg
@@ -48,7 +48,7 @@ Test('parsExpression').run ($test) ->
     #pars '=obj.items.short_name || obj.name', []
 
 
-Test('parsText').run ($test) ->
+Test('parsText').run ($test, alight) ->
     $test.start 5
 
     r = alight.utilits.parsText '  {{a}} {{b}}  '

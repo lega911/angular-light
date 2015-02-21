@@ -2,7 +2,7 @@
 console.log 'test Core'
 
 # test $watch
-Test('$watch').run ($test) ->
+Test('$watch').run ($test, alight) ->
     $test.start 1
     scope = alight.Scope()
     scope.one = 'one'
@@ -22,8 +22,20 @@ Test('$watch').run ($test) ->
             $test.error()
 
 
-Test('$watchArray').run ($test) ->
-    $test.start 14
+Test('$watch #2').run ($test, alight) ->
+    $test.start 2
+    scope = alight.Scope()
+    scope.name = 'linux'
+
+    w0 = scope.$watch 'name', ->
+    w1 = scope.$watch 'name', ->
+
+    $test.equal w0.value, 'linux'
+    $test.equal w1.value, 'linux'
+
+
+Test('$watchArray').run ($test, alight) ->
+    $test.start 12
     scope = alight.Scope()
     #scope.list = null
 
@@ -39,37 +51,33 @@ Test('$watchArray').run ($test) ->
     scope.$scan ->
         $test.equal watch, 0
         $test.equal watchArray, 0
-        scope.list = 5
+
+        scope.list = [1, 2, 3]
         scope.$scan ->
             $test.equal watch, 1
             $test.equal watchArray, 1
 
-            scope.list = [1, 2, 3]
+            scope.list = [1, 2]
             scope.$scan ->
-                $test.equal watch, 2
+                $test.equal watch, 2  # watch should fire on objects, but filter generates new object every time, that create infinity loop
                 $test.equal watchArray, 2
 
-                scope.list = [1, 2]
+                scope.list.push(3)
                 scope.$scan ->
-                    $test.equal watch, 3  # watch should fire on objects, but filter generates new object every time, that create infinity loop
-                    $test.equal watchArray, 3
+                    $test.equal watch, 2
+                    $test.equal watchArray, 3, 'list.push 3'
 
-                    scope.list.push(3)
                     scope.$scan ->
-                        $test.equal watch, 3
-                        $test.equal watchArray, 4
+                        $test.equal watch, 2
+                        $test.equal watchArray, 3, 'none'
 
+                        scope.list = 7
                         scope.$scan ->
                             $test.equal watch, 3
-                            $test.equal watchArray, 4
-
-                            scope.list = 7
-                            scope.$scan ->
-                                $test.equal watch, 4
-                                $test.equal watchArray, 5
+                            $test.equal watchArray, 4, 'list = 7'
 
 
-Test('$watchArray#2').run ($test) ->
+Test('$watchArray#2').run ($test, alight) ->
     $test.start 4
     scope = alight.Scope()
     #scope.list = null
@@ -99,7 +107,7 @@ Test('$watchArray#2').run ($test) ->
 
 
 # test $watchText
-Test('$watchText').run ($test) ->
+Test('$watchText').run ($test, alight) ->
     $test.start 2
     scope = alight.Scope()
     scope.one = 'one'
@@ -116,18 +124,20 @@ Test('$watchText').run ($test) ->
         scope.$scan ->
             $test.check result is 'one three'
 
-alight.filters.double = ->
-    (value) ->
-        value + value
-
-alight.filters.minus = (exp, scope) ->
-    delta = scope.$eval exp
-    (value) ->
-        value - delta
 
 # test filter
-Test('filter').run ($test) ->
+Test('filter').run ($test, alight) ->
     $test.start 2
+
+    alight.filters.double = ->
+        (value) ->
+            value + value
+
+    alight.filters.minus = (exp, scope) ->
+        delta = scope.$eval exp
+        (value) ->
+            value - delta
+
     scope = alight.Scope()
 
     N = 15
@@ -140,8 +150,18 @@ Test('filter').run ($test) ->
     $test.check filter() is 97
 
 
-Test('filter2').run ($test) ->
+Test('filter2').run ($test, alight) ->
     $test.start 2
+
+    alight.filters.double = ->
+        (value) ->
+            value + value
+
+    alight.filters.minus = (exp, scope) ->
+        delta = scope.$eval exp
+        (value) ->
+            value - delta
+
     scope = alight.Scope()
 
     filter = alight.utilits.filterBuilder scope, null, [' double ', ' minus:3']
@@ -149,8 +169,13 @@ Test('filter2').run ($test) ->
     $test.check filter(50) is 97
 
 
-Test('binding').run ($test) ->
+Test('binding').run ($test, alight) ->
     $test.start 2
+
+    alight.filters.double = ->
+        (value) ->
+            value + value
+
     dom = $ '<div attr="{{ num + 5 }}">Text {{ num | double }}</div>'
     scope = alight.Scope()
     scope.num = 15
@@ -164,8 +189,13 @@ Test('binding').run ($test) ->
         $test.check dom.text() is 'Text 100' and dom.attr('attr') is '55'
 
 
-Test('bindonce').run ($test) ->
+Test('bindonce').run ($test, alight) ->
     $test.start 4
+
+    alight.filters.double = ->
+        (value) ->
+            value + value
+
     dom = $ '<div attr="{{= num + 5 }}">Text {{= num | double }}</div>'
     scope = alight.Scope()
     scope.num = 15
@@ -181,16 +211,22 @@ Test('bindonce').run ($test) ->
         $test.equal dom.text(), 'Text 30'
 
 
-alight.text.double = (callback, expression, scope) ->
-    callback 0
-    scope.$watch expression, (value) ->
-        setTimeout ->
-            callback value + value
-            scope.$scan()
-        , 100
-
-Test('text-directive').run ($test) ->
+Test('text-directive').run ($test, alight) ->
     $test.start 4
+
+    alight.filters.minus = (exp, scope) ->
+        delta = scope.$eval exp
+        (value) ->
+            value - delta
+
+    alight.text.double = (callback, expression, scope) ->
+        callback 0
+        scope.$watch expression, (value) ->
+            setTimeout ->
+                callback value + value
+                scope.$scan()
+            , 100
+
     dom = $ '<div attr="Attr {{#double num | minus:7 }}"></div>'
     scope = alight.Scope()
     scope.num = 15
@@ -213,19 +249,20 @@ Test('text-directive').run ($test) ->
     , 150
 
 
-Test('test-take-attr').run ($test) ->
+Test('test-take-attr').run ($test, alight) ->
 
-    alight.directives.ut.test0 =
-        priority: 500
-        init: (el, name, scope, env) ->
-            $test.equal env.attributes[0].attrName, 'ut-test0'
-            for attr in env.attributes
-                if attr.attrName is 'ut-text'
-                    $test.equal attr.skip, true
-                if attr.attrName is 'ut-css'
-                    $test.equal !!attr.skip, false
-            $test.equal 'mo{{d}}el0', env.takeAttr 'ut-text'
-            $test.equal 'mo{{d}}el1', env.takeAttr 'ut-css'
+    alight.directives.ut =
+        test0:
+            priority: 500
+            init: (el, name, scope, env) ->
+                $test.equal env.attributes[0].attrName, 'ut-test0'
+                for attr in env.attributes
+                    if attr.attrName is 'ut-text'
+                        $test.equal attr.skip, true
+                    if attr.attrName is 'ut-css'
+                        $test.equal !!attr.skip, false
+                $test.equal 'mo{{d}}el0', env.takeAttr 'ut-text'
+                $test.equal 'mo{{d}}el1', env.takeAttr 'ut-css'
 
     $test.start 5
     dom = $ '<div ut-test0 ut-text="mo{{d}}el0" ut-css="mo{{d}}el1"></div>'
@@ -236,7 +273,7 @@ Test('test-take-attr').run ($test) ->
         skip_attr: ['ut-text']
 
 
-Test('text-directive').run ($test) ->
+Test('text-directive').run ($test, alight) ->
     $test.start 1
 
     alight.text.test0 = (cb, exp, scope) ->
@@ -249,7 +286,7 @@ Test('text-directive').run ($test) ->
     $test.equal fn(), 'Hello world 0!'
 
 
-Test('oneTime binding #0').run ($test) ->
+Test('oneTime binding #0').run ($test, alight) ->
     $test.start 6
 
     scope = alight.Scope()
@@ -291,7 +328,7 @@ Test('oneTime binding #0').run ($test) ->
     next()
 
 
-Test('oneTime binding #1').run ($test) ->
+Test('oneTime binding #1').run ($test, alight) ->
     $test.start 6
 
     scope = alight.Scope()
@@ -334,7 +371,7 @@ Test('oneTime binding #1').run ($test) ->
     next()
 
 
-Test('oneTime binding #2').run ($test) ->
+Test('oneTime binding #2').run ($test, alight) ->
     $test.start 7
 
     exp = 'a{{::a}}-b{{::b}}-c{{::c}}!'
@@ -369,6 +406,9 @@ Test('oneTime binding #2').run ($test) ->
             ->
                 $test.equal result(), 'a3-bx-c5!::a3-bx-c5!'
                 next()
+        ->
+            ->
+                $test.equal !!scope.$system.watches[exp], false
     ]
 
     step = 0
@@ -381,10 +421,9 @@ Test('oneTime binding #2').run ($test) ->
         scope.$scan n
 
     next()
-    $test.equal !!scope.$system.watches[exp], false
 
 
-Test('oneTime binding #3').run ($test) ->
+Test('oneTime binding #3').run ($test, alight) ->
     $test.start 10
 
     exp = 'Hello {{::name}}!'
@@ -434,7 +473,7 @@ Test('oneTime binding #3').run ($test) ->
     $test.equal !!scope1.$system.watches[exp], false
 
 
-Test('skipped attrs').run ($test) ->
+Test('skipped attrs').run ($test, alight) ->
     $test.start 6
 
     activeAttr = (env) ->
@@ -448,20 +487,21 @@ Test('skipped attrs').run ($test) ->
         r = env.skippedAttr()
         r.sort().join ','
 
-    alight.directives.ut.testAttr0 =
-        priority: 50
-        init: (el, name, scope, env) ->
-            $test.equal skippedAttr(env), 'ut-test-attr0,ut-two'
-            $test.equal activeAttr(env), 'one,ut-test-attr1,ut-three'
-            env.takeAttr 'ut-three'
-            $test.equal skippedAttr(env), 'ut-test-attr0,ut-three,ut-two'
-            $test.equal activeAttr(env), 'one,ut-test-attr1'
+    alight.directives.ut =
+        testAttr0:
+            priority: 50
+            init: (el, name, scope, env) ->
+                $test.equal skippedAttr(env), 'ut-test-attr0,ut-two'
+                $test.equal activeAttr(env), 'one,ut-test-attr1,ut-three'
+                env.takeAttr 'ut-three'
+                $test.equal skippedAttr(env), 'ut-test-attr0,ut-three,ut-two'
+                $test.equal activeAttr(env), 'one,ut-test-attr1'
 
-    alight.directives.ut.testAttr1 =
-        priority: -50
-        init: (el, name, scope, env) ->
-            $test.equal skippedAttr(env), 'one,ut-test-attr0,ut-test-attr1,ut-three,ut-two'
-            $test.equal activeAttr(env), ''
+        testAttr1:
+            priority: -50
+            init: (el, name, scope, env) ->
+                $test.equal skippedAttr(env), 'one,ut-test-attr0,ut-test-attr1,ut-three,ut-two'
+                $test.equal activeAttr(env), ''
 
     scope = alight.Scope()
     dom = document.createElement 'div'
@@ -472,7 +512,7 @@ Test('skipped attrs').run ($test) ->
         skip_attr: ['ut-two']
 
 
-Test('scope isolate').run ($test) ->
+Test('scope isolate').run ($test, alight) ->
     $test.start 6
 
     # usual
@@ -496,7 +536,7 @@ Test('scope isolate').run ($test) ->
     $test.equal child.$parent.x, 7
 
 
-Test('text-directive env.finally').run ($test) ->
+Test('text-directive env.finally').run ($test, alight) ->
     env = null
     alight.text.test1 = (callback, text, scope, ienv) ->
         callback 'init'
@@ -520,26 +560,36 @@ Test('text-directive env.finally').run ($test) ->
             $test.equal dom.text(), 'Text three'
 
             env.finally 'four'
-            scope.$scan()
-            alight.nextTick ->
+            scope.$scan ->
                 $test.equal dom.text(), 'Text four'
                 $test.equal !!scope.$system.watches['Text {{#test1}}'], false
 
 
-Test('deferred process').run ($test) ->
+Test('deferred process').run ($test, alight) ->
     $test.start 5
 
+    # mock ajax
+    Test.ajax = {}
+    alight.f$.ajax = (cfg) ->
+        setTimeout ->
+            data = Test.ajax[cfg.url]
+            if data
+                cfg.success data
+            else
+                cfg.error
+        , 100
     Test.ajax.testDeferredProcess = "<p>{{name}}</p>"
 
     rscope = alight.Scope()
     rscope.name = 'root'
     cscope = null
 
-    alight.directives.ut.test5 =
-        templateUrl: 'testDeferredProcess'
-        link: (el, name, scope) ->
-            cscope = scope
-            scope.name = 'linux'
+    alight.directives.ut =
+        test5:
+            templateUrl: 'testDeferredProcess'
+            link: (el, name, scope) ->
+                cscope = scope
+                scope.name = 'linux'
 
     dom = document.createElement 'div'
     dom.innerHTML = '<span ut-test5></span>'

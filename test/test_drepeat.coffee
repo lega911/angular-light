@@ -1,7 +1,9 @@
 
-$ ->
-    console.log 'test al-repeat'
+setupAlight = (alight) ->
+    alight.controllers.testRepeat = (scope) ->
+        scope.r = scope.it.text + scope.it.text
 
+do ->
     ###
         al-repeat="item in list" al-controller="itemController"
         "item in list"
@@ -22,8 +24,9 @@ $ ->
     ###
 
     run = (name, html, results) ->
-        Test('al-repeat ' + name).run ($test) ->
+        Test('al-repeat ' + name).run ($test, alight) ->
             $test.start 8
+            setupAlight alight
 
             dom = $ "<span>#{html}</span>"
 
@@ -135,8 +138,9 @@ $ ->
         6: 'aa:1, bb:2, cc:3, dd:4'
         7: 'aa:1, bb:2, cc:3, dd:4'
 
-    Test('by $index, primitives').run ($test) ->
+    Test('by $index, primitives').run ($test, alight) ->
         $test.start 8
+        setupAlight alight
 
         scope = alight.Scope()
         scope.list = ['a', 'b', 'c', 'd']
@@ -151,55 +155,78 @@ $ ->
         alight.applyBindings scope, dom
 
         result = ->
-            r = for e in f$.find dom, '.item'
+            r = for e in alight.f$.find dom, '.item'
                 e.innerText
             r.join ', '
 
         ops = [
-            ->
+            (next) ->
                 $test.equal result(), 'a:0, b:1, c:2, d:3'
-            ->
+                next()
+            (next) ->
                 scope.list.push 'e'
-                scope.$scan ->
-                    $test.equal result(), 'a:0, b:1, c:2, d:3, e:4'
-            ->
+                scope.$scan
+                    late: true
+                    callback: ->
+                        $test.equal result(), 'a:0, b:1, c:2, d:3, e:4'
+                        next()
+            (next) ->
                 scope.list.splice 0, 0, 'f'
-                scope.$scan ->
-                    $test.equal result(), 'f:0, a:1, b:2, c:3, d:4, e:5'
-            ->
+                scope.$scan
+                    late: true
+                    callback: ->
+                        $test.equal result(), 'f:0, a:1, b:2, c:3, d:4, e:5'
+                        next()
+            (next) ->
                 scope.list.splice 2, 0, 'g'
-                scope.$scan ->
-                    $test.equal result(), 'f:0, a:1, g:2, b:3, c:4, d:5, e:6'
-            ->
+                scope.$scan
+                    late: true
+                    callback: ->
+                        $test.equal result(), 'f:0, a:1, g:2, b:3, c:4, d:5, e:6'
+                        next()
+            (next) ->
                 scope.list = ['f', 'a', 'g', 'b', 'h', 'c', 'd', 'e']
-                scope.$scan ->
-                    $test.equal result(), 'f:0, a:1, g:2, b:3, h:4, c:5, d:6, e:7'
-            ->
+                scope.$scan
+                    late: true
+                    callback: ->
+                        $test.equal result(), 'f:0, a:1, g:2, b:3, h:4, c:5, d:6, e:7'
+                        next()
+            (next) ->
                 scope.list = ['f', 'b', 'h', 'c', 'd']
-                scope.$scan ->
-                    $test.equal result(), 'f:0, b:1, h:2, c:3, d:4'
-            ->
+                scope.$scan
+                    late: true
+                    callback: ->
+                        $test.equal result(), 'f:0, b:1, h:2, c:3, d:4'
+                        next()
+            (next) ->
                 scope.list = ['f', 'b', 'h', 'i', 'c', 'd', 'j']
-                scope.$scan ->
-                    $test.equal result(), 'f:0, b:1, h:2, i:3, c:4, d:8, j:9'
-            ->
+                scope.$scan
+                    late: true
+                    callback: ->
+                        $test.equal result(), 'f:0, b:1, h:2, i:3, c:4, d:8, j:9'
+                        next()
+            (next) ->
                 scope.list = ['b', 'c', 'd', 'f', 'h', 'i', 'j']
-                scope.$scan ->
-                    $test.equal result(), 'b:0, c:1, d:2, f:3, h:4, i:8, j:9'
+                scope.$scan
+                    late: true
+                    callback: ->
+                        $test.equal result(), 'b:0, c:1, d:2, f:3, h:4, i:8, j:9'
+                        next()
         ]
 
-        for op in ops
-            op()
+        i = 0
+        next = ->
+            op = ops[i++]
+            if op
+                op next
+        next()
 
         null
 
 
-alight.controllers.testRepeat = (scope) ->
-    scope.r = scope.it.text + scope.it.text
-
-
-Test('al-repeat skippedAttr').run ($test) ->
+Test('al-repeat skippedAttr').run ($test, alight) ->
     $test.start 10
+    setupAlight alight
 
     activeAttr = (env) ->
         r = for i in env.attributes
@@ -215,20 +242,20 @@ Test('al-repeat skippedAttr').run ($test) ->
     countHi = 0
     countLo = 0
 
-    alight.directives.ut.testAttr2 =
-        priority: 5000
-        init: (el, name, scope, env) ->
-            countHi++
-            $test.equal skippedAttr(env), 'ut-test-attr2,ut-two'
-            $test.equal activeAttr(env), 'al-repeat,one,ut-test-attr3,ut-three'
-
-    alight.directives.ut.testAttr3 =
-        priority: 50
-        init: (el, name, scope, env) ->
-            countLo++
-            $test.equal skippedAttr(env), 'al-repeat,ut-test-attr2,ut-test-attr3,ut-two'
-            $test.equal activeAttr(env), 'one,ut-three'
-            env.takeAttr 'ut-three'
+    alight.directives.ut =
+        testAttr2:
+            priority: 5000
+            init: (el, name, scope, env) ->
+                countHi++
+                $test.equal skippedAttr(env), 'ut-test-attr2,ut-two'
+                $test.equal activeAttr(env), 'al-repeat,one,ut-test-attr3,ut-three'
+        testAttr3:
+            priority: 50
+            init: (el, name, scope, env) ->
+                countLo++
+                $test.equal skippedAttr(env), 'al-repeat,ut-test-attr2,ut-test-attr3,ut-two'
+                $test.equal activeAttr(env), 'one,ut-three'
+                env.takeAttr 'ut-three'
 
     scope = alight.Scope()
     dom = document.createElement 'div'
@@ -242,8 +269,9 @@ Test('al-repeat skippedAttr').run ($test) ->
     $test.equal countLo, 3, 'countLo'
 
 
-Test('al-repeat one-time-bindings').run ($test) ->
+Test('al-repeat one-time-bindings').run ($test, alight) ->
     $test.start 6
+    setupAlight alight
 
     scope = alight.Scope()
     dom = document.createElement 'div'
@@ -258,7 +286,7 @@ Test('al-repeat one-time-bindings').run ($test) ->
         r.length
 
     rowCount = ->
-        r = for e in f$.find dom, '.item'
+        r = for e in alight.f$.find dom, '.item'
             e
         r.length
 

@@ -1,17 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <!--
-    <script type="text/javascript" src="../alight/fquery.js"></script>
-    <script type="text/javascript" src="../alight/core.js"></script>
-    <script type="text/javascript" src="../alight/utilits.js"></script>
-    <script type="text/javascript" src="../alight/parser.js"></script>
-    <script type="text/javascript" src="../alight/directives.js"></script>
-    <script type="text/javascript" src="../alight/drepeat.js"></script>
-    <script type="text/javascript" src="../alight/filters.js"></script>
-    -->
+    <script type="text/javascript">
+        function alightInitCallback(a) {
+            window.buildAlight = a;
+        };
+    </script>
     <script type="text/javascript" src="../demo/jquery-1.10.1.min.js"></script>
-    <script type="text/javascript" src="../alight.js"></script>
+    <script type="text/javascript" src="../bin/alight.js"></script>
 
     <script type="text/javascript" src="test_main.js"></script>
     <script type="text/javascript" src="test_pars.js"></script>
@@ -22,6 +18,8 @@
     <script type="text/javascript" src="test_dirs.js"></script>
     <script type="text/javascript" src="test_ns.js"></script>
     <script type="text/javascript" src="test_filters.js"></script>
+    <script type="text/javascript" src="test_observer.js"></script>
+    <script type="text/javascript" src="test_compile.js"></script>
 </head>
 <body>
 </body>

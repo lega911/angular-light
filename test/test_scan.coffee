@@ -1,5 +1,5 @@
 
-Test('$watch function/$any').run ($test) ->
+Test('$watch function/$any').run ($test, alight) ->
 	$test.start 26
 
 	col0 = 0
@@ -74,7 +74,7 @@ Test('$watch function/$any').run ($test) ->
 						$test.equal col3, 8
 						$test.equal col4, 1
 
-Test('$scan root').run ($test) ->
+Test('$scan root').run ($test, alight) ->
 	$test.start 15
 
 	c0 = 0
@@ -85,9 +85,6 @@ Test('$scan root').run ($test) ->
 	s1 = s0.$new()
 	s2 = s1.$new()
 
-	s0.dict = dict =
-		x: 0
-
 	s0.$watch 'dict.x', ->
 		c0++
 	s1.$watch 'dict.x', ->
@@ -95,43 +92,42 @@ Test('$scan root').run ($test) ->
 	s2.$watch 'dict.x', ->
 		c2++
 
+	s0.dict = dict =
+		x: 0
+
 	s1.$scan ->
-		$test.check c0 is 0, '/1'
-		$test.check c1 is 0
-		$test.check c2 is 0
+		$test.equal c0, 1, '/1'
+		$test.equal c1, 1
+		$test.equal c2, 1
 
 		dict.x++
 
 		s1.$scan ->
-			$test.check c0 is 1, '/2'
-			$test.check c1 is 1
-			$test.check c2 is 1
+			$test.equal c0, 2, '/2'
+			$test.equal c1, 2
+			$test.equal c2, 2
 
 			dict.x++
 
-			s1.$scan
-				top: s2
-				callback:->
-					$test.check c0 is 1, '/3'
-					$test.check c1 is 1
-					$test.check c2 is 2
+			s1.$scan ->
+				$test.equal c0, 3, '/3'
+				$test.equal c1, 3
+				$test.equal c2, 3
 
-					dict.x++
+				dict.x++
 
-					s1.$scan
-						top: s1
-						callback:->
-							$test.check c0 is 1, '/4'
-							$test.check c1 is 2
-							$test.check c2 is 3
+				s1.$scan ->
+					$test.check c0 is 4, '/4'
+					$test.check c1 is 4
+					$test.check c2 is 4
 
-							s1.$scan ->
-								$test.check c0 is 2, '/5'
-								$test.check c1 is 2
-								$test.check c2 is 3
+					s1.$scanAsync ->
+						$test.check c0 is 4, '/5'
+						$test.check c1 is 4
+						$test.check c2 is 4
 
-Test('$scan late').run ($test) ->
-	$test.start 21
+Test('$scan late').run ($test, alight) ->
+	$test.start 18
 
 	c0 = 0
 	c1 = 0
@@ -174,31 +170,20 @@ Test('$scan late').run ($test) ->
 		, 100
 
 	next = ->
-		alight.nextTick ->
-			$test.equal c0, 6
-			$test.equal c1, 2
-			$test.equal c2, 2
-
 		scope.n++
-		scope.$scan
-			late:true
-			callback: ->
-				c1++
-
-		setTimeout ->
-			$test.equal c0, 6
-			$test.equal c1, 2
-			$test.equal c2, 2
-		, 100
-
-		scope.$scan ->
+		scope.$scanAsync ->
+			c1++
 			$test.equal c0, 6
 			$test.equal c1, 2
 			$test.equal c2, 2
 
+		$test.equal c0, 4
+		$test.equal c1, 1
+		$test.equal c2, 1
 
-Test('$scan order').run ($test) ->
-	$test.start 6
+
+Test('$scan order').run ($test, alight) ->
+	$test.start 7
 	scope = alight.Scope()
 	scope.v0 = 0
 	scope.v1 = 0
@@ -209,6 +194,7 @@ Test('$scan order').run ($test) ->
 	v2 = 0
 	scope.$watch 'v0', ->
 		v0++
+		$test.equal v1, 1
 	scope.$watch 'v1', ->
 		v1++
 		scope.v0++
@@ -224,13 +210,12 @@ Test('$scan order').run ($test) ->
 
 		scope.v1++
 		scope.$scan ->
-			alight.nextTick ->
-				$test.equal v0, 1
-				$test.equal v1, 1
-				$test.equal v2, 0
+			$test.equal v0, 1
+			$test.equal v1, 1
+			$test.equal v2, 0
 
 
-Test('$scan.deep').run ($test) ->
+Test('$scan.deep').run ($test, alight) ->
 	$test.start 4
 	s = alight.Scope()
 	s.a =

@@ -1,4 +1,4 @@
-Test('binding: al-css + attr').run ($test) ->
+Test('binding: al-css + attr').run ($test, alight) ->
 	$test.start 1
 
 	scope = alight.Scope()
@@ -14,7 +14,7 @@ Test('binding: al-css + attr').run ($test) ->
 	$test.equal tag.className, 'one two three'
 
 
-Test('al-css #1').run ($test) ->
+Test('al-css #1').run ($test, alight) ->
 	$test.start 5
 
 	el = document.createElement 'div'
@@ -49,19 +49,20 @@ Test('al-css #1').run ($test) ->
 					$test.equal result(), 'aaa'
 
 
-Test('directive.scope isolate').run ($test) ->
+Test('directive.scope isolate').run ($test, alight) ->
 	$test.start 2
 
-	alight.directives.ut.siTest1 =
-		scope: true
-		template: '{{name}}:{{name2}}:{{$parent.name}}'
-		link: (el, name, scope) ->
-			scope.name2 = 'child1'
-	alight.directives.ut.siTest2 =
-		scope: 'isolate'
-		template: '{{name}}:{{name2}}:{{$parent.name}}'
-		link: (el, name, scope) ->
-			scope.name2 = 'child2'
+	alight.directives.ut =
+		siTest1:
+			scope: true
+			template: '{{name}}:{{name2}}:{{$parent.name}}'
+			link: (el, name, scope) ->
+				scope.name2 = 'child1'
+		siTest2:
+			scope: 'isolate'
+			template: '{{name}}:{{name2}}:{{$parent.name}}'
+			link: (el, name, scope) ->
+				scope.name2 = 'child2'
 
 	scope = alight.Scope()
 	scope.name = 'parent'
@@ -71,29 +72,30 @@ Test('directive.scope isolate').run ($test) ->
 
 	alight.applyBindings scope, el
 
-	$test.equal f$.find(el, '#i1')[0].innerText, 'parent:child1:parent'
-	$test.equal f$.find(el, '#i2')[0].innerText, ':child2:parent'
+	$test.equal alight.f$.find(el, '#i1')[0].innerText, 'parent:child1:parent'
+	$test.equal alight.f$.find(el, '#i2')[0].innerText, ':child2:parent'
 
 
-Test('restrict M #1').run ($test) ->
+Test('restrict M #1').run ($test, alight) ->
 	$test.start 1
 
 	# init
 	do ->
-		alight.directives.ut.test1 =
-			restrict: 'M'
-			init: (element, value, scope) ->
-				scope.name = 'Hello'
+		alight.directives.ut =
+			test1:
+				restrict: 'M'
+				init: (element, value, scope) ->
+					scope.name = 'Hello'
 
-				el = document.createElement 'p'
-				el.innerHTML = "{{name}} #{value}"
+					el = document.createElement 'p'
+					el.innerHTML = "{{name}} #{value}"
 
-				f$.after element, el
+					alight.f$.after element, el
 
-				child = scope.$new()
-				alight.applyBindings scope, el
+					child = scope.$new()
+					alight.applyBindings scope, el
 
-				{ owner: true }
+					{ owner: true }
 
 	# test
 	do ->
@@ -105,20 +107,21 @@ Test('restrict M #1').run ($test) ->
 		scope = alight.Scope()
 		alight.applyBindings scope, el
 
-		$test.equal f$.find(el, 'p')[0].innerText.trimLeft(), 'Hello World!'
+		$test.equal alight.f$.find(el, 'p')[0].innerText.trimLeft(), 'Hello World!'
 
 
-Test('restrict M #2').run ($test) ->
+Test('restrict M #2').run ($test, alight) ->
 	$test.start 1
 
 	# init
 	do ->
-		alight.directives.ut.test2 =
-			restrict: 'M'
-			template: "<p>{{name}} {{value}}!</p>"
-			link: (element, value, scope) ->
-				scope.name = 'Hello'
-				scope.value = value
+		alight.directives.ut =
+			test2:
+				restrict: 'M'
+				template: "<p>{{name}} {{value}}!</p>"
+				link: (element, value, scope) ->
+					scope.name = 'Hello'
+					scope.value = value
 
 	# test
 	do ->
@@ -130,4 +133,4 @@ Test('restrict M #2').run ($test) ->
 		scope = alight.Scope()
 		alight.applyBindings scope, el
 
-		$test.equal f$.find(el, 'p')[0].innerText.trimLeft(), 'Hello World!'
+		$test.equal alight.f$.find(el, 'p')[0].innerText.trimLeft(), 'Hello World!'
