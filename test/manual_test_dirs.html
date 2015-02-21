@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--
+        <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" />
+        <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+        <script type="text/javascript" src="../demo/jquery-1.9.1.js"></script>
+
+    <script type="text/javascript" src="../alight/fquery.js"></script>
+    <script type="text/javascript" src="../alight/core.js"></script>
+    <script type="text/javascript" src="../alight/utilits.js"></script>
+    <script type="text/javascript" src="../alight/parser.js"></script>
+    <script type="text/javascript" src="../alight/directives.js"></script>
+    <script type="text/javascript" src="../alight/drepeat.js"></script>
+    <script type="text/javascript" src="../alight/filters.js"></script>
+    -->
+    <link rel="stylesheet" type="text/css" href="../demo/bootstrap.css" />
+
+    <script type="text/javascript" src="../alight.js"></script>
+
+    <script type="text/javascript">
+        alight.debug.directive = true;
+        function Ctrl(scope) {
+            window.rscope = scope;
+            scope.click = function(){ console.log('click!!!'); throw 'test' };
+            scope.list = [{ title:'one'},{ title:'two'},{ title:'three'}];
+            scope.html = null;
+            scope.counter = 0;
+            scope.log = function(msg) { console.log(msg) };
+            scope.html_set = function() {
+                scope.html = '<input type="text" al-value="text" /> <b>{{text}}</b>';
+            }
+        }
+        function testCtrl(scope) {
+            scope.title = 'ok';
+        }
+    </script>
+    <style type="text/css">
+        [al-cloak] {
+            display: none;
+        }
+    </style>
+
+</head>
+<body>
+<div al-app="Ctrl" class="container">
+    <div class="row" al-init="text='hello'">
+        <div class="span4"> al-text, al-init </div>
+        <div class="span8"> <span al-text="text"></span> {{text}} </div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> attr-bindings </div>
+        <div class="span8"> <a href="http://{{text}}">{{text}}</a> </div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> al-value </div>
+        <div class="span8"> <input type="text" al-value="text" /> {{text}} </div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> al-change </div>
+        <div class="span8"> <input type="text" al-value="text" al-change="log('changed to ' + text)" /> {{text}} </div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> al-click </div>
+        <div class="span8"> <a href="#" class="btn" al-click="click()">al-click</a> </div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> al-dblclick </div>
+        <div class="span8"> <a href="#" class="btn" al-dblclick="click()">al-click</a> </div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> al-mousemove </div>
+        <div class="span8" style="background-color: #099;" al-mousemove="counter+=1">{{counter}}</div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> al-submit </div>
+        <div class="span8">
+            <form al-submit="click()">
+                <input type="submit" value="submit" />
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> al-controller </div>
+        <div class="span8" al-controller="testCtrl"> {{title}} </div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> al-checked </div>
+        <div class="span8"> <input type="checkbox" al-checked="check" /> {{'' + check}} </div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> al-readonly </div>
+        <div class="span8"> <input type="text" al-readonly="check" /> </div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> al-css </div>
+        <div class="span8"> <input type="checkbox" al-checked="one"></span> <input type="checkbox" al-checked="two"></span> <a al-css="btn:one, btn-primary:two">al-css</a> </div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> al-repeat </div>
+        <div class="span8">
+            <span al-repeat="item in list"> {{item.title}}</span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> bo-if, bo-ifnot </div>
+        <div class="span8">
+            <span bo-if="check">bo-if</span>
+            <span bo-ifnot="check">bo-ifnot</span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> al-if, al-ifnot </div>
+        <div class="span8">
+            <span al-if="check">al-if</span>
+            <span al-ifnot="check">al-ifnot</span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> al-show, al-hide </div>
+        <div class="span8">
+            <span al-show="check">al-show</span>
+            <span al-hide="check">al-hide</span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> al-stop </div>
+        <div class="span8" al-stop> {{title}} </div>
+    </div>
+
+    <div class="row" al-init="for_switch='one'">
+        <div class="span4"> bo-switch </div>
+        <div class="span8">
+            one =
+            <span class="label" bo-switch="for_switch">
+                <span bo-switch-when="one">one</span>
+                <span bo-switch-default>not one</span>
+            </span>
+            <span class="label" bo-switch="for_switch">
+                <span bo-switch-when="two">two</span>
+                <span bo-switch-default>not two</span>
+            </span>
+        </div>
+    </div>
+
+    <div class="row" al-init="src='http://www.radio-t.com/images/rt-header-logo.png'">
+        <div class="span4"> al-src, bo-src </div>
+        <div class="span8">
+            <img bo-src="{{src}}"/>
+            <a class="btn" al-click="src2=src">set src</a>
+            <img al-src="{{src2}}"/>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> al-enable, al-disable </div>
+        <div class="span8">
+            <input type="button" class="btn" al-enable="en" al-click="en=false" value="disable" />
+            <input type="button" class="btn" al-disable="en" al-click="en=true" value="enable" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> al-html <a href al-click="html_set()">set</a> </div>
+        <div class="span8" al-html="html"></div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> al-include </div>
+        <div class="span8" al-include="'for_include.html'"></div>
+    </div>
+
+    <div class="row">
+        <div class="span4"> al-cloak </div>
+        <div class="span8" al-cloak>al-cloak ok</div>
+    </div>
+
+    <div class="row" al-init="focused=true">
+        <div class="span4"> al-focused </div>
+        <div class="span8"> <a href al-click="focused=true">set focus</a> <input type="text" al-focused="focused" /> {{focused}} </div>
+    </div>
+
+    <div class="row" al-controller al-init="num = 0">
+        <div class="span4"> al-focus </div>
+        <div class="span8"> <input type="text" al-focus="num+=1" /> {{num}} </div>
+    </div>
+
+    <div class="row" al-controller al-init="num = 0">
+        <div class="span4"> al-blur </div>
+        <div class="span8"> <input type="text" al-blur="num+=1" /> {{num}} </div>
+    </div>
+
+
+
+</div>
+</body>
+</html>
