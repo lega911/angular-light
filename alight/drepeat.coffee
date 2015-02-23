@@ -89,17 +89,30 @@ alight.directives.al.repeat =
                 nodes = []
                 node_by_id = {}
                 
-                getNodeByItem = null
+                node_set = null
+                node_get = null
+                node_del = null
                 index = 0
-                $id = null
 
                 (list) ->
                     # make mapper
-                    if not getNodeByItem
+                    if not node_get
                         if self.trackExpression is '$index'
-                            getNodeByItem = (item) ->
+                            node_get = (item) ->
                                 $id = index
                                 node_by_id[$id] or null
+
+                            node_del = (node) ->
+                                $id = node.$id
+                                if $id
+                                    delete node_by_id[$id]
+                                null
+
+                            node_set = (item, node) ->
+                                $id = index
+                                node.$id = $id
+                                node_by_id[$id] = node
+                                null
                         else
                             if self.trackExpression
                                 _getId = scope.$compile self.trackExpression, { input:['$id', self.nameOfKey] }
@@ -110,18 +123,42 @@ alight.directives.al.repeat =
                                     id = item.$alite_id = alight.utilits.getId()
                                     id
 
-                                getNodeByItem = (item) ->
+                                node_get = (item) ->
                                     $id = _getId _id, item
                                     if $id
                                         return node_by_id[$id]
                                     null
+
+                                node_del = (node) ->
+                                    $id = node.$id
+                                    if $id
+                                        delete node_by_id[$id]
+                                    null
+
+                                node_set = (item, node) ->
+                                    $id = _getId _id, item
+                                    node.$id = $id
+                                    node_by_id[$id] = node
+                                    null
+
                             else
-                                getNodeByItem = (item) ->
+                                node_get = (item) ->
                                     $id = item.$alite_id
                                     if $id
                                         return node_by_id[$id]
+                                    null
+
+                                node_del = (node) ->
+                                    $id = node.$id
+                                    if $id
+                                        delete node_by_id[$id]
+                                    null
+
+                                node_set = (item, node) ->
                                     $id = alight.utilits.getId()
                                     item.$alite_id = $id
+                                    node.$id = $id
+                                    node_by_id[$id] = node
                                     null
 
                     if not list or not list.length  # is it list?
@@ -141,7 +178,7 @@ alight.directives.al.repeat =
                     for node in nodes
                         node.active = false
                     for item, index in list
-                        node = getNodeByItem item
+                        node = node_get item
                         if node
                             node.active = true
 
@@ -152,7 +189,7 @@ alight.directives.al.repeat =
                             node.prev.next = node.next
                         if node.next
                             node.next.prev = node.prev
-                        delete node_by_id[node.$id]
+                        node_del node
                         node.scope.$destroy()
                         node.element
 
@@ -166,7 +203,7 @@ alight.directives.al.repeat =
                         item_value = item
                         item = item or {}
 
-                        node = getNodeByItem item
+                        node = node_get item
 
                         if node
                             self.updateChild node.scope, item, index, list
@@ -204,7 +241,6 @@ alight.directives.al.repeat =
                             after: last_element
 
                         node =
-                            $id: $id
                             scope: child_scope
                             element: element
                             prev: prev_node
@@ -212,7 +248,7 @@ alight.directives.al.repeat =
                             active: true
                             item: item
 
-                        node_by_id[$id] = node
+                        node_set item, node
                         if prev_node
                             next2 = prev_node.next
                             prev_node.next = node

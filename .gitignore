@@ -1,4 +1,5 @@
 Makefile
 test/*.js
+test/*.map
 bin/
 tmp/
