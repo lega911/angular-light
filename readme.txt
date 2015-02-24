@@ -9,3 +9,5 @@ Visit http://angularlight.org/
 
 Build: ./scripts/build.sh
 Test: ./scripts/test.sh
+
+Sources of 0.7.15 and older ones here: https://bitbucket.org/lega911

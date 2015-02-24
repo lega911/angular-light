@@ -1,5 +1,8 @@
 Makefile
 test/*.js
 test/*.map
+alight/*.js
+alight/*.map
 bin/
 tmp/
+node_modules
