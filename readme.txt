@@ -7,7 +7,8 @@ License: MIT
 Visit http://angularlight.org/
 
 
-Build: ./scripts/build.sh
-Test: ./scripts/test.sh
+Build:
+$ npm install
+$ npm gulp
 
-Sources of 0.7.15 and older ones here: https://bitbucket.org/lega911
+Sources of 0.7.15 and older ones there: https://bitbucket.org/lega911
