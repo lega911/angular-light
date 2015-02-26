@@ -91,10 +91,9 @@ window.Test = Test = (title) ->
 		run: (fn) ->
 			alight = buildAlight()
 			stat.bStarted++;
-			closed++;
 			scope = makeScope()
 			try
-			  fn scope, alight
+				fn scope, alight
 			catch e
 				err = e
 				if e.stack
@@ -110,11 +109,15 @@ window.Test = Test = (title) ->
 			alight = buildAlight()
 			alight.debug.useObserver = true
 			stat.bStarted++;
-			closed++;
 			scope = makeScope()
 			try
-			  fn scope, alight
+				fn scope, alight
 			catch e
-				err = if typeof(e) is 'string' then e else e.stack
+				err = e
+				if e.stack
+					err = e.stack
+				else if e.description
+					err = e.description
 				scope.error()
-				console.error err
+				console.error '!!', err
+	r
