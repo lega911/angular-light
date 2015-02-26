@@ -21,6 +21,7 @@ Test('$compile#0').run ($test, alight) ->
 
     $test.equal r1.rawExpression, "(__=$$scope.foo) || (__ == null?'':__)"
     $test.equal r1.fn(scope), 'one'
+    $test.close()
 
 
 Test('$compileText#0').run ($test, alight) ->
@@ -53,3 +54,4 @@ Test('$compileText#0').run ($test, alight) ->
     $test.equal r1.simpleVariables.length, 2
     $test.equal r1.simpleVariables[0], 'os.type'
     $test.equal r1.simpleVariables[1], 'os.name'
+    $test.close()

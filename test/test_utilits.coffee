@@ -37,6 +37,7 @@ Test('utilits.equal').run ($test, alight) ->
 	b = u.clone a
 	b.obj.date = new Date(2015, 1, 1)
 	$test.check not u.equal a, b
+	$test.close()
 
 
 Test('$compile + filter').run ($test, alight) ->
@@ -57,3 +58,4 @@ Test('$compile + filter').run ($test, alight) ->
 
 	$test.equal f0(), 'debian:debian'
 	$test.equal f1(), 'ubuntu:ubuntu'
+	$test.close()

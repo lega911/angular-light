@@ -12,6 +12,7 @@ Test('binding: al-css + attr').run ($test, alight) ->
 	alight.applyBindings scope, tag
 
 	$test.equal tag.className, 'one two three'
+	$test.close()
 
 
 Test('al-css #1').run ($test, alight) ->
@@ -28,7 +29,12 @@ Test('al-css #1').run ($test, alight) ->
 	alight.applyBindings scope, tag
 
 	result = ->
-		l = Array.prototype.slice.call tag.classList
+		if tag.classList
+			l = Array.prototype.slice.call tag.classList
+		else
+			# <= IE9
+			css = tag.className
+			l = css.trim().split ' '
 		l.sort().join ' '
 	$test.equal result(), 'aaa'
 
@@ -47,6 +53,7 @@ Test('al-css #1').run ($test, alight) ->
 				scope.active2 = false
 				scope.$scan ->
 					$test.equal result(), 'aaa'
+					$test.close()
 
 
 Test('directive.scope isolate').run ($test, alight) ->
@@ -72,8 +79,11 @@ Test('directive.scope isolate').run ($test, alight) ->
 
 	alight.applyBindings scope, el
 
-	$test.equal alight.f$.find(el, '#i1')[0].textContent, 'parent:child1:parent'
-	$test.equal alight.f$.find(el, '#i2')[0].textContent, ':child2:parent'
+
+	f$ = alight.f$
+	$test.equal f$.text(f$.find(el, '#i1')[0]), 'parent:child1:parent'
+	$test.equal f$.text(f$.find(el, '#i2')[0]), ':child2:parent'
+	$test.close()
 
 
 Test('restrict M #1').run ($test, alight) ->
@@ -107,7 +117,8 @@ Test('restrict M #1').run ($test, alight) ->
 		scope = alight.Scope()
 		alight.applyBindings scope, el
 
-		$test.equal alight.f$.find(el, 'p')[0].textContent.trimLeft(), 'Hello World!'
+		$test.equal alight.f$.text(alight.f$.find(el, 'p')[0]).trimLeft(), 'Hello World!'
+		$test.close()
 
 
 Test('restrict M #2').run ($test, alight) ->
@@ -133,4 +144,5 @@ Test('restrict M #2').run ($test, alight) ->
 		scope = alight.Scope()
 		alight.applyBindings scope, el
 
-		$test.equal alight.f$.find(el, 'p')[0].textContent.trimLeft(), 'Hello World!'
+		$test.equal alight.f$.text(alight.f$.find(el, 'p')[0]).trimLeft(), 'Hello World!'
+		$test.close()

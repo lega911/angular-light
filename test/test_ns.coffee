@@ -69,3 +69,5 @@ Test('$ns').run ($test, alight) ->
         tag.innerHTML = '<p al-controller="test0ctrl">{{uniqTest}}</p>'
         alight.applyBindings scope, tag
         $test.equal f$.text(f$.find(tag, 'p')[0]), 'linux'
+        
+        $test.close()

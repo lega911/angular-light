@@ -3,65 +3,118 @@ stat =
 	started: 0
 	ok: 0
 	error: 0
+	bStarted: 0
+	bFinished: 0
+
+testList = []
+
+
+printTotals = ->
+	msg = "Started #{stat.started}, Ok #{stat.ok}, Error #{stat.error}"
+	if stat.error or stat.started isnt stat.ok
+		console.error msg
+	else
+		console.log msg
+	stat
+
+
+to = setTimeout ->
+	console.error 'timeout 4 sec'
+	printTotals()
+	for t in testList
+		console.error 'opened UT', t.title
+, 6000
+
+
+onClose = ->
+	if stat.bStarted isnt stat.bFinished
+		return
+	printTotals()
+	clearTimeout to
+
+
+do ->
+	stat.bStarted++;
+	$ ->
+		stat.bFinished++;
+		onClose()
+
 
 window.Test = Test = (title) ->
-	n = 0
-	self =
-		start: (n) ->
-			stat.started += n
-		error: (msg) ->
-			stat.error++
-			console.error n, title, msg or ''
-		ok: (msg) ->
-			stat.ok++
-			console.log n, title, msg or ''
-		check: (value, msg) ->
-			n++
-			if value
-				self.ok msg
-			else
-				self.error msg
-		equal: (a, b, msg) ->
-			n++
-			msg = msg or ''
-			if a is b
-				self.ok msg
-			else
-				self.error "not equal: #{a} != #{b} / #{msg}"
+	makeScope = ->
+		self =
+			title: title
+			n: 0
+			l_started: 0
+			l_ok: 0
+			l_error: 0
+			closed: false
+			close: ->
+				if self.closed
+					self.error 'Double close'
+					testList.push self
+					return
+				self.closed = true
+				stat.bFinished++
+				testList.splice(testList.indexOf(self), 1)
+				onClose()
+				if self.l_error or (self.l_started isnt self.l_ok)
+					self.error "UT #{title} has problem: #{self.l_ok} of #{self.l_started}"
+			start: (count) ->
+				stat.started += count
+				self.l_started += count
+			error: (msg) ->
+				stat.error++
+				self.l_error++
+				console.error self.n, title, msg or ''
+			ok: (msg) ->
+				stat.ok++
+				self.l_ok++
+				console.log self.n, title, msg or ''
+			check: (value, msg) ->
+				self.n++
+				if value
+					self.ok msg
+				else
+					self.error msg
+			equal: (a, b, msg) ->
+				self.n++
+				msg = msg or ''
+				if a is b
+					self.ok msg
+				else
+					self.error "not equal: #{a} != #{b} / #{msg}"
+		testList.push self
+		self
+
+	r =
 		run: (fn) ->
 			alight = buildAlight()
+			stat.bStarted++;
+			closed++;
+			scope = makeScope()
 			try
-			  fn self, alight
+			  fn scope, alight
 			catch e
-				err = if typeof(e) is 'string' then e else e.stack
-				self.error()
-				console.error err
+				err = e
+				if e.stack
+					err = e.stack
+				else if e.description
+					err = e.description
+				scope.error()
+				console.error '!!', err
+
+			# test with observer
 			if not Object.observe
 				return
 			alight = buildAlight()
 			alight.debug.useObserver = true
+			stat.bStarted++;
+			closed++;
+			scope = makeScope()
 			try
-			  fn self, alight
+			  fn scope, alight
 			catch e
 				err = if typeof(e) is 'string' then e else e.stack
-				self.error()
+				scope.error()
 				console.error err
-
-		totals: ->
-			msg = "Started #{stat.started}, Ok #{stat.ok}, Error #{stat.error}"
-			if stat.error or stat.started isnt stat.ok
-				console.error msg
-			else
-				console.log msg
-			stat
-
-# show totals
-setTimeout ->
-	if stat.started is stat.ok
-		Test().totals()
-	else
-		setTimeout ->
-			console.error 'timeout 4 sec'
-			Test().totals()
-		, 4000
-, 2000

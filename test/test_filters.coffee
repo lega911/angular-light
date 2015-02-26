@@ -33,6 +33,7 @@ Test('filter slice').run ($test, alight) ->
         scope.$scan ->
             $test.check equal(result, [3,4,5,6,7,8,9])
             $test.check equal(result2, [3,4,5])
+            $test.close()
 
 
 Test('filter date').run ($test, alight) ->
@@ -66,6 +67,7 @@ Test('filter date').run ($test, alight) ->
                 $test.equal r0, '1995-01-31'
                 $test.equal r1, '23:59:59'
                 $test.equal r2, '1995-01-31 23:59:59'
+                $test.close()
 
 
 Test('$compile filter').run ($test, alight) ->
@@ -98,3 +100,4 @@ Test('$compile filter').run ($test, alight) ->
     $test.equal b(), '2014-06-13'
     $test.equal a2(scope), '2014-06-132014-06-13'
     $test.equal b2(), '2014-06-132014-06-13'
+    $test.close()

@@ -77,6 +77,7 @@ do ->
                                     scope.list[1] = { text:'i' }
                                     scope.$scan ->
                                         $test.check result() is results[7], result()
+                                        $test.close()
 
     run 'default', '<div al-repeat="it in list">{{it.text}}:{{=numerator()}}</div>',
         0: 'a:1, b:2, c:3, d:4'
@@ -156,7 +157,7 @@ do ->
 
         result = ->
             r = for e in alight.f$.find dom, '.item'
-                e.textContent
+                alight.f$.text e
             r.join ', '
 
         ops = [
@@ -212,6 +213,7 @@ do ->
                     callback: ->
                         $test.equal result(), 'b:0, c:1, d:2, f:3, h:4, i:8, j:9'
                         next()
+                        $test.close()
         ]
 
         i = 0
@@ -267,6 +269,7 @@ Test('al-repeat skippedAttr').run ($test, alight) ->
 
     $test.equal countHi, 1, 'countHi'
     $test.equal countLo, 3, 'countLo'
+    $test.close()
 
 
 Test('al-repeat one-time-bindings').run ($test, alight) ->
@@ -302,3 +305,4 @@ Test('al-repeat one-time-bindings').run ($test, alight) ->
         scope.$scan ->
             $test.equal watchCount(), 0
             $test.equal rowCount(), 3
+            $test.close()

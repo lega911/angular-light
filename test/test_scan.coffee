@@ -73,6 +73,7 @@ Test('$watch function/$any').run ($test, alight) ->
 						$test.equal col2, 1
 						$test.equal col3, 8
 						$test.equal col4, 1
+						$test.close()
 
 Test('$scan root').run ($test, alight) ->
 	$test.start 15
@@ -125,6 +126,7 @@ Test('$scan root').run ($test, alight) ->
 						$test.check c0 is 4, '/5'
 						$test.check c1 is 4
 						$test.check c2 is 4
+						$test.close()
 
 Test('$scan late').run ($test, alight) ->
 	$test.start 18
@@ -176,6 +178,7 @@ Test('$scan late').run ($test, alight) ->
 			$test.equal c0, 6
 			$test.equal c1, 2
 			$test.equal c2, 2
+			$test.close()
 
 		$test.equal c0, 4
 		$test.equal c1, 1
@@ -213,6 +216,7 @@ Test('$scan order').run ($test, alight) ->
 			$test.equal v0, 1
 			$test.equal v1, 1
 			$test.equal v2, 0
+			$test.close()
 
 
 Test('$scan.deep').run ($test, alight) ->
@@ -246,3 +250,4 @@ Test('$scan.deep').run ($test, alight) ->
 
 				s.$scan ->
 					$test.equal n, 3
+					$test.close()

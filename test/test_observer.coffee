@@ -1,6 +1,7 @@
 
 Test('observer').run ($test, alight) ->
     if not alight.debug.useObserver
+        $test.close()
         return
     $test.start 27
 
@@ -86,6 +87,8 @@ Test('observer').run ($test, alight) ->
             $test.equal wroot, 3
             $test.equal wuser, 2
             $test.equal wrole, 3
+            
+            $test.close()
     ]
 
     for fn in steps
@@ -94,6 +97,7 @@ Test('observer').run ($test, alight) ->
 
 Test('observer array#0').run ($test, alight) ->
     if not alight.debug.useObserver
+        $test.close()
         return
     $test.start 4
 
@@ -125,10 +129,12 @@ Test('observer array#0').run ($test, alight) ->
     $test.equal wlist, 0
 
     $test.equal !scope.list[0].$$observer, true
+    $test.close()
 
 
 Test('observer array#1').run ($test, alight) ->
     if not alight.debug.useObserver
+        $test.close()
         return
     $test.start 4
 
@@ -161,10 +167,12 @@ Test('observer array#1').run ($test, alight) ->
     $test.equal wlist, 0
 
     $test.equal !scope.data.list[0].$$observer, true
+    $test.close()
 
 
 Test('observer-scope array#0').run ($test, alight) ->
     if not alight.debug.useObserver
+        $test.close()
         return
     $test.start 9
 
@@ -215,6 +223,7 @@ Test('observer-scope array#0').run ($test, alight) ->
 
 
     scope.$destroy()
+    $test.close()
 
 
 Test('observer Scope').run ($test, alight) ->
@@ -305,6 +314,7 @@ Test('observer Scope').run ($test, alight) ->
                                 scope.$scan ->
                                     $test.equal userName, 3
                                     $test.equal userRole, 3
+                                    $test.close()
 
 
 Test('observer Scope#2').run ($test, alight) ->
@@ -353,6 +363,7 @@ Test('observer Scope#2').run ($test, alight) ->
                 s0.$scan ->
                     $test.equal count2, 2
                     $test.equal value2, 'redhat'
+                    $test.close()
 
 
 Test('observer watchText#0').run ($test, alight) ->
@@ -392,3 +403,4 @@ Test('observer watchText#0').run ($test, alight) ->
                 scope.$scan ->
                     $test.equal count, 2
                     $test.equal result, 'OS: MacOS X'
+                    $test.close()

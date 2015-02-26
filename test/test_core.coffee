@@ -18,8 +18,10 @@ Test('$watch').run ($test, alight) ->
             scope.two = '2'
             scope.$scan ->
                 $test.check result is 'one two'
+                $test.close()
         else
             $test.error()
+            $test.close()
 
 
 Test('$watch #2').run ($test, alight) ->
@@ -32,6 +34,7 @@ Test('$watch #2').run ($test, alight) ->
 
     $test.equal w0.value, 'linux'
     $test.equal w1.value, 'linux'
+    $test.close()
 
 
 Test('$watchArray').run ($test, alight) ->
@@ -75,6 +78,7 @@ Test('$watchArray').run ($test, alight) ->
                         scope.$scan ->
                             $test.equal watch, 3
                             $test.equal watchArray, 4, 'list = 7'
+                            $test.close()
 
 
 Test('$watchArray#2').run ($test, alight) ->
@@ -104,6 +108,7 @@ Test('$watchArray#2').run ($test, alight) ->
                 scope.list.push(4)
                 scope.$scan ->
                     $test.check watch is 2 and watchArray is 3
+                    $test.close()
 
 
 # test $watchText
@@ -123,6 +128,7 @@ Test('$watchText').run ($test, alight) ->
         scope.two = 'three'
         scope.$scan ->
             $test.check result is 'one three'
+            $test.close()
 
 
 # test filter
@@ -148,6 +154,7 @@ Test('filter').run ($test, alight) ->
     $test.check filter() is 27
     N = 50
     $test.check filter() is 97
+    $test.close()
 
 
 Test('filter2').run ($test, alight) ->
@@ -167,6 +174,7 @@ Test('filter2').run ($test, alight) ->
     filter = alight.utilits.filterBuilder scope, null, [' double ', ' minus:3']
     $test.check filter(15) is 27
     $test.check filter(50) is 97
+    $test.close()
 
 
 Test('binding').run ($test, alight) ->
@@ -187,6 +195,7 @@ Test('binding').run ($test, alight) ->
     scope.num = 50
     scope.$scan ->
         $test.check dom.text() is 'Text 100' and dom.attr('attr') is '55'
+        $test.close()
 
 
 Test('bindonce').run ($test, alight) ->
@@ -209,6 +218,7 @@ Test('bindonce').run ($test, alight) ->
     scope.$scan ->
         $test.equal dom.attr('attr'), '20'
         $test.equal dom.text(), 'Text 30'
+        $test.close()
 
 
 Test('text-directive').run ($test, alight) ->
@@ -244,6 +254,7 @@ Test('text-directive').run ($test, alight) ->
 
             setTimeout ->
                 $test.check dom.attr('attr') is 'Attr 93'
+                $test.close()
             , 150
 
     , 150
@@ -271,6 +282,7 @@ Test('test-take-attr').run ($test, alight) ->
 
     alight.applyBindings scope, dom[0],
         skip_attr: ['ut-text']
+    $test.close()
 
 
 Test('text-directive').run ($test, alight) ->
@@ -284,6 +296,7 @@ Test('text-directive').run ($test, alight) ->
     scope.b = 'world'
     fn = scope.$compileText '{{a}} {{#test0 b}} {{#test0 0}}!'
     $test.equal fn(), 'Hello world 0!'
+    $test.close()
 
 
 Test('oneTime binding #0').run ($test, alight) ->
@@ -314,6 +327,9 @@ Test('oneTime binding #0').run ($test, alight) ->
                 $test.equal value, 0
                 $test.equal count, 1
                 next()
+        ->
+            ->
+                $test.close()
     ]
 
     step = 0
@@ -357,6 +373,9 @@ Test('oneTime binding #1').run ($test, alight) ->
                 $test.equal value, 'Hello 0!'
                 $test.equal count, 1
                 next()
+        ->
+            ->
+                $test.close()
     ]
 
     step = 0
@@ -382,7 +401,7 @@ Test('oneTime binding #2').run ($test, alight) ->
     alight.applyBindings scope, dom
 
     result = ->
-        dom.textContent
+        alight.f$.text dom
 
     steps = [
         ->
@@ -408,7 +427,7 @@ Test('oneTime binding #2').run ($test, alight) ->
                 next()
         ->
             ->
-                $test.equal !!scope.$system.watches[exp], false
+                $test.equal !!scope.$system.watches[exp], false                
     ]
 
     step = 0
@@ -421,6 +440,7 @@ Test('oneTime binding #2').run ($test, alight) ->
         scope.$scan n
 
     next()
+    $test.close()
 
 
 Test('oneTime binding #3').run ($test, alight) ->
@@ -471,6 +491,7 @@ Test('oneTime binding #3').run ($test, alight) ->
     next()
     $test.equal !!scope.$system.watches[exp], false
     $test.equal !!scope1.$system.watches[exp], false
+    $test.close()
 
 
 Test('skipped attrs').run ($test, alight) ->
@@ -510,6 +531,7 @@ Test('skipped attrs').run ($test, alight) ->
 
     alight.applyBindings scope, element,
         skip_attr: ['ut-two']
+    $test.close()
 
 
 Test('scope isolate').run ($test, alight) ->
@@ -534,6 +556,7 @@ Test('scope isolate').run ($test, alight) ->
     scope.x = 7
     $test.equal child.x, undefined
     $test.equal child.$parent.x, 7
+    $test.close()
 
 
 Test('text-directive env.finally').run ($test, alight) ->
@@ -563,6 +586,7 @@ Test('text-directive env.finally').run ($test, alight) ->
             scope.$scan ->
                 $test.equal dom.text(), 'Text four'
                 $test.equal !!scope.$system.watches['Text {{#test1}}'], false
+                $test.close()
 
 
 Test('deferred process').run ($test, alight) ->
@@ -592,14 +616,15 @@ Test('deferred process').run ($test, alight) ->
                 scope.name = 'linux'
 
     dom = document.createElement 'div'
-    dom.innerHTML = '<span ut-test5></span>'
+    dom.innerHTML = '<span ut-test5="noop"></span>'
 
     alight.applyBindings rscope, dom
 
     setTimeout ->
         $test.equal rscope.name, 'root'
         $test.equal cscope.name, 'linux'
-        $test.equal dom.innerHTML, '<span ut-test5=""><p>linux</p></span>'
+        $test.equal dom.innerHTML.toLowerCase(), '<span ut-test5="noop"><p>linux</p></span>'
         $test.equal alight.directives.ut.test5.template, undefined
         $test.equal alight.directives.ut.test5.scope, undefined
+        $test.close()
     , 200

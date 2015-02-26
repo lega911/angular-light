@@ -47,6 +47,8 @@ Test('parsExpression').run ($test, alight) ->
     pars "info.user.acl('write', 're_type:546a1d07bb05aa73a632807d')", ["(($$=$$scope.info,$$==null)?undefined:$$.user).acl('write', 're_type:546a1d07bb05aa73a632807d')"]
     #pars '=obj.items.short_name || obj.name', []
 
+    $test.close()
+
 
 Test('parsText').run ($test, alight) ->
     $test.start 5
@@ -63,3 +65,5 @@ Test('parsText').run ($test, alight) ->
     r = alight.utilits.parsText "label {{#get tag.ref -> items.css, $value || 'label-default'}}"
     $test.equal r[0].value, 'label '
     $test.equal r[1].list[0], "#get tag.ref -> items.css, $value || 'label-default'"
+
+    $test.close()
