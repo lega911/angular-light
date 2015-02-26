@@ -7,7 +7,7 @@ var header = require('gulp-header');
 var clean = require('gulp-clean');
 
 
-gulp.task('default', ['compress'], function() {
+gulp.task('default', ['compress', 'animate_compress'], function() {
 });
 
 gulp.task('clean', function () {
@@ -49,4 +49,26 @@ gulp.task('compress', ['assemble'], function() {
      }))
     .pipe(header("/**\n * Angular Light\n * (c) 2015 Oleg Nechaev\n * Released under the MIT License.\n */"))
     .pipe(gulp.dest('bin'))
+});
+
+gulp.task('animate_build', ['compile'], function() {
+  return gulp.src('tmp/animate.js')
+    .pipe(concat('animate.js'))
+    .pipe(gulp.dest('bin'));
+});
+
+gulp.task('animate_compress', ['animate_build'], function() {
+  return gulp.src('./bin/animate.js')
+    .pipe(uglify())
+    .pipe(rename({
+       extname: '.min.js'
+     }))
+    .pipe(gulp.dest('bin'))
+});
+
+gulp.task('test', function() {
+  return gulp.src('./test/*.coffee')
+    //.pipe(coffee({bare: true}).on('error', console.log))
+    .pipe(coffee({}).on('error', console.log))
+    .pipe(gulp.dest('test'))
 });

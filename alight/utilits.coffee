@@ -55,7 +55,7 @@ alight.utilits.clone = clone = (d) ->
 
         # Date
         if d instanceof Date
-            return new Date(d)
+            return new Date(d.valueOf())
 
         # DOM?, copy link
         if d.nodeType and typeof(d.cloneNode) is "function"

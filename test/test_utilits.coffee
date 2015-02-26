@@ -35,7 +35,7 @@ Test('utilits.equal').run ($test, alight) ->
 	$test.check not u.equal a, b
 
 	b = u.clone a
-	b.obj.date = new Date()
+	b.obj.date = new Date(2015, 1, 1)
 	$test.check not u.equal a, b
 
 

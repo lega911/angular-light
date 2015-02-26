@@ -156,7 +156,7 @@ do ->
 
         result = ->
             r = for e in alight.f$.find dom, '.item'
-                e.innerText
+                e.textContent
             r.join ', '
 
         ops = [

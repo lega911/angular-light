@@ -382,7 +382,7 @@ Test('oneTime binding #2').run ($test, alight) ->
     alight.applyBindings scope, dom
 
     result = ->
-        dom.innerText
+        dom.textContent
 
     steps = [
         ->

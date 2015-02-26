@@ -9,6 +9,6 @@ Visit http://angularlight.org/
 
 Build:
 $ npm install
-$ npm gulp
+$ gulp
 
 Sources of 0.7.15 and older ones there: https://bitbucket.org/lega911

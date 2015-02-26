@@ -72,8 +72,8 @@ Test('directive.scope isolate').run ($test, alight) ->
 
 	alight.applyBindings scope, el
 
-	$test.equal alight.f$.find(el, '#i1')[0].innerText, 'parent:child1:parent'
-	$test.equal alight.f$.find(el, '#i2')[0].innerText, ':child2:parent'
+	$test.equal alight.f$.find(el, '#i1')[0].textContent, 'parent:child1:parent'
+	$test.equal alight.f$.find(el, '#i2')[0].textContent, ':child2:parent'
 
 
 Test('restrict M #1').run ($test, alight) ->
@@ -107,7 +107,7 @@ Test('restrict M #1').run ($test, alight) ->
 		scope = alight.Scope()
 		alight.applyBindings scope, el
 
-		$test.equal alight.f$.find(el, 'p')[0].innerText.trimLeft(), 'Hello World!'
+		$test.equal alight.f$.find(el, 'p')[0].textContent.trimLeft(), 'Hello World!'
 
 
 Test('restrict M #2').run ($test, alight) ->
@@ -133,4 +133,4 @@ Test('restrict M #2').run ($test, alight) ->
 		scope = alight.Scope()
 		alight.applyBindings scope, el
 
-		$test.equal alight.f$.find(el, 'p')[0].innerText.trimLeft(), 'Hello World!'
+		$test.equal alight.f$.find(el, 'p')[0].textContent.trimLeft(), 'Hello World!'
