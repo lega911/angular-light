@@ -33,6 +33,8 @@ alight.bootstrap({
 });
 ```
 
+[More examples](http://angularlight.org/doc/examples.html)
+
 ### Browser Support
 Google Chrome, Firefox, IE9+ (IE8 with jQuery)
 
