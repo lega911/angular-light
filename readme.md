@@ -1,7 +1,6 @@
 
 ### Angular Light
-Web framework with MVC model. Angular.js + Knockout.js way.
-Visit [angularlight.org](http://angularlight.org/)
+Web framework with MVC model. Angular.js + Knockout.js way. Visit [angularlight.org](http://angularlight.org/)
 
 ### Example 0
 ``` html
@@ -40,9 +39,9 @@ Google Chrome, Firefox, IE9+ (IE8 with jQuery)
 
 
 ### Building and testing
-$ npm install
-$ gulp
-$ gulp test
+* npm install
+* gulp
+* gulp test
 
 Sources of 0.7.15 and older ones there: https://bitbucket.org/lega911
 
