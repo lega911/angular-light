@@ -11,5 +11,5 @@ page.open(url, function (status) {
 	setTimeout(function(){
 		console.log('run test in a browser is a better way');
 		phantom.exit();
-	}, 7000);
+	}, 5000);
 });

@@ -23,7 +23,7 @@ to = setTimeout ->
 	printTotals()
 	for t in testList
 		console.error 'opened UT', t.title
-, 6000
+, 4000
 
 
 onClose = ->

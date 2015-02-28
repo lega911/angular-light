@@ -11,4 +11,7 @@ Build:
 $ npm install
 $ gulp
 
+Test:
+$ gulp test
+
 Sources of 0.7.15 and older ones there: https://bitbucket.org/lega911

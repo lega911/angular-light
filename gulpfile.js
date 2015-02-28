@@ -66,9 +66,22 @@ gulp.task('animate_compress', ['animate_build'], function() {
     .pipe(gulp.dest('bin'))
 });
 
-gulp.task('test', function() {
+gulp.task('build_test', function() {
   return gulp.src('./test/*.coffee')
     //.pipe(coffee({bare: true}).on('error', console.log))
     .pipe(coffee({}).on('error', console.log))
     .pipe(gulp.dest('test'))
+});
+
+
+gulp.task('test', ['build_test'], function(){
+  var path = require('path');
+  var childProcess = require('child_process');
+  var phantomjs = require('phantomjs');
+  var binPath = phantomjs.path;
+  var childArgs = [path.join('test', 'phantom.js')];
+
+  childProcess.execFile(binPath, childArgs, function(err, stdout, stderr) {
+    console.log(stdout);
+  });
 });
