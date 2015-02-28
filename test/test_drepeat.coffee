@@ -56,7 +56,7 @@ do ->
 
                 scope.list.splice 0, 0, { text: 'f' }
                 scope.$scan ->
-                    $test.equal result(), results[2]
+                    $test.equal result(), results[2], result()
 
                     scope.list.splice 2, 0, { text: 'g' }, { text: 'h' }
                     scope.$scan ->
