@@ -174,7 +174,7 @@ Test('observer-scope array#0').run ($test, alight) ->
     if not alight.debug.useObserver
         $test.close()
         return
-    $test.start 9
+    $test.start 17
 
     scope = alight.Scope()
     scope.data =
@@ -196,9 +196,19 @@ Test('observer-scope array#0').run ($test, alight) ->
     ,  
         isArray: true
 
+    acount3 = 0
+    scope.$watch 'data.list.length', ->
+        acount3++    
+
+    acount4 = 0
+    scope.$watch 'ar.length', ->
+        acount4++    
+
     scope.$scan ->
         $test.equal acount, 1
         $test.equal acount2, 1
+        $test.equal acount3, 0
+        $test.equal acount4, 0
 
         $test.equal not scope.data.list[0].$$observer, true
 
@@ -211,16 +221,22 @@ Test('observer-scope array#0').run ($test, alight) ->
             $test.equal acount, 2
             $test.equal acount2, 2
 
+            $test.equal acount3, 1
+            $test.equal acount4, 1
+
             scope.$scan ->
                 $test.equal acount, 2
                 $test.equal acount2, 2
+                $test.equal acount3, 1
+                $test.equal acount4, 1
 
                 scope.data.list = []
                 scope.ar = []
                 scope.$scan ->
                     $test.equal acount, 3
                     $test.equal acount2, 3
-
+                    $test.equal acount3, 2
+                    $test.equal acount4, 2
 
     scope.$destroy()
     $test.close()
