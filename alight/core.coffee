@@ -1,8 +1,8 @@
 # Angular light
-# version: 0.8.4 / 2015-02-23
+# version: 0.8.5 / 2015-03-03
 
 # init
-alight.version = '0.8.4'
+alight.version = '0.8.5'
 alight.debug =
     useObserver: false
     observer: 0
