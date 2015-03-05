@@ -146,3 +146,86 @@ Test('restrict M #2').run ($test, alight) ->
 
 		$test.equal alight.f$.text(alight.f$.find(el, 'p')[0]).trimLeft(), 'Hello World!'
 		$test.close()
+
+
+Test('al-controller').run ($test, alight) ->
+	$test.start 3
+
+	dom = $ '<div al-controller="foo"><i al-getter></i></div>'
+	c0 = 0
+	c1 = 0
+
+	alight.controllers.foo = (scope) ->
+		c0++
+		scope.value = 123
+
+	alight.directives.al.getter = (el, name, scope) ->
+		c1++
+		$test.equal scope.value, 123
+
+	alight.bootstrap(dom[0])
+
+	$test.equal c0, 1
+	$test.equal c1, 1
+	$test.close()
+
+
+Test('al-controller as syntax').run ($test, alight) ->
+	$test.start 5
+
+	dom = $ '<div al-controller="Foo as bar"><i al-getter></i></div>'
+	c0 = 0
+	c1 = 0
+
+	alight.controllers.Foo = (scope) ->
+		c0++
+		scope.val0 = 'a'
+		@.val1 = 'b'
+	alight.controllers.Foo::proFn = ->
+		'c' + @.val1
+
+	alight.directives.al.getter = (el, name, scope) ->
+		c1++
+		$test.equal scope.val0, 'a'
+		$test.equal scope.bar.val1, 'b'
+		$test.equal scope.bar.proFn(), 'cb'
+
+	alight.bootstrap(dom[0])
+
+	$test.equal c0, 1
+	$test.equal c1, 1
+	$test.close()
+
+
+Test('al-input on/off').run ($test, alight) ->
+	if typeof(CustomEvent) isnt 'function'
+		console.warn 'skip al-input on/off'
+		return
+
+	$test.start 3
+	scope = alight.Scope()
+	scope.name = '123'
+
+	dom = $ '<div><input type="text" al-value="name" /></div>'
+	input = dom.find('input')[0]
+
+	alight.applyBindings scope, dom[0]
+
+	$test.equal input.value, '123'
+
+	input.value = 'linux'
+	input.dispatchEvent(new CustomEvent('input'))
+
+	setTimeout ->
+		$test.equal scope.name, 'linux'
+
+		scope.$destroy()
+
+		input.value = 'macos'
+		input.dispatchEvent(new CustomEvent('input'))
+
+		setTimeout ->
+			$test.equal scope.name, 'linux'
+			$test.close()
+		, 50
+	, 50

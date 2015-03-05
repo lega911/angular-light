@@ -36,6 +36,10 @@ dirs.value = (element, variable, scope) ->
         onDom: ->
             f$.on element, 'input', self.updateModel
             f$.on element, 'change', self.updateModel
+            scope.$watch '$destroy', self.offDom
+        offDom: ->
+            f$.off element, 'input', self.updateModel
+            f$.off element, 'change', self.updateModel
         updateModel: ->
             alight.nextTick ->
                 value = f$.val element
@@ -71,6 +75,9 @@ click_maker = (event) ->
                 self.stop = env.takeAttr 'al-click-stop'
             onDom: ->
                 f$.on element, event, self.doCallback
+                scope.$watch '$destroy', self.offDom
+            offDom: ->
+                f$.off element, event, self.doCallback
             doCallback: (e) ->
                 if not self.stop
                     e.preventDefault()
@@ -106,6 +113,9 @@ dirs.submit = (element, name, scope) ->
             self.onDom()
         onDom: ->
             f$.on element, 'submit', self.doCallback
+            scope.$watch '$destroy', self.offDom
+        offDom: ->
+            f$.off element, 'submit', self.doCallback
         doCallback: (e) ->
             e.preventDefault()
             e.stopPropagation()
@@ -125,8 +135,12 @@ dirs.controller =
     init: (element, name, scope, env) ->
         new_scope = scope.$new()
         if name
-            ctrl = alight.getController name, new_scope
-            ctrl new_scope
+            d = name.split ' as '
+            ctrl = alight.getController d[0], new_scope
+            if d[1]
+                new_scope[d[1]] = new ctrl(new_scope)
+            else
+                ctrl new_scope
         alight.applyBindings new_scope, element, { skip_attr:env.skippedAttr() }
         return { owner: true }
 
@@ -143,6 +157,9 @@ dirs.checked =
                 self.initDom()
             onDom: ->
                 f$.on element, 'change', self.updateModel
+                scope.$watch '$destroy', self.offDom
+            offDom: ->
+                f$.off element, 'change', self.updateModel
             updateModel: ->
                 value = f$.prop element, 'checked'
                 self.changing = true
@@ -180,6 +197,9 @@ dirs.radio =
                 self.value = value
             onDom: ->
                 f$.on element, 'change', self.updateModel
+                scope.$watch '$destroy', self.offDom
+            offDom: ->
+                f$.off element, 'change', self.updateModel
             updateModel: ->
                 self.changing = true
                 scope.$setValue name, self.value
@@ -537,6 +557,9 @@ for key in ['keydown', 'keypress', 'keyup', 'mousedown', 'mouseenter', 'mouselea
                         input: ['$event']
                 onDom: ->
                     f$.on element, key, self.callback
+                    scope.$watch '$destroy', self.offDom
+                offDom: ->
+                    f$.off element, key, self.callback
                 callback: (e) ->
                     try
                         self.caller scope, e
@@ -567,10 +590,15 @@ dirs.focused = (element, name, scope) ->
                 safe.changing = false
 
         onDom: ->
-            f$.on element, 'focus', ->
+            von = ->
                 safe.updateModel true
-            f$.on element, 'blur', ->
+            voff = ->
                 safe.updateModel false
+            f$.on element, 'focus', von
+            f$.on element, 'blur', voff
+            scope.$watch '$destroy', ->
+                f$.off element, 'focus', von
+                f$.off element, 'blur', voff
 
         updateDom: (value) ->
             if safe.changing
