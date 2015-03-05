@@ -197,3 +197,35 @@ Test('al-controller as syntax').run ($test, alight) ->
 	$test.close()
 
 
+Test('al-input on/off').run ($test, alight) ->
+	if typeof(CustomEvent) isnt 'function'
+		console.warn 'skip al-input on/off'
+		return
+
+	$test.start 3
+	scope = alight.Scope()
+	scope.name = '123'
+
+	dom = $ '<div><input type="text" al-value="name" /></div>'
+	input = dom.find('input')[0]
+
+	alight.applyBindings scope, dom[0]
+
+	$test.equal input.value, '123'
+
+	input.value = 'linux'
+	input.dispatchEvent(new CustomEvent('input'))
+
+	setTimeout ->
+		$test.equal scope.name, 'linux'
+
+		scope.$destroy()
+
+		input.value = 'macos'
+		input.dispatchEvent(new CustomEvent('input'))
+
+		setTimeout ->
+			$test.equal scope.name, 'linux'
+			$test.close()
+		, 50
+	, 50

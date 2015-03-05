@@ -125,6 +125,9 @@
         f$.on = function(element, event, callback) {
             $(element).on(event, callback)
         };
+        f$.off = function(element, event, callback) {
+            $(element).off(event, callback)
+        };
     } else {
         f$.on = function(element, event, callback) {
             element.addEventListener(event, callback, false)
