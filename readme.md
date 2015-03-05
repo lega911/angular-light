@@ -5,7 +5,7 @@ Visit [angularlight.org](http://angularlight.org/)
 
 ### Example 0
 ``` html
-<div al-app class="col-lg-4 well">
+<div al-app>
     <label>Name:</label>
     <input type="text" al-value="name" />
     <h3>Hello {{name}}!</h3>
