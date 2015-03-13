@@ -621,3 +621,21 @@ dirs.focused = (element, name, scope) ->
             safe.onDom()
             safe.watchModel()
             safe.initDom()
+
+
+dirs.style = (element, name, scope) ->
+    prev = {}
+    setter = (style) ->
+        for key, v of prev
+            element.style[key] = ''
+
+        prev = {}
+        for k, v of style or {}
+            key = k.replace /(-\w)/g, (m) ->
+                m.substring(1).toUpperCase()
+            prev[key] = v
+            element.style[key] = v or ''
+
+    w = scope.$watch name, setter,
+        deep: true
+        init: true
