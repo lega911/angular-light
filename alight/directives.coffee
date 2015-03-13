@@ -636,6 +636,6 @@ dirs.style = (element, name, scope) ->
             prev[key] = v
             element.style[key] = v or ''
 
-    w = scope.$watch name, setter,
+    scope.$watch name, setter,
         deep: true
         init: true
