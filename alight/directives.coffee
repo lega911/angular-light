@@ -218,7 +218,7 @@ dirs.radio =
 
 
 # al-css="class:exp"
-dirs.css =
+dirs.class = dirs.css =
     priority: 30
     init: (element, exp, scope) ->
         self =
