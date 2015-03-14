@@ -133,16 +133,21 @@ dirs.controller =
     priority: 500
     restrict: 'AE'
     init: (element, name, scope, env) ->
-        new_scope = scope.$new()
-        if name
-            d = name.split ' as '
-            ctrl = alight.getController d[0], new_scope
-            if d[1]
-                new_scope[d[1]] = new ctrl(new_scope)
-            else
-                ctrl new_scope
-        alight.applyBindings new_scope, element, { skip_attr:env.skippedAttr() }
-        return { owner: true }
+        self =
+            owner: true
+            start: ->
+                newScope = scope.$new()
+                self.callController newScope
+                alight.applyBindings newScope, element, { skip_attr:env.skippedAttr() }
+            callController: (newScope) ->
+                if name
+                    d = name.split ' as '
+                    ctrl = alight.getController d[0], newScope
+                    if d[1]
+                        newScope[d[1]] = new ctrl(newScope)
+                    else
+                        ctrl newScope
+        self
 
 
 dirs.checked =

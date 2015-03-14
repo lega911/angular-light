@@ -24,10 +24,11 @@ alight.directives.al.repeat =
                 self.initUpdateDom()
 
             prepare: ->
-                # get constroller
+                # get controller
                 controllerName = env.takeAttr 'al-controller'
                 if controllerName
-                    self.childController = alight.getController controllerName, scope
+                    alController = alight.directives.al.controller.init null, controllerName, null
+                    self.childController = alController.callController
                 else
                     self.childController = null
 
