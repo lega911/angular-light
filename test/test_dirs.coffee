@@ -230,3 +230,36 @@ Test('al-value on/off').run ($test, alight) ->
 			$test.close()
 		, 50
 	, 50
+
+
+Test('al-value setter').run ($test, alight) ->
+	if typeof(CustomEvent) isnt 'function'
+		$test.close()
+		console.warn 'skip al-value on/off'
+		return
+
+	$test.start 3
+	scope = alight.Scope()
+	scope.name = ['123']
+
+	dom = $ '<div><input type="text" al-value="name[0]" /></div>'
+	input = dom.find('input')[0]
+
+	alight.applyBindings scope, dom[0]
+
+	$test.equal input.value, '123'
+
+	input.value = 'linux'
+	input.dispatchEvent(new CustomEvent('input'))
+
+	setTimeout ->
+		$test.equal scope.name[0], 'linux'
+
+		input.value = 'new value'
+		input.dispatchEvent(new CustomEvent('input'))
+
+		setTimeout ->
+			$test.equal scope.name[0], 'new value'
+			$test.close()
+		, 50
+	, 50

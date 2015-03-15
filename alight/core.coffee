@@ -1,8 +1,8 @@
 # Angular light
-# version: 0.8.8 / 2015-03-14
+# version: 0.8.9 / 2015-03-15
 
 # init
-alight.version = '0.8.8'
+alight.version = '0.8.9'
 alight.debug =
     useObserver: false
     observer: 0
@@ -684,24 +684,17 @@ Scope::$eval = (exp) ->
     @.$compile(exp, {noBind: true})(@)
 
 
+
 Scope::$getValue = (name) ->
-    dict = @
-    for key in name.split '.'
-        dict = (dict or {})[key]
-    dict
+    @.$eval name
 
 
 Scope::$setValue = (name, value) ->
-    dict = @
-    d = name.split '.'
-    for i in [0..d.length-2] by 1
-        key = d[i]
-        child = dict[key]
-        if child is undefined
-            dict[key] = child = {}
-        dict = child
-    key = d[d.length-1]
-    dict[key] = value
+    fn = @.$compile name + ' = $value',
+        input: ['$value']
+        no_return: true
+        noBind: true
+    fn @, value
 
 
 Scope::$destroy = () ->
