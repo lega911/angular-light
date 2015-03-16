@@ -44,7 +44,8 @@ alight.utilits.parsExpression = (line, cfg) ->
             an = line[index]  # next
 
             if convert
-                if a.match /[\d\w_\.\$]/
+                #if a.match /[\d\wа-яА-ЯёЁ_\.\$]/
+                if a.match /[\d\w\u0410-\u044F\u0401\u0451_\.\$]/
                     if not variable
                         variable_index = index - 1
                     variable += a
