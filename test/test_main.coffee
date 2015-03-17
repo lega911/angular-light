@@ -22,7 +22,7 @@ to = setTimeout ->
 	console.error 'timeout 4 sec'
 	printTotals()
 	for t in testList
-		console.error 'opened UT', t.title
+		console.error 'opened UT:', t.title
 , 4000
 
 
@@ -59,7 +59,7 @@ window.Test = Test = (title) ->
 				testList.splice(testList.indexOf(self), 1)
 				onClose()
 				if self.l_error or (self.l_started isnt self.l_ok)
-					self.error "UT #{title} has problem: #{self.l_ok} of #{self.l_started}"
+					console.warn "UT #{title} has problem: #{self.l_ok} of #{self.l_started}"
 			start: (count) ->
 				stat.started += count
 				self.l_started += count

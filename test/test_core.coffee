@@ -590,42 +590,62 @@ Test('text-directive env.finally').run ($test, alight) ->
 
 
 Test('deferred process').run ($test, alight) ->
-    $test.start 5
+    $test.start 7
 
     # mock ajax
-    Test.ajax = {}
     alight.f$.ajax = (cfg) ->
         setTimeout ->
-            data = Test.ajax[cfg.url]
-            if data
-                cfg.success data
+            if cfg.url is 'testDeferredProcess'
+                cfg.success "<p>{{name}}</p>"
             else
-                cfg.error
+                cfg.error()
         , 100
-    Test.ajax.testDeferredProcess = "<p>{{name}}</p>"
 
-    rscope = alight.Scope()
-    rscope.name = 'root'
-    cscope = null
+    scope5 = scope3 = null
 
     alight.directives.ut =
         test5:
             templateUrl: 'testDeferredProcess'
+            scope: true
             link: (el, name, scope) ->
-                cscope = scope
+                scope5 = scope
+                scope.name = 'linux'
+        test3:
+            templateUrl: 'testDeferredProcess'
+            link: (el, name, scope) ->
+                scope3 = scope
                 scope.name = 'linux'
 
-    dom = document.createElement 'div'
-    dom.innerHTML = '<span ut-test5="noop"></span>'
+    runOne = (template) ->
+        root = alight.Scope()
+        root.name = 'root'
 
-    alight.applyBindings rscope, dom
+        dom = document.createElement 'div'
+        dom.innerHTML = template
+
+        alight.applyBindings root, dom
+
+        response =
+            root: root
+            html: ->
+                dom.innerHTML.toLowerCase()
+        response
+
+    r0 = runOne '<span ut-test5="noop"></span>'
+    r1 = runOne '<span ut-test3="noop"></span>'
 
     setTimeout ->
-        $test.equal rscope.name, 'root'
-        $test.equal cscope.name, 'linux'
-        $test.equal dom.innerHTML.toLowerCase(), '<span ut-test5="noop"><p>linux</p></span>'
+        # 0
         $test.equal alight.directives.ut.test5.template, undefined
-        $test.equal alight.directives.ut.test5.scope, undefined
+        $test.equal r0.root.name, 'root'
+        $test.equal scope5.name, 'linux'
+        $test.equal r0.html(), '<span ut-test5="noop"><p>linux</p></span>'
+        
+        # 1
+        $test.equal scope3, r1.root
+        $test.equal r1.root.name, 'linux'
+        $test.equal r1.html(), '<span ut-test3="noop"><p>linux</p></span>'
+        
         $test.close()
     , 200
 

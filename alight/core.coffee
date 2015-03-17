@@ -1,8 +1,8 @@
 # Angular light
-# version: 0.8.11 / 2015-03-17
+# version: 0.8.12 / 2015-03-17
 
 # init
-alight.version = '0.8.11'
+alight.version = '0.8.12'
 alight.debug =
     useObserver: false
     observer: 0
@@ -87,8 +87,8 @@ alight.directivePreprocessor = directivePreprocessor = (attrName, args) ->
             procLine: directivePreprocessor.ext
             makeDeferred: ->
                 dscope.isDeferred = true
-                dscope.result.owner = true
-                dscope.directive.scope = true
+                dscope.result.owner = true  # stop binding
+                dscope.doBinding = true     # continue binding
 
                 ->
                     dscope.isDeferred = false
@@ -156,7 +156,7 @@ do ->
 
     ext.push
         code: 'scopeBinding'
-        fn: (element, expression, scope, env) ->
+        fn: ->
             if @.doBinding
                 alight.applyBindings @.scope, @.element, { skip_attr:@.env.skippedAttr() }
 
