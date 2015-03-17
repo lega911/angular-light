@@ -628,3 +628,23 @@ Test('deferred process').run ($test, alight) ->
         $test.equal alight.directives.ut.test5.scope, undefined
         $test.close()
     , 200
+
+
+
+Test('html prefix-data').run ($test, alight) ->
+    $test.start 3
+
+    r = []
+    alight.directives.al.test = (el, value) ->
+        r.push value
+
+    dom = $ '<div> <b al-test="one"></b> <b data-al-test="two"></b> </div>'
+    scope = alight.Scope()
+
+    alight.applyBindings scope, dom[0]
+
+    $test.equal r[0], 'one'
+    $test.equal r[1], 'two'
+    $test.equal r.length, 2
+
+    $test.close()

@@ -1,8 +1,8 @@
 # Angular light
-# version: 0.8.10 / 2015-03-16
+# version: 0.8.11 / 2015-03-17
 
 # init
-alight.version = '0.8.10'
+alight.version = '0.8.11'
 alight.debug =
     useObserver: false
     observer: 0
@@ -22,14 +22,29 @@ alight.text = {}
 alight.apps = {}
 
 
-alight.directivePreprocessor = directivePreprocessor = (ns, name, args) ->
-    name = name.replace /(-\w)/g, (m) ->
+alight.directivePreprocessor = directivePreprocessor = (attrName, args) ->
+    # html prefix data
+    if attrName[0..4] is 'data-'
+        name = attrName[5..]
+    else
+        name = attrName
+
+    j = name.indexOf '-'
+    if j < 0
+        return { noNs: true }
+
+    ns = name.substring 0, j
+    name = name.substring(j+1).replace /(-\w)/g, (m) ->
         m.substring(1).toUpperCase()
 
-    if args.scope.$ns
-        raw = args.scope.$ns.directives[ns][name]
+    if args.scope.$ns and args.scope.$ns.directives
+        path = args.scope.$ns.directives[ns]
     else        
-        raw = alight.directives[ns][name]
+        path = alight.directives[ns]
+    if not path
+        return { noNs: true }
+
+    raw = path[name]
     if not raw
         return { noDirective: true }
 
@@ -161,25 +176,14 @@ testDirective = do ->
         if args.skip_attr.indexOf(attrName) >= 0
             return addAttr attrName, args, { skip:true }
 
-        j = attrName.indexOf '-'
-        if j < 0
+        directive = alight.directivePreprocessor attrName, args
+        if directive.noNs
             return addAttr attrName, args
-        ns = attrName.substring 0, j
-        name = attrName.substring j+1
-        scope = args.scope
-        if scope.$ns
-            path = (scope.$ns.directives or {})[ns]
-        else
-            path = alight.directives[ns]
-        if not path
-            return addAttr attrName, args
-
-        directive = alight.directivePreprocessor ns, name, args
         if directive.noDirective
             return addAttr attrName, args, { noDirective:true }
 
         args.list.push
-            name: name
+            name: attrName
             directive: directive
             priority: directive.priority
             attrName: attrName
@@ -1250,8 +1254,8 @@ alight.nextTick = do ->
 
 
 alight.getController = (name, scope) ->
-    if scope.$ns
-        ctrl = (scope.$ns.controllers or {})[name]
+    if scope.$ns and scope.$ns.controllers
+        ctrl = scope.$ns.controllers[name]
     else
         ctrl = alight.controllers[name] or (enableGlobalControllers and window[name])
     if not ctrl
@@ -1262,8 +1266,8 @@ alight.getController = (name, scope) ->
 
 
 alight.getFilter = (name, scope, param) ->
-    if scope.$ns
-        filter = (scope.$ns.filters or {})[name]
+    if scope.$ns and scope.$ns.filters
+        filter = scope.$ns.filters[name]
     else
         filter = alight.filters[name]
     if not filter
