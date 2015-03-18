@@ -720,3 +720,37 @@ Test('$watch $any').run ($test, alight) ->
                     $test.equal countAny2, 2
 
                     $test.close()
+
+
+Test('$watch $finishScan').run ($test, alight) ->
+    $test.start 8
+    scope = alight.Scope()
+
+    count0 = 0
+    count1 = 0
+
+    wa = scope.$watch '$finishScan', ->
+        count0++
+    scope.$watch '$finishScan', ->
+        count1++
+
+    $test.equal count0, 0
+    $test.equal count1, 0
+    scope.$scan()
+    alight.nextTick ->
+        $test.equal count0, 1
+        $test.equal count1, 1
+
+        wa.stop()
+        scope.$scan()
+        alight.nextTick ->
+            $test.equal count0, 1
+            $test.equal count1, 2
+
+            scope.$destroy()
+            scope.$scan()
+            alight.nextTick ->
+                $test.equal count0, 1
+                $test.equal count1, 2
+
+                $test.close()

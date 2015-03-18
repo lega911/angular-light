@@ -1,8 +1,8 @@
 # Angular light
-# version: 0.8.12 / 2015-03-17
+# version: 0.8.13 / 2015-03-18
 
 # init
-alight.version = '0.8.12'
+alight.version = '0.8.13'
 alight.debug =
     useObserver: false
     observer: 0
@@ -386,6 +386,8 @@ Scope = (conf) ->
         watchList: []
         watchAny: []
         watchAnyAll: []
+        watchFinishScan: []
+        watchFinishScanAll: []
         root: scope
         children: []
         scan_callbacks: []
@@ -437,6 +439,7 @@ Scope::$new = (isolate) ->
                     watches: {}
                     watchList: []
                     watchAny: []
+                    watchFinishScan: []
                     root: scope.$system.root
                     children: []
                     destroy_callbacks: []
@@ -469,6 +472,7 @@ $watch
         $any
         $destroy
         $finishBinding
+        $finishScan
     callback:
         function
     option:
@@ -479,157 +483,157 @@ $watch
 
 ###
 
-
-watchAny = do ->
+do ->
     WA = (callback) ->
         @.cb = callback
 
-    (scope, callback) ->
+    watchAny = (scope, lkey, rkey, callback) ->
         root = scope.$system.root
 
         wa = new WA callback
 
-        scope.$system.watchAny.push wa
-        root.$system.watchAnyAll.push wa
+        scope.$system[lkey].push wa
+        root.$system[rkey].push wa
+
+        return {
+            stop: ->
+                l = scope.$system[lkey]
+                i = l.indexOf wa
+                if i >= 0
+                    l.splice i, 1
+
+                l = root.$system[rkey]
+                i = l.indexOf wa
+                if i >= 0
+                    l.splice i, 1
+        }
+
+
+    Scope::$watch = (name, callback, option) ->
+        scope = @
+        if option is true
+            option =
+                isArray: true
+        else if not option
+            option = {}
+        if option.is_array  # compatibility with old version
+            option.isArray = true
+        if f$.isFunction name
+            exp = name
+            key = alight.utilits.getId()
+            isFunction = true
+        else
+            isFunction = false
+            exp = null
+            name = name.trim()
+            if name[0..1] is '::'
+                name = name[2..]
+                option.oneTime = true
+            key = name
+            if key is '$any'
+                return watchAny scope, 'watchAny', 'watchAnyAll', callback
+            if key is '$finishScan'
+                return watchAny scope, 'watchFinishScan', 'watchFinishScanAll', callback
+            if key is '$destroy'
+                return scope.$system.destroy_callbacks.push callback
+            if key is '$finishBinding'
+                return scope.$system.root.$system.finishBinding_callbacks.push callback
+            if option.deep
+                key = 'd#' + key
+            else if option.isArray
+                key = 'a#' + key
+            else
+                key = 'v#' + key
+
+        if alight.debug.watch
+            console.log '$watch', name
+
+        d = scope.$system.watches[key]
+        if d
+            if not option.readOnly
+                d.extraLoop = true
+            returnValue = d.value
+        else
+            # create watch object
+            if not isFunction
+                ce = scope.$compile name,
+                    noBind: true
+                    full: true
+                exp = ce.fn
+            returnValue = value = exp scope
+            if option.deep
+                value = alight.utilits.clone value
+                option.isArray = false
+            scope.$system.watches[key] = d =
+                isArray: Boolean option.isArray
+                extraLoop: not option.readOnly
+                deep: option.deep
+                value: value
+                callbacks: []
+                exp: exp
+                src: '' + name
+
+            # observe?
+            isObserved = false
+            if scope.$system.root.$system.useObserver
+                if not isFunction and not option.oneTime and not option.deep
+                    if ce.isSimple and ce.simpleVariables.length
+                        isObserved = true
+
+                        if d.isArray
+                            d.value = null
+                        else
+                            if ce.isSimple < 2
+                                isObserved = false
+
+                        if isObserved
+                            d.isObserved = true
+                            for variable in ce.simpleVariables
+                                ob = alight.observer.watch @.$system.ob, variable, ->
+                                    if scope.$system.obFire[key]
+                                        return
+                                    scope.$system.obFire[key] = true
+                                    scope.$system.obList.push d
+
+            if option.isArray and not isObserved
+                if f$.isArray value
+                    d.value = value.slice()
+                else
+                    d.value = null
+                returnValue = d.value
+
+            if not isObserved
+                scope.$system.watchList.push d
 
         r =
-            stop: ->
-                l = scope.$system.watchAny
-                i = l.indexOf wa
-                if i >= 0
-                    l.splice i, 1
+            $: d
+            value: returnValue
 
-                l = root.$system.watchAnyAll
-                i = l.indexOf wa
+        if option.oneTime
+            realCallback = callback
+            callback = (value) ->
+                if value is undefined
+                    return
+                r.stop()
+                realCallback value
+
+        d.callbacks.push callback
+        r.stop = ->
+            i = d.callbacks.indexOf callback
+            if i >= 0
+                d.callbacks.splice i, 1
+                if d.callbacks.length isnt 0
+                    return
+                # remove watch
+                delete scope.$system.watches[key]
+                i = scope.$system.watchList.indexOf d
                 if i >= 0
-                    l.splice i, 1
+                    scope.$system.watchList.splice i, 1
+
+        if option.init
+            callback r.value
 
         r
-
-
-Scope::$watch = (name, callback, option) ->
-    scope = @
-    if option is true
-        option =
-            isArray: true
-    else if not option
-        option = {}
-    if option.is_array  # compatibility with old version
-        option.isArray = true
-    if f$.isFunction name
-        exp = name
-        key = alight.utilits.getId()
-        isFunction = true
-    else
-        isFunction = false
-        exp = null
-        name = name.trim()
-        if name[0..1] is '::'
-            name = name[2..]
-            option.oneTime = true
-        key = name
-        if key is '$any'
-            return watchAny scope, callback
-        if key is '$destroy'
-            return scope.$system.destroy_callbacks.push callback
-        if key is '$finishBinding'
-            return scope.$system.root.$system.finishBinding_callbacks.push callback
-        if option.deep
-            key = 'd#' + key
-        else if option.isArray
-            key = 'a#' + key
-        else
-            key = 'v#' + key
-
-    if alight.debug.watch
-        console.log '$watch', name
-
-    d = scope.$system.watches[key]
-    if d
-        if not option.readOnly
-            d.extraLoop = true
-        returnValue = d.value
-    else
-        # create watch object
-        if not isFunction
-            ce = scope.$compile name,
-                noBind: true
-                full: true
-            exp = ce.fn
-        returnValue = value = exp scope
-        if option.deep
-            value = alight.utilits.clone value
-            option.isArray = false
-        scope.$system.watches[key] = d =
-            isArray: Boolean option.isArray
-            extraLoop: not option.readOnly
-            deep: option.deep
-            value: value
-            callbacks: []
-            exp: exp
-            src: '' + name
-
-        # observe?
-        isObserved = false
-        if scope.$system.root.$system.useObserver
-            if not isFunction and not option.oneTime and not option.deep                
-                if ce.isSimple and ce.simpleVariables.length
-                    isObserved = true
-
-                    if d.isArray
-                        d.value = null
-                    else
-                        if ce.isSimple < 2
-                            isObserved = false
-
-                    if isObserved
-                        d.isObserved = true
-                        for variable in ce.simpleVariables
-                            ob = alight.observer.watch @.$system.ob, variable, ->
-                                if scope.$system.obFire[key]
-                                    return
-                                scope.$system.obFire[key] = true
-                                scope.$system.obList.push d
-
-        if option.isArray and not isObserved
-            if f$.isArray value
-                d.value = value.slice()
-            else
-                d.value = null
-            returnValue = d.value
-
-        if not isObserved
-            scope.$system.watchList.push d
-
-    r =
-        $: d
-        value: returnValue
-
-    if option.oneTime
-        realCallback = callback
-        callback = (value) ->
-            if value is undefined
-                return
-            r.stop()
-            realCallback value
-
-    d.callbacks.push callback
-    r.stop = ->
-        i = d.callbacks.indexOf callback
-        if i >= 0
-            d.callbacks.splice i, 1
-            if d.callbacks.length isnt 0
-                return
-            # remove watch
-            delete scope.$system.watches[key]
-            i = scope.$system.watchList.indexOf d
-            if i >= 0
-                scope.$system.watchList.splice i, 1
-
-    if option.init
-        callback r.value
-
-    r
 
 
 ###
@@ -757,12 +761,15 @@ Scope::$destroy = () ->
     scope.$system.watchList = []
 
     # remove watchAny
-    lst = root.$system.watchAnyAll
-    for w in scope.$system.watchAny
-        i = lst.indexOf w
-        if i >= 0
-            lst.splice i, 1
-    scope.$system.watchAny.length = 0
+    cleanWatchAny = (l, r) ->
+        lst = root.$system[r]
+        for w in scope.$system[l]
+            i = lst.indexOf w
+            if i >= 0
+                lst.splice i, 1
+        scope.$system[l].length = 0
+    cleanWatchAny 'watchAny', 'watchAnyAll'
+    cleanWatchAny 'watchFinishScan', 'watchFinishScanAll'
 
 
 get_time = do ->
@@ -999,6 +1006,8 @@ Scope::$scan = (cfg) ->
         root.$system.status = null
         for callback in scan_callbacks
             callback.call root
+        for callback in root.$system.watchFinishScanAll
+            callback()
 
     if mainLoop is 0
         throw 'Infinity loop detected'
