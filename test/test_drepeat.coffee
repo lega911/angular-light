@@ -195,7 +195,7 @@ do ->
             (next) ->
                 scope.list = ['f', 'b', 'h', 'c', 'd']
                 scope.$scan
-                    late: true
+                    late: false
                     callback: ->
                         $test.equal result(), 'f:0, b:1, h:2, c:3, d:4'
                         next()
@@ -208,9 +208,8 @@ do ->
                         next()
             (next) ->
                 scope.list = ['b', 'c', 'd', 'f', 'h', 'i', 'j']
-                scope.$scan
-                    late: true
-                    callback: ->
+                scope.$scan ->
+                    scope.$scan ->
                         $test.equal result(), 'b:0, c:1, d:2, f:3, h:4, i:8, j:9'
                         next()
                         $test.close()

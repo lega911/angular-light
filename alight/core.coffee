@@ -1,8 +1,8 @@
 # Angular light
-# version: 0.8.13 / 2015-03-18
+# version: 0.8.14 / 2015-03-18
 
 # init
-alight.version = '0.8.13'
+alight.version = '0.8.14'
 alight.debug =
     useObserver: false
     observer: 0
@@ -395,7 +395,6 @@ Scope = (conf) ->
         finishBinding_callbacks: []
         finishBinding_lock: false
 
-
     if typeof(conf.useObserver) is 'boolean'
         scope.$system.useObserver = conf.useObserver
     else
@@ -405,15 +404,23 @@ Scope = (conf) ->
         scope.$system.useObserver = !!Object.observe
 
     if scope.$system.useObserver
-        scope.$system.obList = []
-        scope.$system.obFire = []
-        scope.$system.ob = alight.observer.observe scope,
+        # chain for active scopes
+        scope.$system.lineHead = null
+        scope.$system.lineTail = null
+        scope.$system.lineActive = false
+        scope.$system.prevSibling = null
+        scope.$system.nextSibling = null
+
+        scope.$system.obList = []  # contain fired watchers
+        scope.$system.obFire = {}
+        scope.$system.ob = ob = alight.observer.observe scope,
             rootEvent: (key, value) ->
                 if alight.debug.observer
                     console.warn 'Reobserve', key
                 for child in scope.$system.children
                     child.$$rebuildObserve key, value
                 null
+        scope.$system.observers = [ob]  # list of all observers
     scope
 
 alight.Scope = Scope
@@ -446,15 +453,18 @@ Scope::$new = (isolate) ->
                 @.$parent = null
                 if scope.$system.root.$system.useObserver
                     cscope = @
-                    @.$system.obList = []
-                    @.$system.obFire = []
-                    @.$system.ob = alight.observer.observe @,
+                    @.$system.prevSibling = null
+                    @.$system.nextSibling = null
+                    @.$system.lineActive = false
+                    @.$system.obFire = {}
+                    @.$system.ob = ob = alight.observer.observe @,
                         rootEvent: (key, value) ->
                             if alight.debug.observer
                                 console.warn 'Reobserve', key
                             for i in cscope.$system.children
                                 i.$$rebuildObserve key, value
                             null
+                    scope.$system.root.$system.observers.push ob
                 @
 
             scope.$system.ChildScope:: = scope
@@ -482,6 +492,19 @@ $watch
         deep
 
 ###
+
+injectToRootLine = (scope) ->
+    if scope.$system.lineActive
+        return
+    rootSys = scope.$system.root.$system
+    scope.$system.lineActive = true
+    t = rootSys.lineTail
+    if t
+        rootSys.lineTail = t.$system.nextSibling = scope
+        scope.$system.prevSibling = t
+    else
+        rootSys.lineHead = rootSys.lineTail = scope
+
 
 do ->
     WA = (callback) ->
@@ -511,6 +534,7 @@ do ->
 
     Scope::$watch = (name, callback, option) ->
         scope = @
+        rootSys = scope.$system.root.$system
         if option is true
             option =
                 isArray: true
@@ -537,7 +561,7 @@ do ->
             if key is '$destroy'
                 return scope.$system.destroy_callbacks.push callback
             if key is '$finishBinding'
-                return scope.$system.root.$system.finishBinding_callbacks.push callback
+                return rootSys.finishBinding_callbacks.push callback
             if option.deep
                 key = 'd#' + key
             else if option.isArray
@@ -575,7 +599,7 @@ do ->
 
             # observe?
             isObserved = false
-            if scope.$system.root.$system.useObserver
+            if rootSys.useObserver
                 if not isFunction and not option.oneTime and not option.deep
                     if ce.isSimple and ce.simpleVariables.length
                         isObserved = true
@@ -593,7 +617,7 @@ do ->
                                     if scope.$system.obFire[key]
                                         return
                                     scope.$system.obFire[key] = true
-                                    scope.$system.obList.push d
+                                    rootSys.obList.push [scope, d]
 
             if option.isArray and not isObserved
                 if f$.isArray value
@@ -604,6 +628,7 @@ do ->
 
             if not isObserved
                 scope.$system.watchList.push d
+                injectToRootLine scope
 
         r =
             $: d
@@ -736,6 +761,7 @@ Scope::$setValue = (name, value) ->
 
 Scope::$destroy = () ->
     scope = this
+    sys = scope.$system
     root = scope.$system.root
 
     # fire callbacks
@@ -744,7 +770,30 @@ Scope::$destroy = () ->
     scope.$system.destroy_callbacks = []
 
     if root.$system.useObserver
-        alight.observer.unobserve scope.$system.ob
+        do ->
+            # remove observer from root
+            ob = scope.$system.ob
+            l = scope.$system.root.$system.observers
+            i = l.indexOf ob
+            if i >= 0
+                l.splice i, 1
+            alight.observer.unobserve ob
+
+        # remove from root line
+        if sys.lineActive
+            sys.lineActive = false
+            p = sys.prevSibling
+            n = sys.nextSibling
+            if p
+                p.$system.nextSibling = n
+            else
+                # first scope
+                root.$system.lineHead = n
+            if n
+                n.$system.prevSibling = p
+            else
+                # last scope
+                root.$system.lineTail = p
 
     # remove children
     for it in scope.$system.children.slice()
@@ -858,82 +907,80 @@ scan_core = (top, result) ->
     result.extraLoop = extraLoop
 
 
-scan_core2 = (top, result) ->
+scan_core2 = (root, result) ->
     extraLoop = false
     changes = 0
     total = 0
     obTotal = 0
-    line = []
-    queue = [top]
-    while queue
-        scope = queue[0]
-        index = 1
-        while scope
-            sys = scope.$system
 
-            # observed
-            alight.observer.deliver sys.ob
-            for w in sys.obList
-                result.src = w.src
-                last = w.value
-                value = w.exp scope
-                if last isnt value
-                    if not w.isArray
-                        w.value = value
+    # observed
+    for ob in root.$system.observers
+        alight.observer.deliver ob
+    for x in root.$system.obList
+        scope = x[0]
+        w = x[1]
+
+        scope.$system.obFire = {}
+
+        result.src = w.src
+        last = w.value
+        value = w.exp scope
+        if last isnt value
+            if not w.isArray
+                w.value = value
+            changes++
+            if w.extraLoop
+                extraLoop = true
+            for callback in w.callbacks.slice()
+                callback.call scope, value
+    obTotal += root.$system.obList.length
+    root.$system.obList.length = 0
+
+    scope = root.$system.lineHead
+    while scope
+        sys = scope.$system
+
+        # default watches
+        total += sys.watchList.length
+        for w in sys.watchList
+            result.src = w.src
+            last = w.value
+            value = w.exp scope
+            if last isnt value
+                mutated = false
+                if w.isArray
+                    a0 = f$.isArray last
+                    a1 = f$.isArray value
+                    if a0 is a1
+                        if a0
+                            if notEqual last, value
+                                w.value = value.slice()
+                                mutated = true
+                    else
+                        mutated = true
+                        if a1
+                            w.value = value.slice()
+                        else
+                            w.value = null
+                else if w.deep
+                    if not alight.utilits.equal last, value
+                        mutated = true
+                        w.value = alight.utilits.clone value
+                else
+                    mutated = true
+                    w.value = value
+
+                if mutated
+                    mutated = false
                     changes++
                     if w.extraLoop
                         extraLoop = true
                     for callback in w.callbacks.slice()
                         callback.call scope, value
-            obTotal += sys.obList.length
-            sys.obList.length = 0
-            sys.obFire = {}
+                if alight.debug.scan > 1
+                    console.log 'changed:', w.src
 
-            # default watches
-            total += sys.watchList.length
-            for w in sys.watchList
-                result.src = w.src
-                last = w.value
-                value = w.exp scope
-                if last isnt value
-                    mutated = false
-                    if w.isArray
-                        a0 = f$.isArray last
-                        a1 = f$.isArray value
-                        if a0 is a1
-                            if a0
-                                if notEqual last, value
-                                    w.value = value.slice()
-                                    mutated = true
-                        else
-                            mutated = true
-                            if a1
-                                w.value = value.slice()
-                            else
-                                w.value = null
-                    else if w.deep
-                        if not alight.utilits.equal last, value
-                            mutated = true
-                            w.value = alight.utilits.clone value
-                    else
-                        mutated = true
-                        w.value = value
-
-                    if mutated
-                        mutated = false
-                        changes++
-                        if w.extraLoop
-                            extraLoop = true
-                        for callback in w.callbacks.slice()
-                            callback.call scope, value
-                    if alight.debug.scan > 1
-                        console.log 'changed:', w.src
-
-            if sys.children.length
-                line.push sys.children
-            scope = queue[index++]
-        
-        queue = line.shift()
+        scope = sys.nextSibling
 
     result.total = total
     result.obTotal = obTotal
@@ -1240,9 +1287,10 @@ Scope::$watchText = (name, callback, config) ->
                     if scope.$system.obFire[name]
                         return
                     scope.$system.obFire[name] = true
-                    scope.$system.obList.push d
+                    scope.$system.root.$system.obList.push [scope, d]
         else            
             scope.$system.watchList.push d
+            injectToRootLine scope
 
     if config.onStatic
         d.onStatic.push config.onStatic

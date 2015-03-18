@@ -41,7 +41,7 @@ do ->
 
 
 window.Test = Test = (title) ->
-	makeScope = ->
+	makeScope = (title) ->
 		self =
 			title: title
 			n: 0
@@ -91,7 +91,7 @@ window.Test = Test = (title) ->
 		run: (fn) ->
 			alight = buildAlight()
 			stat.bStarted++;
-			scope = makeScope()
+			scope = makeScope title
 			try
 				fn scope, alight
 			catch e
@@ -109,7 +109,7 @@ window.Test = Test = (title) ->
 			alight = buildAlight()
 			alight.debug.useObserver = true
 			stat.bStarted++;
-			scope = makeScope()
+			scope = makeScope "ob+#{title}"
 			try
 				fn scope, alight
 			catch e

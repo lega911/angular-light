@@ -382,6 +382,27 @@ Test('observer Scope#2').run ($test, alight) ->
                     $test.close()
 
 
+Test('observer Scope #3').run ($test, alight) ->
+    $test.start 1
+
+    s0 = alight.Scope()
+    s0.path =
+        var: 1
+    s1 = s0.$new()
+    #s2 = s1.$new()
+
+    value = null
+    s1.$watch 'path.var', (v) ->
+        value = v
+
+    s0.path.var = 3
+    s1.$scan ->
+        $test.equal value, 3
+
+        $test.close()
+
+
+
 Test('observer watchText#0').run ($test, alight) ->
     $test.start 9
 
