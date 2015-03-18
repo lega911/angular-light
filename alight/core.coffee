@@ -919,12 +919,9 @@ Scope::$scan = (cfg) ->
         cfg =
             callback: cfg
     root = this.$system.root
-    top = cfg.top or root
     if cfg.callback
         root.$system.scan_callbacks.push cfg.callback
     if cfg.late
-        if top isnt root
-            throw 'conflict: late and top'
         if root.$system.lateScan
             return
         root.$system.lateScan = true
@@ -954,9 +951,9 @@ Scope::$scan = (cfg) ->
 
             result = {}
             if root.$system.useObserver
-                scan_core2 top, result
+                scan_core2 root, result
             else
-                scan_core top, result
+                scan_core root, result
 
             # call $any
             if result.changes
