@@ -1,5 +1,5 @@
 # Angular light
-# version: 0.8.14 / 2015-03-18
+# version: 0.8.14 / 2015-03-19
 
 # init
 alight.version = '0.8.14'
@@ -381,7 +381,7 @@ Scope = (conf) ->
         scope = new NScope();
     } else scope = new Scope();
     `
-    scope.$system =
+    scope.$system = sys =
         watches: {}
         watchList: []
         watchAny: []
@@ -396,31 +396,31 @@ Scope = (conf) ->
         finishBinding_lock: false
 
     if typeof(conf.useObserver) is 'boolean'
-        scope.$system.useObserver = conf.useObserver
+        sys.useObserver = conf.useObserver
     else
-        scope.$system.useObserver = alight.debug.useObserver
+        sys.useObserver = alight.debug.useObserver
 
-    if scope.$system.useObserver
-        scope.$system.useObserver = !!Object.observe
+    if sys.useObserver
+        sys.useObserver = !!Object.observe
 
-    if scope.$system.useObserver
+    if sys.useObserver
         # chain for active scopes
-        scope.$system.lineHead = null
-        scope.$system.lineTail = null
-        scope.$system.lineActive = false
-        scope.$system.prevSibling = null
-        scope.$system.nextSibling = null
+        sys.lineHead = null
+        sys.lineTail = null
+        sys.lineActive = false
+        sys.prevSibling = null
+        sys.nextSibling = null
 
-        scope.$system.obList = []  # contain fired watchers
-        scope.$system.obFire = {}
-        scope.$system.ob = ob = alight.observer.observe scope,
+        sys.obList = []  # contain fired watchers
+        sys.obFire = {}
+        sys.ob = ob = alight.observer.observe scope,
             rootEvent: (key, value) ->
                 if alight.debug.observer
                     console.warn 'Reobserve', key
                 for child in scope.$system.children
                     child.$$rebuildObserve key, value
                 null
-        scope.$system.observers = [ob]  # list of all observers
+        sys.observers = [ob]  # list of all observers
     scope
 
 alight.Scope = Scope
@@ -442,29 +442,30 @@ Scope::$new = (isolate) ->
     else
         if not scope.$system.ChildScope
             scope.$system.ChildScope = ->
-                @.$system =
+                root = scope.$system.root
+                @.$system = sys =
                     watches: {}
                     watchList: []
                     watchAny: []
                     watchFinishScan: []
-                    root: scope.$system.root
+                    root: root
                     children: []
                     destroy_callbacks: []
                 @.$parent = null
-                if scope.$system.root.$system.useObserver
+                if root.$system.useObserver
                     cscope = @
-                    @.$system.prevSibling = null
-                    @.$system.nextSibling = null
-                    @.$system.lineActive = false
-                    @.$system.obFire = {}
-                    @.$system.ob = ob = alight.observer.observe @,
+                    sys.prevSibling = null
+                    sys.nextSibling = null
+                    sys.lineActive = false
+                    sys.obFire = {}
+                    sys.ob = ob = alight.observer.observe @,
                         rootEvent: (key, value) ->
                             if alight.debug.observer
                                 console.warn 'Reobserve', key
                             for i in cscope.$system.children
                                 i.$$rebuildObserve key, value
                             null
-                    scope.$system.root.$system.observers.push ob
+                    root.$system.observers.push ob
                 @
 
             scope.$system.ChildScope:: = scope
@@ -494,14 +495,15 @@ $watch
 ###
 
 injectToRootLine = (scope) ->
-    if scope.$system.lineActive
+    sys = scope.$system
+    if sys.lineActive
         return
-    rootSys = scope.$system.root.$system
-    scope.$system.lineActive = true
+    rootSys = sys.root.$system
+    sys.lineActive = true
     t = rootSys.lineTail
     if t
         rootSys.lineTail = t.$system.nextSibling = scope
-        scope.$system.prevSibling = t
+        sys.prevSibling = t
     else
         rootSys.lineHead = rootSys.lineTail = scope
 
@@ -511,21 +513,22 @@ do ->
         @.cb = callback
 
     watchAny = (scope, lkey, rkey, callback) ->
-        root = scope.$system.root
+        sys = scope.$system
+        rootSys = sys.root.$system
 
         wa = new WA callback
 
-        scope.$system[lkey].push wa
-        root.$system[rkey].push wa
+        sys[lkey].push wa
+        rootSys[rkey].push wa
 
         return {
             stop: ->
-                l = scope.$system[lkey]
+                l = sys[lkey]
                 i = l.indexOf wa
                 if i >= 0
                     l.splice i, 1
 
-                l = root.$system[rkey]
+                l = rootSys[rkey]
                 i = l.indexOf wa
                 if i >= 0
                     l.splice i, 1
@@ -534,7 +537,8 @@ do ->
 
     Scope::$watch = (name, callback, option) ->
         scope = @
-        rootSys = scope.$system.root.$system
+        sys = scope.$system
+        rootSys = sys.root.$system
         if option is true
             option =
                 isArray: true
@@ -559,7 +563,7 @@ do ->
             if key is '$finishScan'
                 return watchAny scope, 'watchFinishScan', 'watchFinishScanAll', callback
             if key is '$destroy'
-                return scope.$system.destroy_callbacks.push callback
+                return sys.destroy_callbacks.push callback
             if key is '$finishBinding'
                 return rootSys.finishBinding_callbacks.push callback
             if option.deep
@@ -572,7 +576,7 @@ do ->
         if alight.debug.watch
             console.log '$watch', name
 
-        d = scope.$system.watches[key]
+        d = sys.watches[key]
         if d
             if not option.readOnly
                 d.extraLoop = true
@@ -588,7 +592,7 @@ do ->
             if option.deep
                 value = alight.utilits.clone value
                 option.isArray = false
-            scope.$system.watches[key] = d =
+            sys.watches[key] = d =
                 isArray: Boolean option.isArray
                 extraLoop: not option.readOnly
                 deep: option.deep
@@ -613,10 +617,10 @@ do ->
                         if isObserved
                             d.isObserved = true
                             for variable in ce.simpleVariables
-                                ob = alight.observer.watch @.$system.ob, variable, ->
-                                    if scope.$system.obFire[key]
+                                ob = alight.observer.watch sys.ob, variable, ->
+                                    if sys.obFire[key]
                                         return
-                                    scope.$system.obFire[key] = true
+                                    sys.obFire[key] = true
                                     rootSys.obList.push [scope, d]
 
             if option.isArray and not isObserved
@@ -627,7 +631,7 @@ do ->
                 returnValue = d.value
 
             if not isObserved
-                scope.$system.watchList.push d
+                sys.watchList.push d
                 injectToRootLine scope
 
         r =
@@ -650,10 +654,10 @@ do ->
                 if d.callbacks.length isnt 0
                     return
                 # remove watch
-                delete scope.$system.watches[key]
-                i = scope.$system.watchList.indexOf d
+                delete sys.watches[key]
+                i = sys.watchList.indexOf d
                 if i >= 0
-                    scope.$system.watchList.splice i, 1
+                    sys.watchList.splice i, 1
 
         if option.init
             callback r.value
@@ -762,18 +766,18 @@ Scope::$setValue = (name, value) ->
 Scope::$destroy = () ->
     scope = this
     sys = scope.$system
-    root = scope.$system.root
+    rootSys = scope.$system.root.$system
 
     # fire callbacks
-    for cb in scope.$system.destroy_callbacks
+    for cb in sys.destroy_callbacks
         cb scope
-    scope.$system.destroy_callbacks = []
+    sys.destroy_callbacks = []
 
-    if root.$system.useObserver
+    if rootSys.useObserver
         do ->
             # remove observer from root
-            ob = scope.$system.ob
-            l = scope.$system.root.$system.observers
+            ob = sys.ob
+            l = rootSys.observers
             i = l.indexOf ob
             if i >= 0
                 l.splice i, 1
@@ -788,15 +792,15 @@ Scope::$destroy = () ->
                 p.$system.nextSibling = n
             else
                 # first scope
-                root.$system.lineHead = n
+                rootSys.lineHead = n
             if n
                 n.$system.prevSibling = p
             else
                 # last scope
-                root.$system.lineTail = p
+                rootSys.lineTail = p
 
     # remove children
-    for it in scope.$system.children.slice()
+    for it in sys.children.slice()
         it.$destroy()
 
     # remove from parent
@@ -806,17 +810,17 @@ Scope::$destroy = () ->
 
     # remove watch
     scope.$parent = null
-    scope.$system.watches = {}
-    scope.$system.watchList = []
+    sys.watches = {}
+    sys.watchList = []
 
     # remove watchAny
     cleanWatchAny = (l, r) ->
-        lst = root.$system[r]
-        for w in scope.$system[l]
+        lst = rootSys[r]
+        for w in sys[l]
             i = lst.indexOf w
             if i >= 0
                 lst.splice i, 1
-        scope.$system[l].length = 0
+        sys[l].length = 0
     cleanWatchAny 'watchAny', 'watchAnyAll'
     cleanWatchAny 'watchFinishScan', 'watchFinishScanAll'
 
@@ -913,10 +917,12 @@ scan_core2 = (root, result) ->
     total = 0
     obTotal = 0
 
+    rootSys = root.$system
+
     # observed
-    for ob in root.$system.observers
+    for ob in rootSys.observers
         alight.observer.deliver ob
-    for x in root.$system.obList
+    for x in rootSys.obList
         scope = x[0]
         w = x[1]
 
@@ -933,10 +939,10 @@ scan_core2 = (root, result) ->
                 extraLoop = true
             for callback in w.callbacks.slice()
                 callback.call scope, value
-    obTotal += root.$system.obList.length
-    root.$system.obList.length = 0
+    obTotal += rootSys.obList.length
+    rootSys.obList.length = 0
 
-    scope = root.$system.lineHead
+    scope = rootSys.lineHead
     while scope
         sys = scope.$system
 
@@ -1000,24 +1006,25 @@ Scope::$scan = (cfg) ->
         cfg =
             callback: cfg
     root = this.$system.root
+    rootSys = root.$system
     if cfg.callback
-        root.$system.scan_callbacks.push cfg.callback
+        rootSys.scan_callbacks.push cfg.callback
     if cfg.late
-        if root.$system.lateScan
+        if rootSys.lateScan
             return
-        root.$system.lateScan = true
+        rootSys.lateScan = true
         alight.nextTick ->
-            if root.$system.lateScan
+            if rootSys.lateScan
                 root.$scan()
         return
-    if root.$system.status is 'scaning'
-        root.$system.extraLoop = true
+    if rootSys.status is 'scaning'
+        rootSys.extraLoop = true
         return
-    root.$system.lateScan = false
-    root.$system.status = 'scaning'
+    rootSys.lateScan = false
+    rootSys.status = 'scaning'
     # take scan_callbacks
-    scan_callbacks = root.$system.scan_callbacks.slice()
-    root.$system.scan_callbacks.length = 0
+    scan_callbacks = rootSys.scan_callbacks.slice()
+    rootSys.scan_callbacks.length = 0
 
 
     if alight.debug.scan
@@ -1035,18 +1042,18 @@ Scope::$scan = (cfg) ->
         while mainLoop
             mainLoop--
 
-            root.$system.extraLoop = false
+            rootSys.extraLoop = false
 
-            if root.$system.useObserver
+            if rootSys.useObserver
                 scan_core2 root, result
             else
                 scan_core root, result
 
             # call $any
             if result.changes
-                for cb in root.$system.watchAnyAll
+                for cb in rootSys.watchAnyAll
                     cb()
-            if not result.extraLoop and not root.$system.extraLoop
+            if not result.extraLoop and not rootSys.extraLoop
                 break
         if alight.debug.scan
             duration = get_time() - start
@@ -1056,10 +1063,10 @@ Scope::$scan = (cfg) ->
             src: result.src
             result: result
     finally
-        root.$system.status = null
+        rootSys.status = null
         for callback in scan_callbacks
             callback.call root
-        for callback in root.$system.watchFinishScanAll
+        for callback in rootSys.watchFinishScanAll
             callback()
 
     if mainLoop is 0
@@ -1230,12 +1237,13 @@ Scope::$evalText = (exp) ->
 ###
 Scope::$watchText = (name, callback, config) ->
     scope = @
+    sys = scope.$system
     config = config or {}
 
     if alight.debug.watchText
         console.log '$watchText', name
 
-    w = scope.$system.watches;
+    w = sys.watches;
     d = w[name]
     if d
         if not config.readOnly
@@ -1261,9 +1269,9 @@ Scope::$watchText = (name, callback, config) ->
                     # remove watch
                     d.callbacks.length = 0
                     delete w[name]
-                    i = scope.$system.watchList.indexOf d
+                    i = sys.watchList.indexOf d
                     if i >= 0
-                        scope.$system.watchList.splice i, 1
+                        sys.watchList.splice i, 1
 
                 # call listeners
                 for cb in d.onStatic
@@ -1279,17 +1287,17 @@ Scope::$watchText = (name, callback, config) ->
         d.value = ct.fn scope
         w[name] = d
 
-        if ct.isSimple and scope.$system.root.$system.useObserver
+        if ct.isSimple and sys.root.$system.useObserver
             d.isObserved = true
             
             for variable in ct.simpleVariables
-                ob = alight.observer.watch scope.$system.ob, variable, ->
-                    if scope.$system.obFire[name]
+                ob = alight.observer.watch sys.ob, variable, ->
+                    if sys.obFire[name]
                         return
-                    scope.$system.obFire[name] = true
-                    scope.$system.root.$system.obList.push [scope, d]
+                    sys.obFire[name] = true
+                    sys.root.$system.obList.push [scope, d]
         else            
-            scope.$system.watchList.push d
+            sys.watchList.push d
             injectToRootLine scope
 
     if config.onStatic
@@ -1309,9 +1317,9 @@ Scope::$watchText = (name, callback, config) ->
                     return
                 # remove watch
                 delete w[name]
-                i = scope.$system.watchList.indexOf d
+                i = sys.watchList.indexOf d
                 if i >= 0
-                    scope.$system.watchList.splice i, 1
+                    sys.watchList.splice i, 1
 
     r
 
@@ -1391,18 +1399,20 @@ alight.applyBindings = (scope, element, config) ->
     if not scope
         scope = new alight.Scope()
 
-    finishBinding = not scope.$system.root.$system.finishBinding_lock
+    rootSys = scope.$system.root.$system
+
+    finishBinding = not rootSys.finishBinding_lock
     if finishBinding
-        scope.$system.root.$system.finishBinding_lock = true
+        rootSys.finishBinding_lock = true
 
     config = config or {}
 
     process scope, element, config
     
     if finishBinding
-        scope.$system.root.$system.finishBinding_lock = false
-        lst = scope.$system.root.$system.finishBinding_callbacks.slice()
-        scope.$system.root.$system.finishBinding_callbacks.length = 0
+        rootSys.finishBinding_lock = false
+        lst = rootSys.finishBinding_callbacks.slice()
+        rootSys.finishBinding_callbacks.length = 0
         for cb in lst
             cb()
     null
