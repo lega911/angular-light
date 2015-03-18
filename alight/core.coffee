@@ -978,12 +978,18 @@ Scope::$scan = (cfg) ->
 
     mainLoop = 10
     try
+        result =
+            total: 0
+            obTotal: 0
+            changes: 0
+            extraLoop: false
+            src: ''
+
         while mainLoop
             mainLoop--
 
             root.$system.extraLoop = false
 
-            result = {}
             if root.$system.useObserver
                 scan_core2 root, result
             else
