@@ -384,7 +384,8 @@ Scope = (conf) ->
     scope.$system =
         watches: {}
         watchList: []
-        watch_any: []
+        watchAny: []
+        watchAnyAll: []
         root: scope
         children: []
         scan_callbacks: []
@@ -435,7 +436,7 @@ Scope::$new = (isolate) ->
                 @.$system =
                     watches: {}
                     watchList: []
-                    watch_any: []
+                    watchAny: []
                     root: scope.$system.root
                     children: []
                     destroy_callbacks: []
@@ -478,6 +479,34 @@ $watch
 
 ###
 
+
+watchAny = do ->
+    WA = (callback) ->
+        @.cb = callback
+
+    (scope, callback) ->
+        root = scope.$system.root
+
+        wa = new WA callback
+
+        scope.$system.watchAny.push wa
+        root.$system.watchAnyAll.push wa
+
+        r =
+            stop: ->
+                l = scope.$system.watchAny
+                i = l.indexOf wa
+                if i >= 0
+                    l.splice i, 1
+
+                l = root.$system.watchAnyAll
+                i = l.indexOf wa
+                if i >= 0
+                    l.splice i, 1
+
+        r
+
+
 Scope::$watch = (name, callback, option) ->
     scope = @
     if option is true
@@ -500,7 +529,7 @@ Scope::$watch = (name, callback, option) ->
             option.oneTime = true
         key = name
         if key is '$any'
-            return scope.$system.watch_any.push callback
+            return watchAny scope, callback
         if key is '$destroy'
             return scope.$system.destroy_callbacks.push callback
         if key is '$finishBinding'
@@ -703,13 +732,14 @@ Scope::$setValue = (name, value) ->
 
 Scope::$destroy = () ->
     scope = this
+    root = scope.$system.root
 
     # fire callbacks
     for cb in scope.$system.destroy_callbacks
         cb scope
     scope.$system.destroy_callbacks = []
 
-    if scope.$system.root.$system.useObserver
+    if root.$system.useObserver
         alight.observer.unobserve scope.$system.ob
 
     # remove children
@@ -725,7 +755,14 @@ Scope::$destroy = () ->
     scope.$parent = null
     scope.$system.watches = {}
     scope.$system.watchList = []
-    scope.$system.watch_any.length = 0
+
+    # remove watchAny
+    lst = root.$system.watchAnyAll
+    for w in scope.$system.watchAny
+        i = lst.indexOf w
+        if i >= 0
+            lst.splice i, 1
+    scope.$system.watchAny.length = 0
 
 
 get_time = do ->
@@ -756,7 +793,6 @@ scan_core = (top, result) ->
     extraLoop = false
     changes = 0
     total = 0
-    anyList = []
     line = []
     queue = [top]
     while queue
@@ -805,9 +841,6 @@ scan_core = (top, result) ->
 
             if sys.children.length
                 line.push sys.children
-            # add callbacks to $any
-            if sys.watch_any.length
-                anyList.push.apply anyList, sys.watch_any
             scope = queue[index++]
         
         queue = line.shift()
@@ -816,7 +849,6 @@ scan_core = (top, result) ->
     result.obTotal = 0
     result.changes = changes
     result.extraLoop = extraLoop
-    result.anyList = anyList
 
 
 scan_core2 = (top, result) ->
@@ -824,7 +856,6 @@ scan_core2 = (top, result) ->
     changes = 0
     total = 0
     obTotal = 0
-    anyList = []
     line = []
     queue = [top]
     while queue
@@ -893,9 +924,6 @@ scan_core2 = (top, result) ->
 
             if sys.children.length
                 line.push sys.children
-            # add callbacks to $any
-            if sys.watch_any.length
-                anyList.push.apply anyList, sys.watch_any
             scope = queue[index++]
         
         queue = line.shift()
@@ -904,7 +932,6 @@ scan_core2 = (top, result) ->
     result.obTotal = obTotal
     result.changes = changes
     result.extraLoop = extraLoop
-    result.anyList = anyList
 
 
 Scope::$scanAsync = (callback) ->
@@ -957,7 +984,7 @@ Scope::$scan = (cfg) ->
 
             # call $any
             if result.changes
-                for cb in result.anyList
+                for cb in root.$system.watchAnyAll
                     cb()
             if not result.extraLoop and not root.$system.extraLoop
                 break

@@ -668,3 +668,55 @@ Test('html prefix-data').run ($test, alight) ->
     $test.equal r.length, 2
 
     $test.close()
+
+
+Test('$watch $any').run ($test, alight) ->
+    $test.start 15
+    scope = alight.Scope()
+    scope.a = 1
+    scope.b = 1
+
+    countAny = 0
+    countAny2 = 0
+    countA = 0
+
+    wa = scope.$watch '$any', ->
+        countAny++
+
+    scope.$watch '$any', ->
+        countAny2++
+
+    scope.$watch 'a', ->
+        countA++
+
+    $test.equal countA, 0
+    $test.equal countAny, 0
+    $test.equal countAny2, 0
+
+    scope.b++
+    scope.$scan ->
+        $test.equal countA, 0
+        $test.equal countAny, 0
+        $test.equal countAny2, 0
+
+        scope.a++
+        scope.$scan ->
+            $test.equal countA, 1
+            $test.equal countAny, 1
+            $test.equal countAny2, 1
+
+            wa.stop()
+            scope.a++
+            scope.$scan ->
+                $test.equal countA, 2
+                $test.equal countAny, 1
+                $test.equal countAny2, 2
+
+                scope.$destroy()
+                scope.a++
+                scope.$scan ->
+                    $test.equal countA, 2
+                    $test.equal countAny, 1
+                    $test.equal countAny2, 2
+
+                    $test.close()
