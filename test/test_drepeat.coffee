@@ -209,10 +209,9 @@ do ->
             (next) ->
                 scope.list = ['b', 'c', 'd', 'f', 'h', 'i', 'j']
                 scope.$scan ->
-                    scope.$scan ->
-                        $test.equal result(), 'b:0, c:1, d:2, f:3, h:4, i:8, j:9'
-                        next()
-                        $test.close()
+                    $test.equal result(), 'b:0, c:1, d:2, f:3, h:4, i:8, j:9'
+                    next()
+                    $test.close()
         ]
 
         i = 0
