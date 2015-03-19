@@ -25,33 +25,21 @@ Test('$compile#0').run ($test, alight) ->
 
 
 Test('$compileText#0').run ($test, alight) ->
-    $test.start 12
+    $test.start 6
     scope = alight.Scope()
     scope.os =
         type: 'linux'
         name: 'ubuntu'
 
-    r0 = scope.$compileText 'OS {{os.type}} {{os.name}}',
-        result_on_static: true
-        onStatic: true
-        fullResponse: true
+    r0 = scope.$watchText 'OS {{os.type}} {{os.name}}', ->
 
-    $test.equal r0.type, 'fn'
-    $test.equal r0.fn(scope), 'OS linux ubuntu'
-    $test.equal r0.isSimple, true
-    $test.equal r0.simpleVariables.length, 2
-    $test.equal r0.simpleVariables[0], 'os.type'
-    $test.equal r0.simpleVariables[1], 'os.name'
+    $test.equal r0.value, 'OS linux ubuntu'
+    $test.equal r0.$.exp(scope), 'OS linux ubuntu'
+    $test.equal !!r0.$.isObserved, alight.debug.useObserver
 
-    r1 = scope.$compileText 'OS {{os.type}} {{os.name}}',
-        result_on_static: true
-        onStatic: true
-        fullResponse: true
+    r1 = scope.$watchText 'OS {{os.type}} {{os.name}}', ->
 
-    $test.equal r1.type, 'fn'
-    $test.equal r1.fn(scope), 'OS linux ubuntu'
-    $test.equal r1.isSimple, true
-    $test.equal r1.simpleVariables.length, 2
-    $test.equal r1.simpleVariables[0], 'os.type'
-    $test.equal r1.simpleVariables[1], 'os.name'
+    $test.equal r1.value, 'OS linux ubuntu'
+    $test.equal r1.$.exp(scope), 'OS linux ubuntu'
+    $test.equal !!r1.$.isObserved, alight.debug.useObserver
     $test.close()

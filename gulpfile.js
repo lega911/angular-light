@@ -27,6 +27,7 @@ gulp.task('assemble', ['compile'], function() {
     './js/prefix.js',
     './js/fquery.js',
     './tmp/core.js',
+    './tmp/watchText.js',
     './tmp/utilits.js',
     './tmp/parser.js',
     './tmp/compile.js',

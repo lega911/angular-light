@@ -1,6 +1,12 @@
 
 console.log 'test Core'
 
+dictLen = (d) ->
+    i = 0
+    for k of d
+        i++
+    i
+
 # test $watch
 Test('$watch').run ($test, alight) ->
     $test.start 1
@@ -111,26 +117,6 @@ Test('$watchArray#2').run ($test, alight) ->
                     $test.close()
 
 
-# test $watchText
-Test('$watchText').run ($test, alight) ->
-    $test.start 2
-    scope = alight.Scope()
-    scope.one = 'one'
-
-    result = null
-    scope.$watchText '{{one}} {{two}}', (value) ->
-        result = value
-
-    scope.two = 'two'
-    scope.$scan ->
-        $test.check result is 'one two'
-
-        scope.two = 'three'
-        scope.$scan ->
-            $test.check result is 'one three'
-            $test.close()
-
-
 # test filter
 Test('filter').run ($test, alight) ->
     $test.start 2
@@ -230,7 +216,7 @@ Test('text-directive').run ($test, alight) ->
             value - delta
 
     alight.text.double = (callback, expression, scope) ->
-        callback 0
+        callback '$'
         scope.$watch expression, (value) ->
             setTimeout ->
                 callback value + value
@@ -243,17 +229,17 @@ Test('text-directive').run ($test, alight) ->
 
     alight.applyBindings scope, dom[0]
 
-    $test.check dom.attr('attr') is 'Attr -7'
+    $test.check dom.attr('attr') is 'Attr $'
 
     setTimeout ->
-        $test.check dom.attr('attr') is 'Attr -7'
+        $test.check dom.attr('attr') is 'Attr $'
 
         scope.num = 50
         scope.$scan ->
-            $test.check dom.attr('attr') is 'Attr -7'
+            $test.check dom.attr('attr') is 'Attr $'
 
             setTimeout ->
-                $test.check dom.attr('attr') is 'Attr 93'
+                $test.check dom.attr('attr') is 'Attr 86'
                 $test.close()
             , 150
 
@@ -285,7 +271,7 @@ Test('test-take-attr').run ($test, alight) ->
     $test.close()
 
 
-Test('text-directive').run ($test, alight) ->
+Test('text-directive #2').run ($test, alight) ->
     $test.start 1
 
     alight.text.test0 = (cb, exp, scope) ->
@@ -294,8 +280,8 @@ Test('text-directive').run ($test, alight) ->
     scope = alight.Scope()
     scope.a = 'Hello'
     scope.b = 'world'
-    fn = scope.$compileText '{{a}} {{#test0 b}} {{#test0 0}}!'
-    $test.equal fn(), 'Hello world 0!'
+    w = scope.$watchText '{{a}} {{#test0 b}} {{#test0 0}}!', ->
+    $test.equal w.value, 'Hello world 0!'
     $test.close()
 
 
@@ -391,7 +377,7 @@ Test('oneTime binding #1').run ($test, alight) ->
 
 
 Test('oneTime binding #2').run ($test, alight) ->
-    $test.start 7
+    $test.start 6
 
     exp = 'a{{::a}}-b{{::b}}-c{{::c}}!'
     scope = alight.Scope()
@@ -405,8 +391,7 @@ Test('oneTime binding #2').run ($test, alight) ->
 
     steps = [
         ->
-            $test.equal !!scope.$system.watches[exp], true
-            $test.equal scope.$system.watches[exp].callbacks.length, 2
+            $test.equal dictLen(scope.$system.watches), 5
             $test.equal result(), 'a-b-c!::a-b-c!'
             scope.a = 3
             ->
@@ -427,7 +412,7 @@ Test('oneTime binding #2').run ($test, alight) ->
                 next()
         ->
             ->
-                $test.equal !!scope.$system.watches[exp], false                
+                $test.equal dictLen(scope.$system.watches), 0
     ]
 
     step = 0
@@ -462,8 +447,8 @@ Test('oneTime binding #3').run ($test, alight) ->
 
     steps = [
         ->
-            $test.equal !!scope.$system.watches[exp], true
-            $test.equal !!scope1.$system.watches[exp], true
+            $test.equal dictLen(scope.$system.watches), 2
+            $test.equal dictLen(scope1.$system.watches), 2
             $test.equal v0, 'Hello !'
             $test.equal v1, 'Hello !'
             scope.name = 'linux'
@@ -489,8 +474,8 @@ Test('oneTime binding #3').run ($test, alight) ->
         scope.$scan n
 
     next()
-    $test.equal !!scope.$system.watches[exp], false
-    $test.equal !!scope1.$system.watches[exp], false
+    $test.equal dictLen(scope.$system.watches), 0
+    $test.equal dictLen(scope1.$system.watches), 0
     $test.close()
 
 
@@ -572,7 +557,8 @@ Test('text-directive env.finally').run ($test, alight) ->
     alight.applyBindings scope, dom[0]
 
     $test.equal dom.text(), 'Text init'
-    $test.equal !!scope.$system.watches['Text {{#test1}}'], true
+    
+    $test.equal dictLen(scope.$system.watches), 1
 
     env.setter 'two'
     scope.$scan ->
@@ -585,7 +571,7 @@ Test('text-directive env.finally').run ($test, alight) ->
             env.finally 'four'
             scope.$scan ->
                 $test.equal dom.text(), 'Text four'
-                $test.equal !!scope.$system.watches['Text {{#test1}}'], false
+                $test.equal dictLen(scope.$system.watches), 0
                 $test.close()
 
 

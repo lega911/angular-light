@@ -225,7 +225,6 @@ self.observe = (rootScope, conf) ->
 		if not scope.$$observer
 			scope.$$observer = {}
 
-		tree = ob.tree
 		if not tree.$$scope
 			tree.$$scope = scope
 			tree.$$path = ''

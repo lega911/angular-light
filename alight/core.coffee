@@ -1,8 +1,8 @@
 # Angular light
-# version: 0.8.14 / 2015-03-19
+# version: 0.8.15 / 2015-03-19
 
 # init
-alight.version = '0.8.14'
+alight.version = '0.8.15'
 alight.debug =
     useObserver: false
     observer: 0
@@ -394,6 +394,7 @@ Scope = (conf) ->
         destroy_callbacks: []
         finishBinding_callbacks: []
         finishBinding_lock: false
+        private: {}
 
     if typeof(conf.useObserver) is 'boolean'
         sys.useObserver = conf.useObserver
@@ -451,6 +452,7 @@ Scope::$new = (isolate) ->
                     root: root
                     children: []
                     destroy_callbacks: []
+                    private: {}
                 @.$parent = null
                 if root.$system.useObserver
                     cscope = @
@@ -584,10 +586,17 @@ do ->
         else
             # create watch object
             if not isFunction
-                ce = scope.$compile name,
-                    noBind: true
-                    full: true
-                exp = ce.fn
+                # options for observer
+                if option.watchText
+                    exp = option.watchText.fn
+                    ce =
+                        isSimple: if option.watchText.simpleVariables then 2 else 0
+                        simpleVariables: option.watchText.simpleVariables
+                else
+                    ce = scope.$compile name,
+                        noBind: true
+                        full: true
+                    exp = ce.fn
             returnValue = value = exp scope
             if option.deep
                 value = alight.utilits.clone value
@@ -1080,6 +1089,7 @@ Scope::$scan = (cfg) ->
         onStatic
         fullResponse
 ###
+###
 do ->
     isStatic = (data) ->
         for i in data
@@ -1230,11 +1240,11 @@ Scope::$evalText = (exp) ->
     @.$compileText(exp)(@)
 
 
-###
+##
     Scope.$watchText(name, callback, config)
     config.readOnly
     config.onStatic
-###
+##
 Scope::$watchText = (name, callback, config) ->
     scope = @
     sys = scope.$system
@@ -1322,6 +1332,8 @@ Scope::$watchText = (name, callback, config) ->
                     sys.watchList.splice i, 1
 
     r
+###
+
 
 
 alight.nextTick = do ->
@@ -1368,28 +1380,6 @@ alight.getFilter = (name, scope, param) ->
     if not filter
         throw 'Filter not found: ' + name
     filter
-
-
-alight.text.$base = (scope, data, env) ->
-    exp = data.list[0]
-    i = exp.indexOf ' '
-    if i < 0
-        dir_name = exp.slice 1
-        exp = ''
-    else
-        dir_name = exp.slice 1, i
-        exp = exp.slice i
-
-    dir = alight.text[dir_name]
-    if not dir
-        throw 'No directive alight.text.' + dir_name
-
-    if data.list.length > 1  # filters
-        filter = alight.utilits.filterBuilder scope, null, data.list.slice(1)
-        env.setter = (result) ->
-            data.value = filter result
-
-    dir env.setter, exp, scope, env
 
 
 alight.applyBindings = (scope, element, config) ->

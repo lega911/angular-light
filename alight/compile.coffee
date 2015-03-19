@@ -113,28 +113,24 @@ self.buildText = (text, data) ->
 self.cacheSimpleText = {}
 
 self.buildSimpleText = (text, data) ->
-    item = self.cacheSimpleText[text]
+    item = if text then self.cacheSimpleText[text] else null
     if item or not data
         return item or null
 
     result = []
-    isSimple = true
     simpleVariables = []
     for d, index in data
         if d.type is 'expression'
             result.push "(#{d.re})"
-            if d.isSimple
+            if d.simpleVariables
                 simpleVariables.push.apply simpleVariables, d.simpleVariables
-            else
-                isSimple = false
         else if d.value
             `result.push('"' + d.value.replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n') + '"')`
     result = result.join ' + '
     fn = self.Function '$$scope', "var $$, __; return (#{result})"
     item =
         fn: fn
-    if isSimple
-        item.isSimple = true
-        item.simpleVariables = simpleVariables
-    self.cacheSimpleText[text] = item
+        simpleVariables: simpleVariables
+    if text
+        self.cacheSimpleText[text] = item
     item

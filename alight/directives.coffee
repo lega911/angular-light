@@ -2,6 +2,20 @@
 alight.text.bindonce = (callback, expression, scope, env) ->
     env.finally scope.$eval expression
 
+alight.text.oneTimeBinding = (callback, expression, scope, env) ->
+    setted = false
+    w = scope.$watch expression, (value) ->
+        if value is undefined
+            return
+        if setted
+            return
+        setted = true
+        scope.$scan ->
+            w.stop()
+        env.finally value
+    ,
+        init: true
+
 dirs = alight.directives.al
 
 dirs.debug =
