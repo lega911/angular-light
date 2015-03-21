@@ -1,4 +1,5 @@
 
+
 Test('observer').run ($test, alight) ->
     if not alight.debug.useObserver
         $test.close()
@@ -9,16 +10,18 @@ Test('observer').run ($test, alight) ->
         user:
             name: 'macos'
 
+    observer = alight.observer.create()
+
     wroot = 0
-    ob = alight.observer.observe scope,
-        rootEvent: ->
-            wroot++
+    ob = observer.observe scope
+    ob.rootEvent = ->
+        wroot++
 
     wuser = 0
     wrole = 0
-    w0 = alight.observer.watch ob, 'user.name', ->
+    w0 = ob.watch 'user.name', ->
         wuser++
-    w1 = alight.observer.watch ob, 'user.acl.role', ->
+    w1 = ob.watch 'user.acl.role', ->
         wrole++
 
     #alight.observer.unwatch wtree, 'user.name', w1
@@ -27,32 +30,32 @@ Test('observer').run ($test, alight) ->
     steps = [
         (next) ->
             scope.title = 'test'
-            alight.observer.deliver ob
+            observer.deliver()
             $test.equal wroot, 1
             $test.equal wuser, 0, 'wuser 0'
             $test.equal wrole, 0
         (next) ->
             scope.user.name = 'linux'
-            alight.observer.deliver ob
+            observer.deliver()
             $test.equal wroot, 1
             $test.equal wuser, 1, 'wuser 1'
             $test.equal wrole, 0
         (next) ->
             scope.base = {}
-            alight.observer.deliver ob
+            observer.deliver()
             $test.equal wroot, 2
             $test.equal wuser, 1
             $test.equal wrole, 0
         (next) ->
             scope.base.title = 'base'
-            alight.observer.deliver ob
+            observer.deliver()
             $test.equal wroot, 2
             $test.equal wuser, 1
             $test.equal wrole, 0
         (next) ->
             scope.user.acl =
                 role: 'default'
-            alight.observer.deliver ob
+            observer.deliver()
             $test.equal wroot, 2
             $test.equal wuser, 1
             $test.equal wrole, 1
@@ -62,28 +65,28 @@ Test('observer').run ($test, alight) ->
                 name: 'linux'
                 acl:
                     role: 'base'
-            alight.observer.deliver ob
+            observer.deliver()
             $test.equal wroot, 3
             $test.equal wuser, 2
             $test.equal wrole, 2
         (next) ->
             scope.user.acl.role = 'admin'
-            alight.observer.deliver ob
+            observer.deliver()
             $test.equal wroot, 3
             $test.equal wuser, 2
             $test.equal wrole, 3
         (next) ->
             glob.oldAcl.role = 'Old role'
-            alight.observer.deliver ob
+            observer.deliver()
             $test.equal wroot, 3
             $test.equal wuser, 2
             $test.equal wrole, 3
         (next) ->
-            alight.observer.unobserve ob
+            ob.destroy()
             scope.base = {}
             scope.user.name = 'new value'
             scope.user.acl.role = 'new value'
-            alight.observer.deliver ob
+            observer.deliver()
             $test.equal wroot, 3
             $test.equal wuser, 2
             $test.equal wrole, 3
@@ -93,6 +96,7 @@ Test('observer').run ($test, alight) ->
 
     for fn in steps
         fn()
+    null
 
 
 Test('observer array#0').run ($test, alight) ->
@@ -107,25 +111,26 @@ Test('observer array#0').run ($test, alight) ->
                 name: 'macos'
         ]
 
-    ob = alight.observer.observe scope
+    observer = alight.observer.create()
+    ob = observer.observe scope
 
     wlist = 0
-    w0 = alight.observer.watch ob, 'list', ->
+    w0 = ob.watch 'list', ->
         wlist++
 
-    alight.observer.deliver ob
+    observer.deliver()
     $test.equal wlist, 0
 
     scope.list.push
         user:
             name: 'ubuntu'
 
-    alight.observer.deliver ob
+    observer.deliver()
     $test.equal wlist>0, true
     wlist = 0
 
     scope.list[0].user.name = 'linux'
-    alight.observer.deliver ob
+    observer.deliver()
     $test.equal wlist, 0
 
     $test.equal !scope.list[0].$$observer, true
@@ -145,25 +150,26 @@ Test('observer array#1').run ($test, alight) ->
                     name: 'macos'
             ]
 
-    ob = alight.observer.observe scope
+    observer = alight.observer.create()
+    ob = observer.observe scope
 
     wlist = 0
-    w0 = alight.observer.watch ob, 'data.list', ->
+    w0 = ob.watch 'data.list', ->
         wlist++
 
-    alight.observer.deliver ob
+    observer.deliver()
     $test.equal wlist, 0
 
     scope.data.list.push
         user:
             name: 'ubuntu'
 
-    alight.observer.deliver ob
+    observer.deliver()
     $test.equal wlist>0, true
     wlist = 0
 
     scope.data.list[0].user.name = 'linux'
-    alight.observer.deliver ob
+    observer.deliver()
     $test.equal wlist, 0
 
     $test.equal !scope.data.list[0].$$observer, true
