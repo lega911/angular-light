@@ -740,3 +740,42 @@ Test('$watch $finishScan').run ($test, alight) ->
                 $test.equal count1, 2
 
                 $test.close()
+
+
+Test('test dynamic read-only watch').run ($test, alight) ->
+    $test.start 6
+    scope = alight.Scope()
+    scope.one = 'one'
+
+    noop = ->
+    result = null
+
+    count = 0
+    scope.$watch ->
+        count++
+        ''
+    , noop,
+        readOnly: true
+
+    scope.$watch 'one', ->
+        result
+
+    $test.equal count, 1 # init
+    scope.$scan ->
+        $test.equal count, 2
+
+        scope.one = 'two'
+        scope.$scan ->
+            $test.equal count, 4 # 2-loop
+
+            scope.$scan ->
+                $test.equal count, 5
+
+                result = '$scanNoChanges'
+                scope.one = 'three'
+                scope.$scan ->
+                    $test.equal count, 6
+    
+                    scope.$scan ->
+                        $test.equal count, 7
+                        $test.close()
