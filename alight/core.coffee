@@ -490,19 +490,6 @@ $watch
 
 ###
 
-injectToRootLine = (scope) ->
-    sys = scope.$system
-    if sys.lineActive
-        return
-    rootSys = sys.root.$system
-    sys.lineActive = true
-    t = rootSys.lineTail
-    if t
-        rootSys.lineTail = t.$system.nextSibling = scope
-        sys.prevSibling = t
-    else
-        rootSys.lineHead = rootSys.lineTail = scope
-
 
 do ->
     WA = (callback) ->
@@ -635,7 +622,16 @@ do ->
 
             if not isObserved
                 sys.watchList.push d
-                injectToRootLine scope
+
+                # insert scope into root-chain
+                if rootSys.observer and not sys.lineActive
+                    sys.lineActive = true
+                    t = rootSys.lineTail
+                    if t
+                        rootSys.lineTail = t.$system.nextSibling = scope
+                        sys.prevSibling = t
+                    else
+                        rootSys.lineHead = rootSys.lineTail = scope
 
         r =
             $: d
