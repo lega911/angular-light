@@ -1,6 +1,7 @@
 
 ###
     observer = alight.observer.create()
+    ob = observer.observe scope
     observer.deliver()
     observer.destroy()
     
@@ -15,6 +16,15 @@
 
 do ->
     alight.observer = self = {}
+
+    self.support = ->
+        if typeof Map isnt 'function'
+            return false
+        if typeof Object.observe isnt 'function'
+            return false
+        if typeof Symbol isnt 'function'
+            return false
+        true
 
     isObjectOrArray = (d) ->
         if f$.isObject d
@@ -288,6 +298,7 @@ do ->
     Observer::destroy = ->
         for n in @.nodes.slice()
             n.destroy()
+        null
 
     self.create = ->
         new Observer()

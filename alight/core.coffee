@@ -1,8 +1,8 @@
 # Angular light
-# version: 0.8.15 / 2015-03-19
+# version: 0.8.20 / 2015-03-21
 
 # init
-alight.version = '0.8.15'
+alight.version = '0.8.20'
 alight.debug =
     useObserver: false
     observer: 0
@@ -396,15 +396,7 @@ Scope = (conf) ->
         finishBinding_lock: false
         private: {}
 
-    if typeof(conf.useObserver) is 'boolean'
-        sys.useObserver = conf.useObserver
-    else
-        sys.useObserver = alight.debug.useObserver
-
-    if sys.useObserver
-        sys.useObserver = !!Object.observe
-
-    if sys.useObserver
+    if (conf.useObserver or alight.debug.useObserver) and alight.observer.support()
         # chain for active scopes
         sys.lineHead = null
         sys.lineTail = null
@@ -414,14 +406,16 @@ Scope = (conf) ->
 
         sys.obList = []  # contain fired watchers
         sys.obFire = {}
-        sys.ob = ob = alight.observer.observe scope,
-            rootEvent: (key, value) ->
-                if alight.debug.observer
-                    console.warn 'Reobserve', key
-                for child in scope.$system.children
-                    child.$$rebuildObserve key, value
-                null
-        sys.observers = [ob]  # list of all observers
+
+        sys.observer = alight.observer.create()
+        sys.ob = ob = sys.observer.observe scope,
+            keywords: ['$system', '$ns', '$parent']        
+        ob.rootEvent = (key, value) ->
+            if alight.debug.observer
+                console.warn 'Reobserve', key
+            for child in scope.$system.children
+                child.$$rebuildObserve key, value
+            null
     scope
 
 alight.Scope = Scope
@@ -429,10 +423,10 @@ alight.Scope = Scope
 
 Scope::$$rebuildObserve = (key, value) ->
     scope = @
-    alight.observer.reobserve scope.$system.ob, key
+    scope.$system.ob.reobserve key
     for child in scope.$system.children
         child.$$rebuildObserve key, value
-    alight.observer.fire scope.$system.ob, key, value
+    scope.$system.ob.fire key, value
 
 
 Scope::$new = (isolate) ->
@@ -454,20 +448,20 @@ Scope::$new = (isolate) ->
                     destroy_callbacks: []
                     private: {}
                 @.$parent = null
-                if root.$system.useObserver
+                if root.$system.observer
                     cscope = @
                     sys.prevSibling = null
                     sys.nextSibling = null
                     sys.lineActive = false
                     sys.obFire = {}
-                    sys.ob = ob = alight.observer.observe @,
-                        rootEvent: (key, value) ->
-                            if alight.debug.observer
-                                console.warn 'Reobserve', key
-                            for i in cscope.$system.children
-                                i.$$rebuildObserve key, value
-                            null
-                    root.$system.observers.push ob
+                    sys.ob = ob = root.$system.observer.observe cscope,
+                        keywords: ['$system', '$ns', '$parent']
+                    ob.rootEvent = (key, value) ->
+                        if alight.debug.observer
+                            console.warn 'Reobserve', key
+                        for i in cscope.$system.children
+                            i.$$rebuildObserve key, value
+                        null
                 @
 
             scope.$system.ChildScope:: = scope
@@ -612,7 +606,7 @@ do ->
 
             # observe?
             isObserved = false
-            if rootSys.useObserver
+            if rootSys.observer
                 if not isFunction and not option.oneTime and not option.deep
                     if ce.isSimple and ce.simpleVariables.length
                         isObserved = true
@@ -626,7 +620,7 @@ do ->
                         if isObserved
                             d.isObserved = true
                             for variable in ce.simpleVariables
-                                ob = alight.observer.watch sys.ob, variable, ->
+                                ob = sys.ob.watch variable, ->
                                     if sys.obFire[key]
                                         return
                                     sys.obFire[key] = true
@@ -782,16 +776,7 @@ Scope::$destroy = () ->
         cb scope
     sys.destroy_callbacks = []
 
-    if rootSys.useObserver
-        do ->
-            # remove observer from root
-            ob = sys.ob
-            l = rootSys.observers
-            i = l.indexOf ob
-            if i >= 0
-                l.splice i, 1
-            alight.observer.unobserve ob
-
+    if rootSys.observer
         # remove from root line
         if sys.lineActive
             sys.lineActive = false
@@ -821,6 +806,13 @@ Scope::$destroy = () ->
     scope.$parent = null
     sys.watches = {}
     sys.watchList = []
+
+    if sys.ob
+        sys.ob.destroy()
+        sys.ob = null
+    if sys.observer  # root?
+        sys.observer.destroy()
+        sys.observer.destroy = null
 
     # remove watchAny
     cleanWatchAny = (l, r) ->
@@ -929,8 +921,7 @@ scan_core2 = (root, result) ->
     rootSys = root.$system
 
     # observed
-    for ob in rootSys.observers
-        alight.observer.deliver ob
+    rootSys.observer.deliver()
     for x in rootSys.obList
         scope = x[0]
         w = x[1]
@@ -1053,7 +1044,7 @@ Scope::$scan = (cfg) ->
 
             rootSys.extraLoop = false
 
-            if rootSys.useObserver
+            if rootSys.observer
                 scan_core2 root, result
             else
                 scan_core root, result
@@ -1080,260 +1071,6 @@ Scope::$scan = (cfg) ->
 
     if mainLoop is 0
         throw 'Infinity loop detected'
-
-
-###
-    $compileText = (text, cfg)
-    cfg:
-        result_on_static
-        onStatic
-        fullResponse
-###
-###
-do ->
-    isStatic = (data) ->
-        for i in data
-            if i.type is 'expression' and not i.static
-                return false
-        true
-
-    Scope::$compileText = (text, cfg) ->
-        scope = @
-        cfg = cfg or {}
-
-        sitem = alight.utilits.compile.buildSimpleText text, null
-        if sitem
-            if cfg.fullResponse
-                response =
-                    type: 'fn'
-                    fn: sitem.fn
-                    isSimple: sitem.isSimple
-                    simpleVariables: sitem.simpleVariables
-            else
-                response = sitem.fn
-            return response
-
-        if text.indexOf(alight.utilits.pars_start_tag) < 0
-            if cfg.result_on_static
-                if cfg.fullResponse
-                    response =
-                        type: 'text'
-                        text: text
-                else
-                    response = text
-            else
-                if cfg.fullResponse
-                    response =
-                        type: 'fn'
-                        isStatic: true
-                        fn: ->
-                            text
-                else
-                    response = ->
-                        text
-            return response
-
-        data = alight.utilits.parsText text
-        data.scope = scope
-
-        # data: type, value, fn, list, static
-        watch_count = 0
-        simple = true
-        for d in data
-            if d.type is 'expression'
-
-                if d.list[0][0] is '='  # bind once
-                    d.list[0] = '#bindonce ' + d.list[0].slice 1
-
-                exp = d.list.join ' | '
-
-                if exp[0] is '#'
-                    simple = false
-                    do (d=d) ->
-
-                        async = false
-                        env =
-                            data: d
-                            setter: (value) ->
-                                d.value = value
-                            finally: (value) ->
-                                if arguments.length is 1
-                                    env.setter value
-                                d.static = true
-                                if async and cfg.onStatic and isStatic(data)
-                                    cfg.onStatic()
-                        alight.text.$base scope, d, env
-                        async = true
-                    if not d.static
-                        watch_count++
-                else
-                    ce = scope.$compile exp,
-                        stringOrOneTime: true
-                        full: true
-                        rawExpression: true
-                        noBind: true
-                    if ce.oneTime
-                        simple = false
-                        do (d=d, ce=ce) ->
-                            d.fn = ->
-                                v = ce.fn scope
-                                if v is undefined
-                                    return ''
-                                if v is null
-                                    v = ''
-                                d.fn = ->
-                                    v
-                                d.static = true
-                                if cfg.onStatic and isStatic(data)
-                                    cfg.onStatic()
-                                v
-                    else
-                        d.fn = ce.fn
-                        if ce.rawExpression
-                            d.re = ce.rawExpression
-                            if ce.isSimple
-                                d.isSimple = true
-                                d.simpleVariables = ce.simpleVariables
-                        else
-                            simple = false
-                    watch_count++
-        if watch_count
-            if simple
-                sitem = alight.utilits.compile.buildSimpleText text, data
-                if cfg.fullResponse
-                    response =
-                        type: 'fn'
-                        fn: sitem.fn
-                        isSimple: sitem.isSimple
-                        simpleVariables: sitem.simpleVariables
-                else
-                    response = sitem.fn
-            else
-                response = alight.utilits.compile.buildText text, data
-                if cfg.fullResponse
-                    response =
-                        type: 'fn'
-                        fn: response
-            return response
-        else
-            fn = alight.utilits.compile.buildText text, data
-            text = fn()
-            if cfg.result_on_static
-                if cfg.fullResponse
-                    response =
-                        type: 'text'
-                        text: text
-                else
-                    response = text
-            else
-                response = ->
-                    text
-                if cfg.fullResponse
-                    response =
-                        type: 'fn'
-                        isStatic: true
-                        fn: response
-            return response
-
-
-Scope::$evalText = (exp) ->
-    @.$compileText(exp)(@)
-
-
-##
-    Scope.$watchText(name, callback, config)
-    config.readOnly
-    config.onStatic
-##
-Scope::$watchText = (name, callback, config) ->
-    scope = @
-    sys = scope.$system
-    config = config or {}
-
-    if alight.debug.watchText
-        console.log '$watchText', name
-
-    w = sys.watches;
-    d = w[name]
-    if d
-        if not config.readOnly
-            d.extraLoop = true
-    else
-        # create watch object
-        d =
-            extraLoop: not config.readOnly
-            isArray: false
-            callbacks: []
-            onStatic: []
-            src: name
-
-        ct = scope.$compileText name,
-            fullResponse: true
-            result_on_static: true
-            onStatic: ->
-                value = ct.fn.call scope
-
-                d.exp = ->
-                    value
-                scope.$scanAsync ->
-                    # remove watch
-                    d.callbacks.length = 0
-                    delete w[name]
-                    i = sys.watchList.indexOf d
-                    if i >= 0
-                        sys.watchList.splice i, 1
-
-                # call listeners
-                for cb in d.onStatic
-                    cb value
-                null
-
-        if ct.type is 'text'  # no watch
-            return {
-                value: ct.text
-            }
-
-        d.exp = ct.fn
-        d.value = ct.fn scope
-        w[name] = d
-
-        if ct.isSimple and sys.root.$system.useObserver
-            d.isObserved = true
-            
-            for variable in ct.simpleVariables
-                ob = alight.observer.watch sys.ob, variable, ->
-                    if sys.obFire[name]
-                        return
-                    sys.obFire[name] = true
-                    sys.root.$system.obList.push [scope, d]
-        else            
-            sys.watchList.push d
-            injectToRootLine scope
-
-    if config.onStatic
-        d.onStatic.push config.onStatic
-
-    d.callbacks.push callback
-
-    r =
-        $: d
-        value: d.value
-        exp: d.exp
-        stop: ->
-            i = d.callbacks.indexOf callback
-            if i >= 0
-                d.callbacks.splice i, 1
-                if d.callbacks.length isnt 0
-                    return
-                # remove watch
-                delete w[name]
-                i = sys.watchList.indexOf d
-                if i >= 0
-                    sys.watchList.splice i, 1
-
-    r
-###
-
 
 
 alight.nextTick = do ->

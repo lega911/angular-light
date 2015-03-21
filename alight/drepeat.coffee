@@ -55,7 +55,9 @@ alight.directives.al.repeat =
                 self.expression = r[2]
 
             watchModel: ->
-                self.watch = scope.$watch self.expression, self.updateDom, { isArray:true, readOnly:!self.storeTo }
+                #self.watch = scope.$watch self.expression, self.updateDom, { isArray:true, readOnly:!self.storeTo }
+                self.watch = scope.$watch self.expression, self.updateDom,
+                    isArray: true
 
             initUpdateDom: ->
                 self.updateDom self.watch.value
