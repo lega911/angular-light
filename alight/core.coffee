@@ -1,8 +1,8 @@
 # Angular light
-# version: 0.8.20 / 2015-03-21
+# version: 0.8.21 / 2015-03-22
 
 # init
-alight.version = '0.8.20'
+alight.version = '0.8.21'
 alight.debug =
     useObserver: false
     observer: 0
@@ -409,7 +409,7 @@ Scope = (conf) ->
 
         sys.observer = alight.observer.create()
         sys.ob = ob = sys.observer.observe scope,
-            keywords: ['$system', '$ns', '$parent']        
+            keywords: ['$system', '$ns', '$parent']
         ob.rootEvent = (key, value) ->
             if alight.debug.observer
                 console.warn 'Reobserve', key
@@ -540,6 +540,11 @@ do ->
             if name[0..1] is '::'
                 name = name[2..]
                 option.oneTime = true
+            if option.private
+                if option.oneTime or option.isArray or option.deep
+                    throw 'Conflict $watch option private'
+                privateName = name
+                name = '$system.private.' + name
             key = name
             if key is '$any'
                 return watchAny scope, 'watchAny', 'watchAnyAll', callback
@@ -606,12 +611,23 @@ do ->
 
                         if isObserved
                             d.isObserved = true
-                            for variable in ce.simpleVariables
-                                ob = sys.ob.watch variable, ->
+
+                            if option.private
+                                if not sys.privateOb
+                                    sys.privateOb = rootSys.observer.observe sys.private,
+                                        keywords: ['$system', '$ns', '$parent']
+                                ob = sys.privateOb.watch privateName, ->
                                     if sys.obFire[key]
                                         return
                                     sys.obFire[key] = true
                                     rootSys.obList.push [scope, d]
+                            else
+                                for variable in ce.simpleVariables
+                                    ob = sys.ob.watch variable, ->
+                                        if sys.obFire[key]
+                                            return
+                                        sys.obFire[key] = true
+                                        rootSys.obList.push [scope, d]
 
             if option.isArray and not isObserved
                 if f$.isArray value
@@ -803,9 +819,13 @@ Scope::$destroy = () ->
     sys.watches = {}
     sys.watchList = []
 
+    # destroy observer
     if sys.ob
         sys.ob.destroy()
         sys.ob = null
+    if sys.privateOb
+        sys.privateOb.destroy()
+        sys.privateOb = null
     if sys.observer  # root?
         sys.observer.destroy()
         sys.observer.destroy = null

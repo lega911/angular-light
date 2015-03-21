@@ -207,7 +207,7 @@ Test('bindonce').run ($test, alight) ->
         $test.close()
 
 
-Test('text-directive').run ($test, alight) ->
+Test('text-directive', 'text-directive-0').run ($test, alight) ->
     $test.start 4
 
     alight.filters.minus = (exp, scope) ->
@@ -330,7 +330,7 @@ Test('oneTime binding #0').run ($test, alight) ->
     next()
 
 
-Test('oneTime binding #1').run ($test, alight) ->
+Test('oneTime binding #1', 'one-time-binding-1').run ($test, alight) ->
     $test.start 6
 
     scope = alight.Scope()

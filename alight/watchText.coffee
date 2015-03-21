@@ -173,4 +173,5 @@ do ->
             if config.onStatic
                 config.onStatic()
         doUpdate()
-        w = scope.$watch "$system.private.#{key}", callback
+        w = scope.$watch key, callback,
+            private: true

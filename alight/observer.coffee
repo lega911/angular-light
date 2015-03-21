@@ -196,6 +196,8 @@ do ->
             throw 'Inactive observer'
         t = @.wtree
         for k in key.split '.'
+            if @.keywords[k]
+                return  # keyword in path of key
             if not t[k]
                 t[k] = {}
                 t[k][$cbs] = []
