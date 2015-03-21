@@ -322,14 +322,18 @@
         var rawAjax = function(args) {
             $.ajax({
                 url: args.url,
-                type: args.type || 'GET'
+                type: args.type || 'GET',
+                username: args.username,
+                password: args.password,
+                headers: args.headers,
+                data: args.data
             }).then(args.success || empty, args.error || empty)
         }
     } else {
         var rawAjax = function(args) {
             var request = new XMLHttpRequest();
-            request.open(args.type || 'GET', args.url, true);
-            request.send();
+            request.open(args.type || 'GET', args.url, true, args.username, args.password);
+            for(var i in args.headers) request.setRequestHeader(i, args.headers[i]);
 
             if(args.success) {
                 request.onload = function() {
@@ -341,12 +345,26 @@
                 }
             }
             if(args.error) request.onerror = args.error;
+
+            request.send(args.data || null);
         };
     };
 
     f$.ajaxCache = {};
+    /*
+        ajax
+            cache
+            type
+            url
+            success
+            error
+            username
+            password
+            data
+            headers
+    */
     f$.ajax = function(args) {
-        if(!args.cache) return rawAjax(args);
+        if(args.username || args.password || args.headers || args.data || !args.cache) return rawAjax(args);
 
         // cache
         var queryType = args.type || 'GET';
@@ -364,18 +382,20 @@
             type: queryType,
             url: args.url,
             success: function(result) {
+                d.loading = false
                 d.result = result;
                 for(var i=0;i<d.callback.length;i++)
                     if(d.callback[i].success) d.callback[i].success(result)
                 d.callback.length = 0;
             },
             error: function() {
+                d.loading = false
                 for(var i=0;i<d.callback.length;i++)
                     if(d.callback[i].error) d.callback[i].error()
                 d.callback.length = 0;
             }
         })
-    };    
+    };
 
     if(msie && msie < 8) {
         f$.focus = function(element) {
