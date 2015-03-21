@@ -26,6 +26,9 @@ do ->
             return false
         true
 
+    if not self.support()
+        return
+
     isObjectOrArray = (d) ->
         if f$.isObject d
             return true
