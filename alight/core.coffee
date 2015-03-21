@@ -852,6 +852,7 @@ notEqual = (a, b) ->
 
 scan_core = (top, result) ->
     extraLoop = false
+    extraLoopFlag = false
     changes = 0
     total = 0
     line = []
@@ -893,10 +894,11 @@ scan_core = (top, result) ->
                     if mutated
                         mutated = false
                         changes++
-                        if w.extraLoop
-                            extraLoop = true
                         for callback in w.callbacks.slice()
-                            callback.call scope, value
+                            if callback.call(scope, value) isnt '$scanNoChanges'
+                                extraLoopFlag = true
+                        if extraLoopFlag and w.extraLoop
+                            extraLoop = true
                     if alight.debug.scan > 1
                         console.log 'changed:', w.src
 
@@ -914,6 +916,7 @@ scan_core = (top, result) ->
 
 scan_core2 = (root, result) ->
     extraLoop = false
+    extraLoopFlag = false
     changes = 0
     total = 0
     obTotal = 0
@@ -935,10 +938,12 @@ scan_core2 = (root, result) ->
             if not w.isArray
                 w.value = value
             changes++
-            if w.extraLoop
-                extraLoop = true
             for callback in w.callbacks.slice()
-                callback.call scope, value
+                if callback.call(scope, value) isnt '$scanNoChanges'
+                    extraLoopFlag = true
+            if extraLoopFlag and w.extraLoop
+                extraLoop = true
+
     obTotal += rootSys.obList.length
     rootSys.obList.length = 0
 
@@ -979,10 +984,11 @@ scan_core2 = (root, result) ->
                 if mutated
                     mutated = false
                     changes++
-                    if w.extraLoop
-                        extraLoop = true
                     for callback in w.callbacks.slice()
-                        callback.call scope, value
+                        if callback.call(scope, value) isnt '$scanNoChanges'
+                            extraLoopFlag = true
+                    if extraLoopFlag and w.extraLoop
+                        extraLoop = true
                 if alight.debug.scan > 1
                     console.log 'changed:', w.src
 

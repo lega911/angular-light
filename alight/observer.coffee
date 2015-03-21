@@ -43,7 +43,7 @@ do ->
     $node = Symbol 'node'
     $isArray = Symbol 'isArray'
 
-    ensureTree = (node, key) ->
+    ensureTree = (node, key, flag) ->
         wtree = node.wtree
 
         for k in key.split '.'
@@ -52,18 +52,18 @@ do ->
                 break
 
         if wtree
-            __ensureTree node, wtree, key
+            __ensureTree node, wtree, key, flag
 
-    __ensureTree = (node, wtree, path) ->
+    __ensureTree = (node, wtree, path, flag) ->
         r = false
         for k of wtree
             if node.keywords[k]
                 continue
-            if __ensureTree node, wtree[k], "#{path}.#{k}"
+            if __ensureTree node, wtree[k], "#{path}.#{k}", flag
                 r = true
 
         if not r and wtree[$cbs].length
-            ensureObserve node, path
+            ensureObserve node, path, flag
             return true
         false
 
@@ -92,7 +92,7 @@ do ->
         null
 
 
-    ensureObserve = (node, key) ->
+    ensureObserve = (node, key, flag) ->
         scope = node.scope
         tree = node.tree
         treeByScope = node.observer.treeByScope
@@ -134,6 +134,8 @@ do ->
                 #throw 'ERROR: scope has already observed'
 
             if tree[$scope]
+                if flag is 'add'  # must be event is depricated
+                    continue
                 throw 'ERROR: tree has already got scope, why?'
 
             tree[$node] = node
@@ -199,7 +201,7 @@ do ->
                 t[k][$cbs] = []
             t = t[k]
             t[$cbs].push callback
-        ensureTree @, key
+        ensureTree @, key, 'watch'
         callback
 
     Node::unwatch = (key, callback) ->
@@ -270,7 +272,7 @@ do ->
 
                         if ch.type is 'add'
                             if isObjectOrArray value
-                                ensureTree node, keyPath
+                                ensureTree node, keyPath, 'add'
                             node.fire keyPath, value
                         else if ch.type is 'update'
                             if tree[key] and isObjectOrArray ch.oldValue

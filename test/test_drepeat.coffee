@@ -304,3 +304,48 @@ Test('al-repeat one-time-bindings').run ($test, alight) ->
             $test.equal watchCount(), 0
             $test.equal rowCount(), 3
             $test.close()
+
+
+Test('al-repeat store to', 'repeat-store-to-0').run ($test, alight) ->
+    $test.start 6
+
+    alight.filters.myfilter = ->
+        ->
+            makeResult
+
+    scope = alight.Scope()
+    dom = document.createElement 'div'
+    dom.innerHTML = '<div class="item" al-repeat="it in list | myfilter store to filteredList"></div>'
+
+    scope.filteredList = []
+    scope.list = list = makeResult = [
+        {t: 'a'},
+        {t: 'b'},
+        {t: 'c'},
+        {t: 'd'},
+        {t: 'e'},
+        {t: 'f'}
+    ]
+
+    flen = 0
+    fcount = 0
+    w = scope.$watch 'filteredList.length', (value) ->
+        flen = value
+        fcount++
+    flen = w.value
+
+    alight.applyBindings scope, dom
+
+    $test.equal fcount, 0
+    $test.equal flen, 0
+
+    scope.$scan ->
+        $test.equal fcount, 1
+        $test.equal flen, 6
+
+        makeResult = [list[1], list[2], list[3]]
+        scope.$scan ->
+            $test.equal fcount, 2
+            $test.equal flen, 3
+
+            $test.close()

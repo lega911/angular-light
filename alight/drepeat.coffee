@@ -55,7 +55,6 @@ alight.directives.al.repeat =
                 self.expression = r[2]
 
             watchModel: ->
-                #self.watch = scope.$watch self.expression, self.updateDom, { isArray:true, readOnly:!self.storeTo }
                 self.watch = scope.$watch self.expression, self.updateDom,
                     isArray: true
 
@@ -184,11 +183,6 @@ alight.directives.al.repeat =
                     if not list or not list.length  # is it list?
                         list = []
 
-                    if self.storeTo
-                        scope.$setValue self.storeTo, list
-                        scope.$scan
-                            late: true
-
                     last_element = self.top_element
 
                     dom_inserts = []
@@ -293,7 +287,15 @@ alight.directives.al.repeat =
                     skippedAttrs = env.skippedAttr()
                     for it in applyList
                         alight.applyBindings it[0], it[1], { skip_attr:skippedAttrs }
-                    null
+
+                    if self.storeTo
+                        scope.$setValue self.storeTo, list
+                        return
+
+                    if scope.$system.ob  # observer
+                        return
+
+                    return '$scanNoChanges'
 
 
 alight.directives.bo.repeat =
