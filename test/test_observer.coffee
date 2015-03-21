@@ -1,6 +1,52 @@
 
 
-Test('observer').run ($test, alight) ->
+Test('observer #0').run ($test, alight) ->
+    if not alight.debug.useObserver
+        $test.close()
+        return
+    $test.start 8
+
+    scope0 =
+        user:
+            name: 'macos'
+    scope1 =
+        user:
+            name: 'windows'
+
+    observer = alight.observer.create()
+    a0 = 0
+    ob0 = observer.observe scope0
+    ob0.watch 'user.name', ->
+        a0++
+    a1 = 0
+    ob1 = observer.observe scope1
+    ob1.watch 'user.name', ->
+        a1++
+
+    observer.deliver()
+    $test.equal a0, 0
+    $test.equal a1, 0
+
+    scope0.user.name = 'linux'
+    observer.deliver()
+    $test.equal a0, 1
+    $test.equal a1, 0
+
+    scope1.user.name = 'freebsd'
+    observer.deliver()
+    $test.equal a0, 1
+    $test.equal a1, 1
+
+    scope0.user.name = 'a'
+    scope1.user.name = 'b'
+    observer.deliver()
+    $test.equal a0, 2
+    $test.equal a1, 2
+
+    $test.close()
+
+
+Test('observer #1').run ($test, alight) ->
     if not alight.debug.useObserver
         $test.close()
         return
