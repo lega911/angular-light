@@ -18,7 +18,7 @@ do ->
     alight.observer = self = {}
 
     self.support = ->
-        if typeof Map isnt 'function'
+        if typeof WeakMap isnt 'function'
             return false
         if typeof Object.observe isnt 'function'
             return false
@@ -244,7 +244,7 @@ do ->
     Observer = ->
         observer = @
         @.nodes = []
-        @.treeByScope = new Map()  # store trees by scopes
+        @.treeByScope = new WeakMap()  # store trees by scopes
         @.handler = (changes) ->
             for ch in changes
                 scope = ch.object
