@@ -102,7 +102,11 @@ self.buildText = (text, data) ->
                 # text directive
                 result.push "((x=this[#{index}].value) || (x == null?'':x))"
         else if d.value
-            `result.push('"' + d.value.replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n') + '"')`
+            escapedValue = d.value
+                .replace(/\\/g, "\\\\")
+                .replace(/"/g, '\\"')
+                .replace(/\n/g, "\\n")
+            result.push '"' + escapedValue + '"'
     result = result.join ' + '
     fn = self.Function "var x; return (#{result})"
     self.cacheText[text] = fn
