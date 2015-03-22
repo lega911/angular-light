@@ -1,8 +1,8 @@
 # Angular light
-# version: 0.8.21 / 2015-03-22
+# version: 0.8.22 / 2015-03-22
 
 # init
-alight.version = '0.8.21'
+alight.version = '0.8.22'
 alight.debug =
     useObserver: false
     observer: 0
@@ -363,24 +363,20 @@ nodeTypeBind =
 
 
 Scope = (conf) ->
-    `
-    if(this instanceof Scope) return this;
+    return @ if @ instanceof Scope
+    conf = conf or {}
+    if conf.prototype
+        Parent = ->
+        Parent:: = conf.prototype
+        parent = new Parent()
+        for k, v of Scope::
+            parent[k] = v
+        NScope = ->
+        NScope:: = parent
+        scope = new NScope()
+    else
+        scope = new Scope()
 
-    conf = conf || {};
-    var scope;
-    if(conf.prototype) {
-        var Parent = function() {};
-        Parent.prototype = conf.prototype;
-        var parent = new Parent();
-        var proto = Scope.prototype;
-        for(var k in proto)
-            if(proto.hasOwnProperty(k)) parent[k] = proto[k];
-
-        var NScope = function() {};
-        NScope.prototype = parent;
-        scope = new NScope();
-    } else scope = new Scope();
-    `
     scope.$system = sys =
         watches: {}
         watchList: []
