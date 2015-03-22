@@ -731,7 +731,9 @@ do ->
             func = alight.utilits.filterBuilder scope, func, filters
             if cfg.string
                 f1 = func
-                `func = function() { var __ = f1.apply(this, arguments); return '' + (__ || (__ == null?'':__)) }`
+                func = ->
+                    __ = f1.apply this, arguments
+                    "" + (__ or (__ ? ''))
 
         if cfg.noBind
             resp.fn = func
