@@ -129,7 +129,11 @@ self.buildSimpleText = (text, data) ->
             if d.simpleVariables
                 simpleVariables.push.apply simpleVariables, d.simpleVariables
         else if d.value
-            `result.push('"' + d.value.replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n') + '"')`
+            escapedValue = d.value
+                .replace(/\\/g, "\\\\")
+                .replace(/"/g, '\\"')
+                .replace(/\n/g, "\\n")
+            result.push '"' + escapedValue + '"'
     result = result.join ' + '
     fn = self.Function '$$scope', "var $$, __; return (#{result})"
     item =
