@@ -67,8 +67,8 @@ dirs.value = (element, variable, scope) ->
         updateDom: (value) ->
             if self.changing
                 return
-            if not (value is undefined or value is null)
-                f$.val element, value
+            value ?= ''
+            f$.val element, value
         initDom: ->
             self.updateDom init_value
         start: ->
