@@ -44,6 +44,11 @@ self.makeRoot = (conf) ->
 
         scan_callbacks: []
 
+        # helpers
+        extraLoop: false
+        finishBinding_lock: false
+        lateScan: false
+
     if conf.useObserver
         root.obList = []  # contain fired watchers
         root.observer = null
@@ -58,12 +63,18 @@ self.makeNode = (root, scope) ->
         scope: scope
         root: root
         children: []
-        watches: {}
+        watchers: {}
         watchList: []
         destroy_callbacks: []
+
         lineActive: false
         prevSibling: null
         nextSibling: null
+
+        #
+        rwatchers:
+            any: []
+            finishScan: []
 
     if root.observer
         # local
@@ -71,6 +82,24 @@ self.makeNode = (root, scope) ->
         node.ob = null
 
     node
+
+
+WA = (callback) ->
+    @.cb = callback
+
+watchAny = (node, key, callback) ->
+    root = node.root
+
+    wa = new WA callback
+
+    node.rwatchers[key].push wa
+    root.watchers[key].push wa
+
+    return {
+        stop: ->
+            removeItem node.rwatchers[key], wa
+            removeItem root.watchers[key], wa
+    }
 
 
 self.watch = (name, callback, option) ->
@@ -95,12 +124,12 @@ self.watch = (name, callback, option) ->
             if option.oneTime or option.isArray or option.deep
                 throw 'Conflict $watch option private'
             privateName = name
-            name = '$system.private.' + name
+            name = '$system.root.private.' + name
         key = name
         if key is '$any'
-            return watchAny scope, 'watchAny', 'watchAnyAll', callback
+            return watchAny node, 'any', callback
         if key is '$finishScan'
-            return watchAny scope, 'watchFinishScan', 'watchFinishScanAll', callback
+            return watchAny node, 'finishScan', callback
         if key is '$destroy'
             return node.destroy_callbacks.push callback
         if key is '$finishBinding'
@@ -115,7 +144,7 @@ self.watch = (name, callback, option) ->
     if alight.debug.watch
         console.log '$watch', name
 
-    d = node.watches[key]
+    d = node.watchers[key]
     if d
         if not option.readOnly
             d.extraLoop = true
@@ -139,7 +168,7 @@ self.watch = (name, callback, option) ->
         if option.deep
             value = alight.utilits.clone value
             option.isArray = false
-        node.watches[key] = d =
+        node.watchers[key] = d =
             isArray: Boolean option.isArray
             extraLoop: not option.readOnly
             deep: option.deep
@@ -221,10 +250,10 @@ self.watch = (name, callback, option) ->
             if d.callbacks.length isnt 0
                 return
             # remove watch
-            delete sys.watches[key]
-            i = sys.watchList.indexOf d
+            delete node.watchers[key]
+            i = node.watchList.indexOf d
             if i >= 0
-                sys.watchList.splice i, 1
+                node.watchList.splice i, 1
 
     if option.init
         callback r.value
@@ -429,7 +458,7 @@ scan_core2 = (root, result) ->
     while node
         scope = node.scope
 
-        # default watches
+        # default watchers
         total += node.watchList.length
         for w in node.watchList
             result.src = w.src
@@ -480,21 +509,22 @@ scan_core2 = (root, result) ->
 
 self.scan = (cfg) ->
     node = cfg.node
-    scope = node.scope
     root = node.root
 
     if cfg.callback
         root.scan_callbacks.push cfg.callback
     if cfg.late
-        if rootSys.lateScan
+        if root.lateScan
             return
-        rootSys.lateScan = true
+        root.lateScan = true
         alight.nextTick ->
-            if rootSys.lateScan
-                root.$scan()
+            if root.lateScan
+                self.scan
+                    node:
+                        root: root
         return
     if root.status is 'scaning'
-        rootSys.extraLoop = true
+        root.extraLoop = true
         return
     root.lateScan = false
     root.status = 'scaning'

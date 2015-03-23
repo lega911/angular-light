@@ -139,7 +139,7 @@ do ->
         6: 'aa:1, bb:2, cc:3, dd:4'
         7: 'aa:1, bb:2, cc:3, dd:4'
 
-    Test('by $index, primitives').run ($test, alight) ->
+    Test('by $index, primitives', 'by-index-primitives').run ($test, alight) ->
         $test.start 8
         setupAlight alight
 
@@ -282,7 +282,7 @@ Test('al-repeat one-time-bindings').run ($test, alight) ->
     alight.applyBindings scope, element
 
     watchCount = ->
-        r = for i of scope.$system.watches
+        r = for i of scope.$system.watchers
             i
         r.length
 

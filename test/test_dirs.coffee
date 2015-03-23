@@ -56,7 +56,7 @@ Test('al-css #1').run ($test, alight) ->
 					$test.close()
 
 
-Test('directive.scope isolate').run ($test, alight) ->
+Test('directive.scope isolate #0', 'directive-scope-isolate-0').run ($test, alight) ->
 	$test.start 2
 
 	alight.directives.ut =

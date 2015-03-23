@@ -368,7 +368,7 @@ Scope = (conf) ->
 
     scope = new Scope()
 
-    root = alight.core.makeRoot()
+    root = conf.root or alight.core.makeRoot()
     scope.$system = alight.core.makeNode root, scope
 
     scope
@@ -386,10 +386,19 @@ Scope::$$rebuildObserve = (key, value) ->
 
 Scope::$new = (isolate) ->
     parent = @
-    scope = {}
     
+    if isolate
+        scope = alight.Scope
+            root: parent.$system.root
+    else
+        Child = ->
+        Child:: = parent
+        scope = new Child
+
     scope.$system = alight.core.makeNode parent.$system.root, scope
-    child
+    scope.$parent = parent
+    parent.$system.children.push scope
+    scope
 
 
 ###
@@ -416,12 +425,16 @@ do ->
         scope = @
 
         option = option or {}
-        opt =
-            scope: scope
-            node: scope.$system
+        if option is true
+            option =
+                isArray: true
 
-        for k in ['watchText', 'is_array', 'isArray', 'oneTime', 'private', 'deep', 'readOnly', 'init']
-            opt[k] = option[k]
+        opt = {}
+        for k, v of option
+            opt[k] = v
+        opt.scope = scope
+        opt.node = scope.$system
+
         alight.core.watch name, callback, opt
 
 
@@ -465,66 +478,61 @@ Scope::$setValue = (name, value) ->
 
 Scope::$destroy = () ->
     scope = this
-    sys = scope.$system
-    rootSys = scope.$system.root.$system
+    node = scope.$system
+    root = node.root
 
     # fire callbacks
-    for cb in sys.destroy_callbacks
+    for cb in node.destroy_callbacks
         cb scope
-    sys.destroy_callbacks = []
+    node.destroy_callbacks.length = 0
 
-    if rootSys.observer
-        # remove from root line
-        if sys.lineActive
-            sys.lineActive = false
-            p = sys.prevSibling
-            n = sys.nextSibling
-            if p
-                p.$system.nextSibling = n
-            else
-                # first scope
-                rootSys.lineHead = n
-            if n
-                n.$system.prevSibling = p
-            else
-                # last scope
-                rootSys.lineTail = p
+    if node.lineActive
+        node.lineActive = false
+        p = node.prevSibling
+        n = node.nextSibling
+        if p
+            p.nextSibling = n
+        else
+            # first scope
+            root.nodeHead = n
+        if n
+            n.prevSibling = p
+        else
+            # last scope
+            root.nodeTail = p
 
     # remove children
-    for it in sys.children.slice()
+    for it in node.children.slice()
         it.$destroy()
 
     # remove from parent
     if scope.$parent
-        i = scope.$parent.$system.children.indexOf scope
-        scope.$parent.$system.children.splice i, 1
+        removeItem scope.$parent.$system.children, scope
 
     # remove watch
     scope.$parent = null
-    sys.watches = {}
-    sys.watchList = []
+    node.watchers = {}
+    node.watchList = []
 
     # destroy observer
-    if sys.ob
-        sys.ob.destroy()
-        sys.ob = null
-    if sys.privateOb
-        sys.privateOb.destroy()
-        sys.privateOb = null
-    if sys.observer  # root?
-        sys.observer.destroy()
-        sys.observer.destroy = null
+    if node.ob
+        node.ob.destroy()
+        node.ob = null
+    #if node.privateOb  # root?
+    #    node.privateOb.destroy()
+    #    node.privateOb = null
+    #if sys.observer  # root?
+    #    sys.observer.destroy()
+    #    sys.observer.destroy = null
 
     # remove watchAny
-    cleanWatchAny = (l, r) ->
-        lst = rootSys[r]
-        for w in sys[l]
-            i = lst.indexOf w
-            if i >= 0
-                lst.splice i, 1
-        sys[l].length = 0
-    cleanWatchAny 'watchAny', 'watchAnyAll'
-    cleanWatchAny 'watchFinishScan', 'watchFinishScanAll'
+    cleanWatchAny = (key) ->
+        lst = root.watchers[key]
+        for w in node.rwatchers[key]
+            removeItem lst, w
+        node.rwatchers[key].length = 0
+    cleanWatchAny 'any'
+    cleanWatchAny 'finishScan'
 
 
 Scope::$scanAsync = (callback) ->
@@ -534,6 +542,11 @@ Scope::$scanAsync = (callback) ->
 
 
 Scope::$scan = (option) ->
+    if f$.isFunction option
+        option =
+            callback: option
+    else
+        option = option or {}
     alight.core.scan
         node: @.$system
         callback: option.callback

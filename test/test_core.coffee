@@ -391,7 +391,7 @@ Test('oneTime binding #2').run ($test, alight) ->
 
     steps = [
         ->
-            $test.equal dictLen(scope.$system.watches), 5
+            $test.equal dictLen(scope.$system.watchers), 5
             $test.equal result(), 'a-b-c!::a-b-c!'
             scope.a = 3
             ->
@@ -412,7 +412,7 @@ Test('oneTime binding #2').run ($test, alight) ->
                 next()
         ->
             ->
-                $test.equal dictLen(scope.$system.watches), 0
+                $test.equal dictLen(scope.$system.watchers), 0
     ]
 
     step = 0
@@ -447,8 +447,8 @@ Test('oneTime binding #3').run ($test, alight) ->
 
     steps = [
         ->
-            $test.equal dictLen(scope.$system.watches), 2
-            $test.equal dictLen(scope1.$system.watches), 2
+            $test.equal dictLen(scope.$system.watchers), 2
+            $test.equal dictLen(scope1.$system.watchers), 2
             $test.equal v0, 'Hello !'
             $test.equal v1, 'Hello !'
             scope.name = 'linux'
@@ -474,8 +474,8 @@ Test('oneTime binding #3').run ($test, alight) ->
         scope.$scan n
 
     next()
-    $test.equal dictLen(scope.$system.watches), 0
-    $test.equal dictLen(scope1.$system.watches), 0
+    $test.equal dictLen(scope.$system.watchers), 0
+    $test.equal dictLen(scope1.$system.watchers), 0
     $test.close()
 
 
@@ -558,7 +558,7 @@ Test('text-directive env.finally').run ($test, alight) ->
 
     $test.equal dom.text(), 'Text init'
     
-    $test.equal dictLen(scope.$system.watches), 1
+    $test.equal dictLen(scope.$system.watchers), 1
 
     env.setter 'two'
     scope.$scan ->
@@ -571,7 +571,7 @@ Test('text-directive env.finally').run ($test, alight) ->
             env.finally 'four'
             scope.$scan ->
                 $test.equal dom.text(), 'Text four'
-                $test.equal dictLen(scope.$system.watches), 0
+                $test.equal dictLen(scope.$system.watchers), 0
                 $test.close()
 
 
@@ -779,3 +779,38 @@ Test('test dynamic read-only watch').run ($test, alight) ->
                     scope.$scan ->
                         $test.equal count, 7
                         $test.close()
+
+
+Test('$watch private #0', 'watch-private-0').run ($test, alight) ->
+    $test.start 8
+
+    scope = alight.Scope()
+
+    value = null
+    count = 0
+    scope.$watch 'key', (v) ->
+        count++
+        value = v
+    ,
+        private: true
+
+    scope.$scan ->
+        $test.equal count, 0
+        $test.equal value, null
+
+        scope.$system.root.private.key = 5
+        scope.$scan ->
+            $test.equal count, 1
+            $test.equal value, 5
+
+            scope.$system.root.private.key = 7
+            scope.$scan ->
+                $test.equal count, 2
+                $test.equal value, 7
+
+                scope.$destroy()
+                scope.$system.root.private.key = 11
+                scope.$scan ->
+                    $test.equal count, 2
+                    $test.equal value, 7
+                    $test.close()

@@ -159,7 +159,7 @@ do ->
         data.scope = scope
         fn = alight.utilits.compile.buildText expression, data
         doUpdate = ->
-            scope.$system.private[key] = fn()
+            scope.$system.root.private[key] = fn()
         doFinally = ->
             i = true
             for d in data
