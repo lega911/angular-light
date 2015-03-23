@@ -102,8 +102,7 @@ watchAny = (node, key, callback) ->
     }
 
 
-self.watch = (name, callback, option) ->
-    node = option.node
+self.watch = (node, name, callback, option) ->
     root = node.root
     scope = node.scope
 
@@ -159,10 +158,9 @@ self.watch = (name, callback, option) ->
                     isSimple: if option.watchText.simpleVariables then 2 else 0
                     simpleVariables: option.watchText.simpleVariables
             else
-                ce = self.compile name,
+                ce = self.compile scope, name,
                     noBind: true
                     full: true
-                    scope: scope
                 exp = ce.fn
         returnValue = value = exp scope
         if option.deep
@@ -261,9 +259,8 @@ self.watch = (name, callback, option) ->
     r
 
 
-self.compile = (src_exp, cfg) ->
+self.compile = (scope, src_exp, cfg) ->
     cfg = cfg or {}
-    scope = cfg.scope
     # make hash
     resp = {}
     src_exp = src_exp.trim()
@@ -329,9 +326,6 @@ self.compile = (src_exp, cfg) ->
     if cfg.full
         return resp
     resp.fn
-
-
-self
 
 
 get_time = do ->
@@ -507,10 +501,8 @@ scan_core2 = (root, result) ->
     result.extraLoop = extraLoop
 
 
-self.scan = (cfg) ->
-    node = cfg.node
-    root = node.root
-
+self.scan = (root, cfg) ->
+    cfg = cfg or {}
     if cfg.callback
         root.scan_callbacks.push cfg.callback
     if cfg.late
@@ -519,9 +511,7 @@ self.scan = (cfg) ->
         root.lateScan = true
         alight.nextTick ->
             if root.lateScan
-                self.scan
-                    node:
-                        root: root
+                self.scan root
         return
     if root.status is 'scaning'
         root.extraLoop = true

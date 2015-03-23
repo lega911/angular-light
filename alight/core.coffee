@@ -422,20 +422,11 @@ $watch
 
 do ->
     Scope::$watch = (name, callback, option) ->
-        scope = @
-
         option = option or {}
         if option is true
             option =
                 isArray: true
-
-        opt = {}
-        for k, v of option
-            opt[k] = v
-        opt.scope = scope
-        opt.node = scope.$system
-
-        alight.core.watch name, callback, opt
+        alight.core.watch @.$system, name, callback, option
 
 
 ###
@@ -452,11 +443,7 @@ do ->
 
 do ->
     Scope::$compile = (src, option) ->
-        opt = {}
-        for k, v of option
-            opt[k] = v
-        opt.scope = @
-        alight.core.compile src, opt
+        alight.core.compile @, src, option
 
 
 Scope::$eval = (exp) ->
@@ -547,10 +534,7 @@ Scope::$scan = (option) ->
             callback: option
     else
         option = option or {}
-    alight.core.scan
-        node: @.$system
-        callback: option.callback
-        late: option.late
+    alight.core.scan @.$system.root, option
 
 
 alight.nextTick = do ->
