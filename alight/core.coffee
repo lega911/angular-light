@@ -368,8 +368,8 @@ Scope = (conf) ->
 
     scope = new Scope()
 
-    root = conf.root or alight.core.makeRoot()
-    scope.$system = alight.core.makeNode root, scope
+    root = conf.root or alight.core.root()
+    scope.$system = root.node scope
 
     scope
 
@@ -395,7 +395,7 @@ Scope::$new = (isolate) ->
         Child:: = parent
         scope = new Child
 
-    scope.$system = alight.core.makeNode parent.$system.root, scope
+    scope.$system = parent.$system.root.node scope
     scope.$parent = parent
     parent.$system.children.push scope
     scope
@@ -426,7 +426,7 @@ do ->
         if option is true
             option =
                 isArray: true
-        alight.core.watch @.$system, name, callback, option
+        @.$system.watch name, callback, option
 
 
 ###
@@ -443,12 +443,11 @@ do ->
 
 do ->
     Scope::$compile = (src, option) ->
-        alight.core.compile @, src, option
+        @.$system.compile src, option
 
 
 Scope::$eval = (exp) ->
     @.$compile(exp, {noBind: true})(@)
-
 
 
 Scope::$getValue = (name) ->
@@ -534,7 +533,7 @@ Scope::$scan = (option) ->
             callback: option
     else
         option = option or {}
-    alight.core.scan @.$system.root, option
+    @.$system.root.scan option
 
 
 alight.nextTick = do ->

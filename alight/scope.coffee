@@ -20,68 +20,83 @@ Scope::$scan
 # other
 Scope::$rebuildObserve
 
-
-
 makeWatch = (scope, $system) ->
     (name, callback, options) ->
         baseWatch name, callback, options, scope, $system
+
+# new API
+scope = {}
+root = alight.core.root(conf)
+node = root.node(scope)
+root.scan(option)
+
+node.watch(src, callback, option)
+node.compile(src, option)
+
 ###
 
 alight.core = self = {}
 
-self.makeRoot = (conf) ->
+
+self.root = (conf) ->
+    conf = conf or {}
+    new Root conf
+
+
+Root = (conf) ->
     conf = conf or {}
 
-    root =
-        nodeHead: null
-        nodeTail: null
-        private: {}
-        watchers:    # $finishBindings, $finishScan, $any
-            finishBinding: []
-            finishScan: []
-            any: []
-        status: null
+    @.nodeHead = null
+    @.nodeTail = null
+    @.private = {}
+    @.watchers =    # $finishBindings, $finishScan, $any
+        finishBinding: []
+        finishScan: []
+        any: []
+    @.status = null
 
-        scan_callbacks: []
+    @.scan_callbacks = []
 
-        # helpers
-        extraLoop: false
-        finishBinding_lock: false
-        lateScan: false
+    # helpers
+    @.extraLoop = false
+    @.finishBinding_lock = false
+    @.lateScan = false
 
     if conf.useObserver
-        root.obList = []  # contain fired watchers
-        root.observer = null
-        root.privateOb = null
+        @.obList = []  # contain fired watchers
+        @.observer = null
+        @.privateOb = null
 
-    root
+    @
 
 
-self.makeNode = (root, scope) ->
-    node =
-        # local
-        scope: scope
-        root: root
-        children: []
-        watchers: {}
-        watchList: []
-        destroy_callbacks: []
+Root::node = (scope) ->
+    new Node @, scope
 
-        lineActive: false
-        prevSibling: null
-        nextSibling: null
 
-        #
-        rwatchers:
-            any: []
-            finishScan: []
+Node = (root, scope) ->
+    # local
+    @.scope = scope
+    @.root = root
+    @.children = []
+    @.watchers = {}
+    @.watchList = []
+    @.destroy_callbacks = []
+
+    @.lineActive = false
+    @.prevSibling = null
+    @.nextSibling = null
+
+    #
+    @.rwatchers =
+        any: []
+        finishScan: []
 
     if root.observer
         # local
-        node.obFire = {}
-        node.ob = null
-
-    node
+        @.obFire = {}
+        @.ob = null
+    @
 
 
 WA = (callback) ->
@@ -102,7 +117,8 @@ watchAny = (node, key, callback) ->
     }
 
 
-self.watch = (node, name, callback, option) ->
+Node::watch = (name, callback, option) ->
+    node = @
     root = node.root
     scope = node.scope
 
@@ -158,7 +174,7 @@ self.watch = (node, name, callback, option) ->
                     isSimple: if option.watchText.simpleVariables then 2 else 0
                     simpleVariables: option.watchText.simpleVariables
             else
-                ce = self.compile scope, name,
+                ce = node.compile name,
                     noBind: true
                     full: true
                 exp = ce.fn
@@ -259,7 +275,8 @@ self.watch = (node, name, callback, option) ->
     r
 
 
-self.compile = (scope, src_exp, cfg) ->
+Node::compile = (src_exp, cfg) ->
+    scope = @.scope
     cfg = cfg or {}
     # make hash
     resp = {}
@@ -501,7 +518,8 @@ scan_core2 = (root, result) ->
     result.extraLoop = extraLoop
 
 
-self.scan = (root, cfg) ->
+Root::scan = (cfg) ->
+    root = @
     cfg = cfg or {}
     if cfg.callback
         root.scan_callbacks.push cfg.callback
@@ -511,7 +529,7 @@ self.scan = (root, cfg) ->
         root.lateScan = true
         alight.nextTick ->
             if root.lateScan
-                self.scan root
+                root.scan()
         return
     if root.status is 'scaning'
         root.extraLoop = true

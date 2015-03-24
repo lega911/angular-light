@@ -24,7 +24,7 @@ Test('$compile#0').run ($test, alight) ->
     $test.close()
 
 
-Test('$compileText#0').run ($test, alight) ->
+Test('$watchText#0', 'watch-text-0').run ($test, alight) ->
     $test.start 6
     scope = alight.Scope()
     scope.os =
