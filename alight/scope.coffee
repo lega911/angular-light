@@ -49,7 +49,7 @@ Root = (conf) ->
     @.nodeHead = null
     @.nodeTail = null
     @.private = {}
-    @.watchers =    # $finishBindings, $finishScan, $any
+    @.watchers =    # $finishBinding, $finishScan, $any
         finishBinding: []
         finishScan: []
         any: []
@@ -64,21 +64,29 @@ Root = (conf) ->
 
     if conf.useObserver
         @.obList = []  # contain fired watchers
-        @.observer = null
-        @.privateOb = null
-
+        @.observer = alight.observer.create()
+        @.privateOb = @.observer.observe @.private
     @
 
 
-Root::node = (scope) ->
-    new Node @, scope
+Root::destroy = ->
+    if @.observer
+        @.privateOb.destroy()
+        @.observer.destroy()
+    @.scan_callbacks.length = 0
+    @.watchers.finishBinding.length = 0
+    @.watchers.finishScan.length = 0
+    @.watchers.any.length = 0
 
 
-Node = (root, scope) ->
+Root::node = (scope, option) ->
+    new Node @, scope, option
+
+
+Node = (root, scope, option) ->
     # local
     @.scope = scope
     @.root = root
-    @.children = []
     @.watchers = {}
     @.watchList = []
     @.destroy_callbacks = []
@@ -95,8 +103,52 @@ Node = (root, scope) ->
     if root.observer
         # local
         @.obFire = {}
-        @.ob = null
+        @.ob = root.observer.observe scope, option
     @
+
+
+Node::destroy = ->
+    node = @
+    root = node.root
+
+    for fn in node.destroy_callbacks
+        fn()
+
+    # observer
+    if node.ob
+        for k, d of node.watchers
+            #if d.ob
+            #    node.ob.unwatch d.ob
+            if d.privateOb
+                root.privateOb.unwatch d.privateName, d.privateOb
+        node.ob.destroy()
+    node.obFire = null
+
+    #
+    node.destroy_callbacks.length = 0
+    node.watchList.length = 0
+    node.watchers.length = 0
+    node.watchers = {}
+
+    for wa in node.rwatchers.any
+        removeItem root.watchers.any, wa
+    for wa in node.rwatchers.finishScan
+        removeItem root.watchers.finishScan, wa
+
+    if node.lineActive
+        node.lineActive = false
+        p = node.prevSibling
+        n = node.nextSibling
+        if p
+            p.nextSibling = n
+        else
+            # first scope
+            root.nodeHead = n
+        if n
+            n.prevSibling = p
+        else
+            # last scope
+            root.nodeTail = p
 
 
 WA = (callback) ->
@@ -208,21 +260,19 @@ Node::watch = (name, callback, option) ->
                         d.isObserved = true
 
                         if option.private
-                            if not sys.privateOb
-                                sys.privateOb = rootSys.observer.observe sys.private,
-                                    keywords: ['$system', '$ns', '$parent']
-                            ob = sys.privateOb.watch privateName, ->
-                                if sys.obFire[key]
+                            d.privateName = privateName
+                            d.privateOb = root.privateOb.watch privateName, ->
+                                if node.obFire[key]
                                     return
-                                sys.obFire[key] = true
-                                rootSys.obList.push [scope, d]
+                                node.obFire[key] = true
+                                root.obList.push [node, d]
                         else
                             for variable in ce.simpleVariables
-                                ob = sys.ob.watch variable, ->
-                                    if sys.obFire[key]
+                                ob = node.ob.watch variable, ->
+                                    if node.obFire[key]
                                         return
-                                    sys.obFire[key] = true
-                                    rootSys.obList.push [scope, d]
+                                    node.obFire[key] = true
+                                    root.obList.push [node, d]
 
         if option.isArray and not isObserved
             if f$.isArray value
@@ -369,70 +419,6 @@ notEqual = (a, b) ->
     false
 
 
-scan_core = (top, result) ->
-    extraLoop = false
-    extraLoopFlag = false
-    changes = 0
-    total = 0
-    line = []
-    queue = [top]
-    while queue
-        scope = queue[0]
-        index = 1
-        while scope
-            sys = scope.$system
-            total += sys.watchList.length
-            for w in sys.watchList
-                result.src = w.src
-                last = w.value
-                value = w.exp scope
-                if last isnt value
-                    mutated = false
-                    if w.isArray
-                        a0 = f$.isArray last
-                        a1 = f$.isArray value
-                        if a0 is a1
-                            if a0
-                                if notEqual last, value
-                                    w.value = value.slice()
-                                    mutated = true
-                        else
-                            mutated = true
-                            if a1
-                                w.value = value.slice()
-                            else
-                                w.value = null
-                    else if w.deep
-                        if not alight.utilits.equal last, value
-                            mutated = true
-                            w.value = alight.utilits.clone value
-                    else
-                        mutated = true
-                        w.value = value
-
-                    if mutated
-                        mutated = false
-                        changes++
-                        for callback in w.callbacks.slice()
-                            if callback.call(scope, value) isnt '$scanNoChanges'
-                                extraLoopFlag = true
-                        if extraLoopFlag and w.extraLoop
-                            extraLoop = true
-                    if alight.debug.scan > 1
-                        console.log 'changed:', w.src
-
-            if sys.children.length
-                line.push sys.children
-            scope = queue[index++]
-        
-        queue = line.shift()
-
-    result.total = total
-    result.obTotal = 0
-    result.changes = changes
-    result.extraLoop = extraLoop
-
-
 scan_core2 = (root, result) ->
     extraLoop = false
     extraLoopFlag = false
@@ -443,11 +429,12 @@ scan_core2 = (root, result) ->
     # observed
     if root.observer
         root.observer.deliver()
-        for x in rootSys.obList
-            scope = x[0]
+        for x in root.obList
+            node = x[0]
             w = x[1]
+            scope = node.scope
 
-            scope.$system.obFire = {}
+            node.obFire = {}
 
             result.src = w.src
             last = w.value

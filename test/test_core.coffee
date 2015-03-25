@@ -808,9 +808,82 @@ Test('$watch private #0', 'watch-private-0').run ($test, alight) ->
                 $test.equal count, 2
                 $test.equal value, 7
 
+                root = scope.$system.root
                 scope.$destroy()
-                scope.$system.root.private.key = 11
+                root.private.key = 11
                 scope.$scan ->
                     $test.equal count, 2
                     $test.equal value, 7
+                    root.private.key = 15
                     $test.close()
+
+
+Test('$watch private #1', 'watch-private-1').run ($test, alight) ->
+    if not alight.debug.useObserver
+        return $test.close()
+    $test.start 17
+
+    _ob = []
+    _unob = []
+    alight.observer._objectObserve = (d, fn) ->
+        _ob.push d
+        Object.observe d, fn
+    alight.observer._objectUnobserve = (d, fn) ->
+        _unob.push d
+        Object.unobserve d, fn
+    #alight.observer._arrayObserve = Array.observe
+    #alight.observer._arrayUnobserve = Array.unobserve
+
+    scope = alight.Scope()
+
+    value = null
+    count = 0
+    scope.$watch 'key', (v) ->
+        count++
+        value = v
+    ,
+        private: true
+
+    fireCount = 0
+    do ->
+        p = scope.$system.root.privateOb
+        fire = scope.$system.root.privateOb.fire
+        scope.$system.root.privateOb.fire = (k, v) ->            
+            fireCount++
+            fire.call p, k, v
+
+    scope.$scan ->
+        $test.equal count, 0
+        $test.equal value, null
+        $test.equal fireCount, 0
+
+        scope.$system.root.private.key = 5
+        scope.$scan ->
+            $test.equal count, 1
+            $test.equal value, 5
+            $test.equal fireCount, 1
+
+            scope.$system.root.private.key = 7
+            scope.$scan ->
+                $test.equal count, 2
+                $test.equal value, 7
+                $test.equal fireCount, 2
+
+                root = scope.$system.root
+                scope.$destroy()
+                root.private.key = 11
+                scope.$scan ->
+                    $test.equal count, 2
+                    $test.equal value, 7
+                    $test.equal fireCount, 2
+                    root.private.key = 15
+
+                    setTimeout ->
+                        $test.equal fireCount, 2
+                        $test.equal _ob.length, 2
+                        $test.equal _unob.length, 2
+                        $test.equal _unob.indexOf(_ob[0]) >= 0, true
+                        $test.equal _unob.indexOf(_ob[1]) >= 0, true
+
+                        $test.close()
+                    , 100

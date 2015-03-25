@@ -17,6 +17,11 @@
 do ->
     alight.observer = self = {}
 
+    self._objectObserve = Object.observe
+    self._objectUnobserve = Object.unobserve
+    self._arrayObserve = Array.observe
+    self._arrayUnobserve = Array.unobserve
+
     self.support = ->
         if typeof WeakMap isnt 'function'
             return false
@@ -77,9 +82,9 @@ do ->
 
         if f$.isArray scope
             tree[$isArray] = null
-            Array.unobserve scope, node.observer.handler
+            self._arrayUnobserve scope, node.observer.handler
         else
-            Object.unobserve scope, node.observer.handler
+            self._objectUnobserve scope, node.observer.handler
 
         scopeTree = node.observer.treeByScope.get scope
         delete scopeTree[node.id]
@@ -148,9 +153,9 @@ do ->
             scopeTree[node.id] = tree
             if f$.isArray scope
                 tree[$isArray] = true
-                Array.observe scope, node.observer.handler
+                self._arrayObserve scope, node.observer.handler
             else
-                Object.observe scope, node.observer.handler
+                self._objectObserve scope, node.observer.handler
         null
 
 
@@ -190,7 +195,7 @@ do ->
         tree[$path] = ''
         tree[$scope] = scope
         scopeTree[node.id] = tree
-        Object.observe scope, node.observer.handler
+        self._objectObserve scope, node.observer.handler
 
         @
 

@@ -75,7 +75,7 @@ Test('$watch function/$any').run ($test, alight) ->
 						$test.equal col4, 1
 						$test.close()
 
-Test('$scan root').run ($test, alight) ->
+Test('$scan root #0', 'scan-root-0').run ($test, alight) ->
 	$test.start 15
 
 	c0 = 0

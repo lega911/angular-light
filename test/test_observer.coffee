@@ -385,7 +385,7 @@ Test('observer Scope').run ($test, alight) ->
                                     $test.close()
 
 
-Test('observer Scope#2').run ($test, alight) ->
+Test('observer Scope#2', 'observer-scope-2').run ($test, alight) ->
     # watch for parent model
     $test.start 8
 

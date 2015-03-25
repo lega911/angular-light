@@ -368,9 +368,18 @@ Scope = (conf) ->
 
     scope = new Scope()
 
-    root = conf.root or alight.core.root()
-    scope.$system = root.node scope
+    root = conf.root or alight.core.root
+        useObserver: (alight.debug.useObserver or conf.useObserver) and alight.observer.support()
+    scope.$system = root.node scope,
+        keywords: ['$system', '$parent', '$ns']
+    scope.$system.exIsRoot = true
+    scope.$system.exChildren = []
 
+    if scope.$system.ob
+        scope.$system.ob.rootEvent = (key, value) ->
+            for child in scope.$system.exChildren
+                child.$$rebuildObserve key, value
+            null
     scope
 
 alight.Scope = Scope
@@ -379,7 +388,7 @@ alight.Scope = Scope
 Scope::$$rebuildObserve = (key, value) ->
     scope = @
     scope.$system.ob.reobserve key
-    for child in scope.$system.children
+    for child in scope.$system.exChildren
         child.$$rebuildObserve key, value
     scope.$system.ob.fire key, value
 
@@ -395,9 +404,18 @@ Scope::$new = (isolate) ->
         Child:: = parent
         scope = new Child
 
-    scope.$system = parent.$system.root.node scope
+    scope.$system = parent.$system.root.node scope,
+        keywords: ['$system', '$parent', '$ns']
+    scope.$system.exChildren = []
     scope.$parent = parent
-    parent.$system.children.push scope
+
+    if scope.$system.ob
+        scope.$system.ob.rootEvent = (key, value) ->
+            for child in scope.$system.exChildren
+                child.$$rebuildObserve key, value
+            null
+
+    parent.$system.exChildren.push scope
     scope
 
 
@@ -467,6 +485,18 @@ Scope::$destroy = () ->
     node = scope.$system
     root = node.root
 
+    for child in node.exChildren
+        child.$destroy()
+
+    node.destroy()
+    if scope.$system.exIsRoot
+        root.destroy()
+
+    #scope.$system = null
+
+
+    ###
+
     # fire callbacks
     for cb in node.destroy_callbacks
         cb scope
@@ -519,6 +549,8 @@ Scope::$destroy = () ->
         node.rwatchers[key].length = 0
     cleanWatchAny 'any'
     cleanWatchAny 'finishScan'
+
+    ###
 
 
 Scope::$scanAsync = (callback) ->

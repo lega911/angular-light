@@ -197,7 +197,7 @@ Test('al-controller as syntax').run ($test, alight) ->
 	$test.close()
 
 
-Test('al-value on/off').run ($test, alight) ->
+Test('al-value on/off', 'al-value-on-off').run ($test, alight) ->
 	if typeof(CustomEvent) isnt 'function'
 		$test.close()
 		console.warn 'skip al-value on/off'
