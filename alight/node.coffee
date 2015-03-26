@@ -124,6 +124,7 @@ Node::destroy = ->
             if d.privateOb
                 root.privateOb.unwatch d.privateName, d.privateOb
         node.ob.destroy()
+        node.ob = null
     node.obFire = null
 
     #
@@ -310,16 +311,12 @@ Node::watch = (name, callback, option) ->
 
     d.callbacks.push callback
     r.stop = ->
-        i = d.callbacks.indexOf callback
-        if i >= 0
-            d.callbacks.splice i, 1
-            if d.callbacks.length isnt 0
-                return
-            # remove watch
-            delete node.watchers[key]
-            i = node.watchList.indexOf d
-            if i >= 0
-                node.watchList.splice i, 1
+        removeItem d.callbacks, callback
+        if d.callbacks.length isnt 0
+            return
+        # remove watch
+        delete node.watchers[key]
+        removeItem node.watchList, d
 
     if option.init
         callback r.value

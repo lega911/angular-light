@@ -220,9 +220,7 @@ do ->
             c = t[k]
             if not c
                 continue
-            i = c[$cbs].indexOf callback
-            if i>= 0
-                c[$cbs].splice i, 1
+            removeItem c[$cbs], callback
             t = c
         null
 
@@ -246,9 +244,7 @@ do ->
             throw 'Inactive observer'
         @.active = false
         cleanTree @, @.tree
-        i = @.observer.nodes.indexOf @
-        if i >= 0
-            @.observer.nodes.splice i, 1
+        removeItem @.observer.nodes, @
 
 
     Observer = ->

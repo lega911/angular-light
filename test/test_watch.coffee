@@ -101,3 +101,35 @@ Test('$watchText #4').run ($test, alight) ->
             $test.close()
 
 
+Test('$watch $destroy', 'watch-destroy').run ($test, alight) ->
+    $test.start 8
+
+    s0 = alight.Scope()
+    s1 = s0.$new()
+    s0.$new()
+    s2 = s1.$new()
+
+    c1 = 0
+    s1.$watch '$destroy', ->
+        c1++
+    c2 = 0
+    s2.$watch '$destroy', ->
+        c2++
+
+    $test.equal c1, 0
+    $test.equal c2, 0
+
+    s2.$destroy()
+    $test.equal c1, 0
+    $test.equal c2, 1
+
+    s0.$destroy()
+    $test.equal c1, 1
+    $test.equal c2, 1
+
+    s2.$destroy()
+    s1.$destroy()
+    $test.equal c1, 1
+    $test.equal c2, 1
+
+    $test.close()

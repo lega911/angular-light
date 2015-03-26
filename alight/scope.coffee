@@ -120,7 +120,10 @@ Scope::$destroy = () ->
     node = scope.$system
     root = node.root
 
-    for child in node.exChildren
+    if not scope.$system.exIsRoot
+        removeItem scope.$parent.$system.exChildren, scope
+
+    for child in node.exChildren.slice()
         child.$destroy()
 
     node.destroy()
