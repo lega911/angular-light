@@ -26,6 +26,7 @@ gulp.task('assemble', ['compile'], function() {
   var files = [
     './js/prefix.js',
     './js/fquery.js',
+    './tmp/node.js',
     './tmp/scope.js',
     './tmp/core.js',
     './tmp/watchText.js',
