@@ -502,25 +502,6 @@ Scope::$destroy = () ->
         cb scope
     node.destroy_callbacks.length = 0
 
-    if node.lineActive
-        node.lineActive = false
-        p = node.prevSibling
-        n = node.nextSibling
-        if p
-            p.nextSibling = n
-        else
-            # first scope
-            root.nodeHead = n
-        if n
-            n.prevSibling = p
-        else
-            # last scope
-            root.nodeTail = p
-
-    # remove children
-    for it in node.children.slice()
-        it.$destroy()
-
     # remove from parent
     if scope.$parent
         removeItem scope.$parent.$system.children, scope
@@ -529,26 +510,6 @@ Scope::$destroy = () ->
     scope.$parent = null
     node.watchers = {}
     node.watchList = []
-
-    # destroy observer
-    if node.ob
-        node.ob.destroy()
-        node.ob = null
-    #if node.privateOb  # root?
-    #    node.privateOb.destroy()
-    #    node.privateOb = null
-    #if sys.observer  # root?
-    #    sys.observer.destroy()
-    #    sys.observer.destroy = null
-
-    # remove watchAny
-    cleanWatchAny = (key) ->
-        lst = root.watchers[key]
-        for w in node.rwatchers[key]
-            removeItem lst, w
-        node.rwatchers[key].length = 0
-    cleanWatchAny 'any'
-    cleanWatchAny 'finishScan'
 
     ###
 
