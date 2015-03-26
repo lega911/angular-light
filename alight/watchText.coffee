@@ -67,6 +67,12 @@ do ->
         if alight.debug.watchText
             console.log '$watchText', expression
 
+        # test simple text
+        st = alight.utilits.compile.buildSimpleText expression, null
+        if st
+            return scope.$watch expression, callback,
+                watchText: st
+
         data = alight.utilits.parsText expression
 
         watchCount = 0
