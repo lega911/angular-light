@@ -32,6 +32,8 @@ root.scan(option)
 
 node.watch(src, callback, option)
 node.compile(src, option)
+node.destroy()
+root.destroy()
 
 ###
 
