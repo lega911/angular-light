@@ -471,8 +471,11 @@ alight.bootstrap = (input) ->
             scope = alight.Scope
                 prototype: input
 
-            for el in f$.find(document.body, input.$el)
-                alight.applyBindings scope, el
+            if input.$el instanceof HTMLElement
+                alight.applyBindings scope, input.$el
+            else
+                for el in f$.find(document.body, input.$el)
+                    alight.applyBindings scope, el
             return scope
         else
             alight.exceptionHandler 'Error in bootstrap', 'Error in bootstrap',

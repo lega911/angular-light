@@ -887,3 +887,25 @@ Test('$watch private #1', 'watch-private-1').run ($test, alight) ->
 
                         $test.close()
                     , 100
+
+
+Test('bootstrap $el', 'bootstrap-el').run ($test, alight) ->
+    $test.start 4
+
+    el = $("<div>{{data.name}}</div>")[0]
+
+    app = alight.bootstrap
+        $el: el
+        data:
+            name: 'Some text'
+        click: ->
+            @.data.name = 'Hello'
+
+    $test.equal app.data.name, 'Some text'
+    $test.equal el.innerText, 'Some text'
+
+    app.click()
+    app.$scan ->
+        $test.equal app.data.name, 'Hello'
+        $test.equal el.innerText, 'Hello'        
+        $test.close()

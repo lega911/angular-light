@@ -3,7 +3,13 @@ Scope = (conf) ->
     return @ if @ instanceof Scope
     conf = conf or {}
 
-    scope = new Scope()
+    if conf.prototype
+        scope = conf.prototype
+
+        for k, v of Scope::
+            scope[k] = v
+    else
+        scope = new Scope()
 
     root = conf.root or alight.core.root
         useObserver: (alight.debug.useObserver or conf.useObserver) and alight.observer.support()
