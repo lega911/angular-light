@@ -270,12 +270,15 @@ Node::watch = (name, callback, option) ->
                                 node.obFire[key] = true
                                 root.obList.push [node, d]
                         else
+                            d.obList = []
                             for variable in ce.simpleVariables
-                                ob = node.ob.watch variable, ->
-                                    if node.obFire[key]
-                                        return
-                                    node.obFire[key] = true
-                                    root.obList.push [node, d]
+                                d.obList.push
+                                    name: variable
+                                    callback: node.ob.watch variable, ->
+                                        if node.obFire[key]
+                                            return
+                                        node.obFire[key] = true
+                                        root.obList.push [node, d]
 
         if option.isArray and not isObserved
             if f$.isArray value
@@ -316,7 +319,18 @@ Node::watch = (name, callback, option) ->
             return
         # remove watch
         delete node.watchers[key]
-        removeItem node.watchList, d
+        if d.isObserved
+            # provate
+            if d.privateOb
+                root.privateOb.unwatch d.privateName, d.privateOb
+                d.privateOb = null
+            # usual
+            if d.obList
+                for t in d.obList
+                    node.ob.unwatch t.name, t.callback
+                d.obList = null
+        else
+            removeItem node.watchList, d
 
     if option.init
         callback r.value

@@ -43,6 +43,103 @@ Test('$watch #2').run ($test, alight) ->
     $test.close()
 
 
+Test('$watch #3', 'watch-3').run ($test, alight) ->
+    $test.start 20
+    scope = alight.Scope()
+    scope.data =
+        a: 'A'
+        b: 'B'
+
+    valueA = null
+    valueB = null
+    countA = 0
+    countB = 0
+    watchA = scope.$watch 'data.a', (value) ->
+        valueA = value
+        countA++
+    watchB = scope.$watch 'data.b', (value) ->
+        valueB = value
+        countB++
+
+    scope.$scan ->
+        $test.equal countA, 0
+        $test.equal valueA, null
+        $test.equal countB, 0
+        $test.equal valueB, null
+
+        scope.data.a = '3'
+        scope.$scan ->
+            $test.equal countA, 1
+            $test.equal valueA, '3'
+            $test.equal countB, 0
+            $test.equal valueB, null
+
+            scope.data.a = '3'
+            scope.data.b = 'X'
+            scope.$scan ->
+                $test.equal countA, 1
+                $test.equal valueA, '3'
+                $test.equal countB, 1
+                $test.equal valueB, 'X'
+
+                watchA.stop()
+                scope.data.a = 'Y'
+                scope.data.b = 'Z'
+                scope.$scan ->
+                    $test.equal countA, 1
+                    $test.equal valueA, '3'
+                    $test.equal countB, 2
+                    $test.equal valueB, 'Z'
+
+                    watchB.stop()
+                    scope.data.a = 'C'
+                    scope.data.b = 'D'
+                    scope.$scan ->
+                        $test.equal countA, 1
+                        $test.equal valueA, '3'
+                        $test.equal countB, 2
+                        $test.equal valueB, 'Z'
+                        $test.close()
+
+
+Test('$watch #4', 'watch-4').run ($test, alight) ->
+    if not alight.debug.useObserver
+        return $test.close()
+    $test.start 5
+    scope = alight.Scope()
+    scope.data =
+        a: 'A'
+        b: 'B'
+
+    count = 0
+    w = scope.$watch 'data.a', (value) ->
+        count++
+    wB = scope.$watch 'data.b', (value) ->
+
+    scope.$scan ->
+        $test.equal count, 0
+
+        scope.data.a = 'B'
+        scope.$scan ->
+            $test.equal count, 1
+
+            w.stop()
+            scope.data.a = 'C'
+
+            root = scope.$system.root
+            root.observer.deliver()
+            $test.equal root.obList.length, 0  # no observe events
+            scope.$scan ->
+                $test.equal count, 1
+
+                scope.$destroy()
+                scope.data.a = 'X'
+                scope.data.b = 'Y'
+                root.observer.deliver()
+                $test.equal root.obList.length, 0  # no observe events                
+                $test.close()
+
+
 Test('$watchArray').run ($test, alight) ->
     $test.start 12
     scope = alight.Scope()
@@ -376,7 +473,7 @@ Test('oneTime binding #1', 'one-time-binding-1').run ($test, alight) ->
     next()
 
 
-Test('oneTime binding #2').run ($test, alight) ->
+Test('oneTime binding #2', 'onetime-binding-2').run ($test, alight) ->
     $test.start 6
 
     exp = 'a{{::a}}-b{{::b}}-c{{::c}}!'
