@@ -48,36 +48,36 @@ self.root = (conf) ->
 Root = (conf) ->
     conf = conf or {}
 
-    @.nodeHead = null
-    @.nodeTail = null
-    @.private = {}
-    @.watchers =    # $finishBinding, $finishScan, $any
+    @nodeHead = null
+    @nodeTail = null
+    @private = {}
+    @watchers =    # $finishBinding, $finishScan, $any
         any: []
         finishBinding: []
         finishScan: []
         finishScanOnce: []
-    @.status = null
+    @status = null
 
     # helpers
-    @.extraLoop = false
-    @.finishBinding_lock = false
-    @.lateScan = false
+    @extraLoop = false
+    @finishBinding_lock = false
+    @lateScan = false
 
     if conf.useObserver
-        @.obList = []  # contain fired watchers
-        @.observer = alight.observer.create()
-        @.privateOb = @.observer.observe @.private
+        @obList = []  # contain fired watchers
+        @observer = alight.observer.create()
+        @privateOb = @observer.observe @private
     @
 
 
 Root::destroy = ->
-    if @.observer
-        @.privateOb.destroy()
-        @.observer.destroy()
-    @.watchers.any.length = 0
-    @.watchers.finishBinding.length = 0
-    @.watchers.finishScan.length = 0
-    @.watchers.finishScanOnce.length = 0
+    if @observer
+        @privateOb.destroy()
+        @observer.destroy()
+    @watchers.any.length = 0
+    @watchers.finishBinding.length = 0
+    @watchers.finishScan.length = 0
+    @watchers.finishScanOnce.length = 0
 
 
 Root::node = (scope, option) ->
@@ -86,25 +86,25 @@ Root::node = (scope, option) ->
 
 Node = (root, scope, option) ->
     # local
-    @.scope = scope
-    @.root = root
-    @.watchers = {}
-    @.watchList = []
-    @.destroy_callbacks = []
+    @scope = scope
+    @root = root
+    @watchers = {}
+    @watchList = []
+    @destroy_callbacks = []
 
-    @.lineActive = false
-    @.prevSibling = null
-    @.nextSibling = null
+    @lineActive = false
+    @prevSibling = null
+    @nextSibling = null
 
     #
-    @.rwatchers =
+    @rwatchers =
         any: []
         finishScan: []
 
     if root.observer
         # local
-        @.obFire = {}
-        @.ob = root.observer.observe scope, option
+        @obFire = {}
+        @ob = root.observer.observe scope, option
     @
 
 
@@ -156,7 +156,7 @@ Node::destroy = ->
 
 
 WA = (callback) ->
-    @.cb = callback
+    @cb = callback
 
 watchAny = (node, key, callback) ->
     root = node.root
@@ -342,7 +342,7 @@ Node::watch = (name, callback, option) ->
 
 
 Node::compile = (src_exp, cfg) ->
-    scope = @.scope
+    scope = @scope
     cfg = cfg or {}
     # make hash
     resp = {}

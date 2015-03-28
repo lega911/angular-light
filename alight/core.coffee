@@ -105,20 +105,20 @@ do ->
     ext.push
         code: 'init'
         fn: ->
-            if @.directive.init
-                @.result = @.directive.init(@.element, @.expression, @.scope, @.env) or {}
-            if not f$.isObject(@.result)
-                @.result = {}
+            if @directive.init
+                @result = @directive.init(@element, @expression, @scope, @env) or {}
+            if not f$.isObject(@result)
+                @result = {}
 
     ext.push
         code: 'templateUrl'
         fn: ->
             ds = @
-            if @.directive.templateUrl
-                callback = @.makeDeferred()
+            if @directive.templateUrl
+                callback = @makeDeferred()
                 f$.ajax
                     cache: true
-                    url: @.directive.templateUrl
+                    url: @directive.templateUrl
                     success: (html) ->
                         ds.directive.template = html
                         callback()
@@ -127,38 +127,38 @@ do ->
     ext.push
         code: 'template'
         fn: ->
-            if @.directive.template
-                if @.element.nodeType is 1
-                    f$.html @.element, @.directive.template
-                else if @.element.nodeType is 8
+            if @directive.template
+                if @element.nodeType is 1
+                    f$.html @element, @directive.template
+                else if @element.nodeType is 8
                     el = document.createElement 'p'
-                    el.innerHTML = @.directive.template.trimLeft()
+                    el.innerHTML = @directive.template.trimLeft()
                     el = el.firstChild
-                    f$.after @.element, el
-                    @.element = el
-                    if not @.directive.scope
-                        @.directive.scope = true
+                    f$.after @element, el
+                    @element = el
+                    if not @directive.scope
+                        @directive.scope = true
 
     ext.push
         code: 'scope'
         fn: ->
-            if @.directive.scope
-                parentScope = @.scope
-                @.scope = parentScope.$new(@.directive.scope is 'isolate')
-                @.result.owner = true
-                @.doBinding = true
+            if @directive.scope
+                parentScope = @scope
+                @scope = parentScope.$new(@directive.scope is 'isolate')
+                @result.owner = true
+                @doBinding = true
 
     ext.push
         code: 'link'
         fn: ->
-            if @.directive.link
-                @.directive.link(@.element, @.expression, @.scope, @.env)
+            if @directive.link
+                @directive.link(@element, @expression, @scope, @env)
 
     ext.push
         code: 'scopeBinding'
         fn: ->
-            if @.doBinding
-                alight.applyBindings @.scope, @.element, { skip_attr:@.env.skippedAttr() }
+            if @doBinding
+                alight.applyBindings @scope, @element, { skip_attr:@env.skippedAttr() }
 
 
 testDirective = do ->
@@ -272,16 +272,16 @@ process = do ->
     takeAttr = (name, skip) ->
         if arguments.length is 1
             skip = true
-        for attr in @.attributes
+        for attr in @attributes
             if attr.attrName isnt name
                 continue
             if skip
                 attr.skip = true
-            value = f$.attr @.element, name
+            value = f$.attr @element, name
             return value or true
 
     skippedAttr = ->
-        for attr in @.attributes
+        for attr in @attributes
             if not attr.skip
                 continue
             attr.attrName

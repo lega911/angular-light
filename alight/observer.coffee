@@ -163,18 +163,18 @@ do ->
         if not f$.isObject scope
             throw 'Only objects can be observed'
 
-        @.id = getId()
-        @.active = true
-        @.observer = observer
-        @.rootEvent = null
-        @.keywords = {}
+        @id = getId()
+        @active = true
+        @observer = observer
+        @rootEvent = null
+        @keywords = {}
         if keywords
             for k in keywords
-                @.keywords[k] = true
+                @keywords[k] = true
 
-        @.scope = scope
-        @.wtree = {}  # store callbacks by keys
-        @.tree = tree = {}   # scope, path, isArray
+        @scope = scope
+        @wtree = {}  # store callbacks by keys
+        @tree = tree = {}   # scope, path, isArray
 
         observer.nodes.push @
 
@@ -200,11 +200,11 @@ do ->
         @
 
     Node::watch = (key, callback) ->
-        if not @.active
+        if not @active
             throw 'Inactive observer'
-        t = @.wtree
+        t = @wtree
         for k in key.split '.'
-            if @.keywords[k]
+            if @keywords[k]
                 return  # keyword in path of key
             if not t[k]
                 t[k] = {}
@@ -215,7 +215,7 @@ do ->
         callback
 
     Node::unwatch = (key, callback) ->
-        t = @.wtree
+        t = @wtree
         for k in key.split '.'
             c = t[k]
             if not c
@@ -225,13 +225,13 @@ do ->
         null
 
     Node::reobserve = (key) ->
-        if @.tree[key]
-            cleanTree @, @.tree[key]
-        if isObjectOrArray @.scope[key]
+        if @tree[key]
+            cleanTree @, @tree[key]
+        if isObjectOrArray @scope[key]
             ensureTree @, key
 
     Node::fire = (key, value) ->
-        t = @.wtree
+        t = @wtree
         for k in key.split '.'
             t = t[k] or {}
         if t[$cbs]
@@ -240,18 +240,18 @@ do ->
         null
 
     Node::destroy = ->
-        if not @.active
+        if not @active
             throw 'Inactive observer'
-        @.active = false
-        cleanTree @, @.tree
-        removeItem @.observer.nodes, @
+        @active = false
+        cleanTree @, @tree
+        removeItem @observer.nodes, @
 
 
     Observer = ->
         observer = @
-        @.nodes = []
-        @.treeByScope = new WeakMap()  # store trees by scopes
-        @.handler = (changes) ->
+        @nodes = []
+        @treeByScope = new WeakMap()  # store trees by scopes
+        @handler = (changes) ->
             for ch in changes
                 scope = ch.object
 
@@ -302,9 +302,9 @@ do ->
         n
 
     Observer::deliver = ->
-        Object.deliverChangeRecords @.handler
+        Object.deliverChangeRecords @handler
     Observer::destroy = ->
-        for n in @.nodes.slice()
+        for n in @nodes.slice()
             n.destroy()
         null
 

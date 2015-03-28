@@ -87,7 +87,7 @@ Scope::$watch = (name, callback, option) ->
     if option is true
         option =
             isArray: true
-    @.$system.watch name, callback, option
+    @$system.watch name, callback, option
 
 
 ###
@@ -103,19 +103,19 @@ Scope::$watch = (name, callback, option) ->
 ###
 
 Scope::$compile = (src, option) ->
-    @.$system.compile src, option
+    @$system.compile src, option
 
 
 Scope::$eval = (exp) ->
-    @.$compile(exp, {noBind: true})(@)
+    @$compile(exp, {noBind: true})(@)
 
 
 Scope::$getValue = (name) ->
-    @.$eval name
+    @$eval name
 
 
 Scope::$setValue = (name, value) ->
-    fn = @.$compile name + ' = $value',
+    fn = @$compile name + ' = $value',
         input: ['$value']
         no_return: true
         noBind: true
@@ -160,7 +160,7 @@ Scope::$destroy = () ->
 
 
 Scope::$scanAsync = (callback) ->
-    @.$scan
+    @$scan
         late: true
         callback: callback
 
@@ -171,4 +171,4 @@ Scope::$scan = (option) ->
             callback: option
     else
         option = option or {}
-    @.$system.root.scan option
+    @$system.root.scan option
