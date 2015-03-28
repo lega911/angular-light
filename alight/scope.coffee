@@ -71,6 +71,7 @@ $watch
         $destroy
         $finishBinding
         $finishScan
+        $finishScanOnce
     callback:
         function
     option:

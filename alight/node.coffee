@@ -52,12 +52,11 @@ Root = (conf) ->
     @.nodeTail = null
     @.private = {}
     @.watchers =    # $finishBinding, $finishScan, $any
+        any: []
         finishBinding: []
         finishScan: []
-        any: []
+        finishScanOnce: []
     @.status = null
-
-    @.scan_callbacks = []
 
     # helpers
     @.extraLoop = false
@@ -75,10 +74,10 @@ Root::destroy = ->
     if @.observer
         @.privateOb.destroy()
         @.observer.destroy()
-    @.scan_callbacks.length = 0
+    @.watchers.any.length = 0
     @.watchers.finishBinding.length = 0
     @.watchers.finishScan.length = 0
-    @.watchers.any.length = 0
+    @.watchers.finishScanOnce.length = 0
 
 
 Root::node = (scope, option) ->
@@ -135,8 +134,10 @@ Node::destroy = ->
 
     for wa in node.rwatchers.any
         removeItem root.watchers.any, wa
+    node.rwatchers.any.length = 0
     for wa in node.rwatchers.finishScan
         removeItem root.watchers.finishScan, wa
+    node.rwatchers.finishScan.length = 0
 
     if node.lineActive
         node.lineActive = false
@@ -200,6 +201,8 @@ Node::watch = (name, callback, option) ->
             return watchAny node, 'any', callback
         if key is '$finishScan'
             return watchAny node, 'finishScan', callback
+        if key is '$finishScanOnce'
+            return root.watchers.finishScanOnce.push callback
         if key is '$destroy'
             return node.destroy_callbacks.push callback
         if key is '$finishBinding'
@@ -522,7 +525,7 @@ Root::scan = (cfg) ->
     root = @
     cfg = cfg or {}
     if cfg.callback
-        root.scan_callbacks.push cfg.callback
+        root.watchers.finishScanOnce.push cfg.callback
     if cfg.late
         if root.lateScan
             return
@@ -536,9 +539,9 @@ Root::scan = (cfg) ->
         return
     root.lateScan = false
     root.status = 'scaning'
-    # take scan_callbacks
-    scan_callbacks = root.scan_callbacks.slice()
-    root.scan_callbacks.length = 0
+    # take finishScanOnce
+    finishScanOnce = root.watchers.finishScanOnce.slice()
+    root.watchers.finishScanOnce.length = 0
 
 
     if alight.debug.scan
@@ -575,10 +578,10 @@ Root::scan = (cfg) ->
             result: result
     finally
         root.status = null
-        for callback in scan_callbacks
-            callback.call root
         for callback in root.watchers.finishScan
             callback()
+        for callback in finishScanOnce
+            callback.call root
 
     if mainLoop is 0
         throw 'Infinity loop detected'

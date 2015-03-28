@@ -174,7 +174,7 @@ do ->
                     break
             if not i
                 return
-            scope.$scan ->
+            scope.$watch '$finishScanOnce', ->
                 w.stop()
             if config.onStatic
                 config.onStatic()

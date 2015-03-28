@@ -641,15 +641,23 @@ Test('scope isolate').run ($test, alight) ->
     $test.close()
 
 
-Test('text-directive env.finally').run ($test, alight) ->
+Test('text-directive env.finally', 'text-directive-finally').run ($test, alight) ->
     env = null
     alight.text.test1 = (callback, text, scope, ienv) ->
         callback 'init'
         env = ienv
 
-    $test.start 6
+    $test.start 13
     dom = $ '<div>Text {{#test1}}</div>'
     scope = alight.Scope()
+
+    scanCount = 0
+    scope.$watch '$finishScan', ->
+        scanCount++
+
+    anyCount = 0
+    scope.$watch '$any', ->
+        anyCount++
 
     alight.applyBindings scope, dom[0]
 
@@ -658,18 +666,28 @@ Test('text-directive env.finally').run ($test, alight) ->
     $test.equal dictLen(scope.$system.watchers), 1
 
     env.setter 'two'
-    scope.$scan ->
+    scope.$scanAsync ->
+        $test.equal scanCount, 1
+        $test.equal anyCount, 1
         $test.equal dom.text(), 'Text two'
 
         env.setter 'three'
-        scope.$scan ->
+        scope.$scanAsync ->
+            $test.equal scanCount, 2
+            $test.equal anyCount, 2
             $test.equal dom.text(), 'Text three'
 
             env.finally 'four'
-            scope.$scan ->
-                $test.equal dom.text(), 'Text four'
-                $test.equal dictLen(scope.$system.watchers), 0
-                $test.close()
+            setTimeout ->
+                $test.equal scanCount, 2
+                $test.equal anyCount, 2
+                $test.equal dom.text(), 'Text three'
+
+                scope.$scanAsync ->
+                    $test.equal dom.text(), 'Text four'
+                    $test.equal dictLen(scope.$system.watchers), 0
+                    $test.close()
+            , 100
 
 
 Test('deferred process').run ($test, alight) ->
@@ -805,38 +823,62 @@ Test('$watch $any').run ($test, alight) ->
                     $test.close()
 
 
-Test('$watch $finishScan').run ($test, alight) ->
-    $test.start 8
+Test('$watch $finishScan', 'watch-finish-scan').run ($test, alight) ->
+    $test.start 20
     scope = alight.Scope()
 
     count0 = 0
     count1 = 0
+    count2 = 0
+    count3 = 0
 
     wa = scope.$watch '$finishScan', ->
         count0++
     scope.$watch '$finishScan', ->
         count1++
+    child = scope.$new()
+    wa2 = child.$watch '$finishScan', ->
+        count2++
+    child.$watch '$finishScan', ->
+        count3++
 
     $test.equal count0, 0
     $test.equal count1, 0
+    $test.equal count2, 0
+    $test.equal count3, 0
     scope.$scan()
     alight.nextTick ->
         $test.equal count0, 1
         $test.equal count1, 1
+        $test.equal count2, 1
+        $test.equal count3, 1
 
         wa.stop()
+        wa2.stop()
         scope.$scan()
         alight.nextTick ->
             $test.equal count0, 1
             $test.equal count1, 2
+            $test.equal count2, 1
+            $test.equal count3, 2
 
-            scope.$destroy()
+            child.$destroy()
             scope.$scan()
             alight.nextTick ->
                 $test.equal count0, 1
-                $test.equal count1, 2
+                $test.equal count1, 3
+                $test.equal count2, 1
+                $test.equal count3, 2
 
-                $test.close()
+                scope.$destroy()
+                scope.$scan()
+                alight.nextTick ->
+                    $test.equal count0, 1
+                    $test.equal count1, 3
+                    $test.equal count2, 1
+                    $test.equal count3, 2
+
+                    $test.close()
 
 
 Test('test dynamic read-only watch').run ($test, alight) ->
