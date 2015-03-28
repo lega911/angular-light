@@ -2,6 +2,7 @@
     Scope
         prototype
         parent
+        attachParent
         root
         useObserver
 
@@ -50,11 +51,16 @@ Scope = (conf) ->
     scope.$system.exIsRoot = isRoot
     scope.$system.exChildren = []
 
+    if conf.attachParent
+        scope.$parent = conf.attachParent
+        conf.attachParent.$system.exChildren.push scope
+
     if scope.$system.ob
         scope.$system.ob.rootEvent = (key, value) ->
             for child in scope.$system.exChildren
                 child.$$rebuildObserve key, value
             null
+
     scope
 
 alight.Scope = Scope
@@ -74,12 +80,12 @@ Scope::$new = (isolate) ->
     if isolate
         scope = alight.Scope
             root: parent.$system.root
+            attachParent: parent
     else
         scope = alight.Scope
             parent: parent
+            attachParent: parent
 
-    scope.$parent = parent
-    parent.$system.exChildren.push scope
     scope
 
 

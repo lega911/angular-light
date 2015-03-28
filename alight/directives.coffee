@@ -698,7 +698,7 @@ dirs.with = (element, name, scope, env) ->
             child = alight.Scope
                 prototype: value
                 root: scope.$system.root
-            child.$parent = scope
+                attachParent: scope
             alight.applyBindings child, activeElement, { skip_attr:env.skippedAttr() }
         removeDom: (element) ->
             f$.remove element
