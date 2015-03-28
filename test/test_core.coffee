@@ -369,16 +369,24 @@ Test('test-take-attr').run ($test, alight) ->
 
 
 Test('text-directive #2').run ($test, alight) ->
-    $test.start 1
+    $test.start 2
 
     alight.text.test0 = (cb, exp, scope) ->
         cb scope.$eval exp
 
     scope = alight.Scope()
+    child = scope.$new()
+    child.$ns =
+        text:
+            test0: (cb, exp, scope) ->
+                cb 'inner:' + scope.$eval exp
+
     scope.a = 'Hello'
     scope.b = 'world'
     w = scope.$watchText '{{a}} {{#test0 b}} {{#test0 0}}!', ->
+    w2 = child.$watchText '{{a}} {{#test0 b}} {{#test0 0}}!', ->
     $test.equal w.value, 'Hello world 0!'
+    $test.equal w2.value, 'Hello inner:world inner:0!'
     $test.close()
 
 

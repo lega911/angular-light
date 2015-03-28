@@ -39,7 +39,11 @@ do ->
             dirName = exp.slice 1, i
             exp = exp.slice i
 
-        dir = alight.text[dirName]
+        scope = conf.scope
+        if scope.$ns and scope.$ns.text
+            dir = scope.$ns.text[dirName]
+        else
+            dir = alight.text[dirName]
         if not dir
             throw 'No directive alight.text.' + dirName
 
@@ -58,7 +62,7 @@ do ->
                 point.type = 'text'
                 conf.finally()
 
-        dir env.setter, exp, conf.scope, env
+        dir env.setter, exp, scope, env
             
 
     alight.Scope::$watchText = (expression, callback, config) ->
