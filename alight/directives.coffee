@@ -295,44 +295,46 @@ alight.directives.bo.ifnot = make_boif false
 dirs.if =
     priority: 700
     init: (element, name, scope, env) ->
-        item = null
-        child = null
-        base_element = null
-        top_element = null
-        init_value = false
-
         self =
-            direction: true
             owner: true
+            item: null
+            child: null
+            base_element: null
+            top_element: null
+            init_value: false
             start: ->
                 self.prepare()
                 self.watchModel()
                 self.initUpdate()
             prepare: ->
-                base_element = element
-                top_element = f$.createComment " #{env.attrName}: #{name} "
-                f$.before element, top_element
+                self.base_element = element
+                self.top_element = f$.createComment " #{env.attrName}: #{name} "
+                f$.before element, self.top_element
                 f$.remove element
             updateDom: (value) ->
-                if !value is self.direction
-                    if not child
-                        return
-                    child.$destroy()
-                    self.removeDom item
-                    child = null
-                    item = null
+                if value
+                    self.insertBlock value
                 else
-                    if child
-                        return
-                    item = f$.clone base_element
-                    self.insertDom top_element, item
-                    child = scope.$new()
-                    alight.applyBindings child, item, { skip_attr:env.skippedAttr() }
+                    self.removeBlock()
+            removeBlock: ->
+                if not self.child
+                    return
+                self.child.$destroy()
+                self.removeDom self.item
+                self.child = null
+                self.item = null
+            insertBlock: ->
+                if self.child
+                    return
+                self.item = f$.clone self.base_element
+                self.insertDom self.top_element, self.item
+                self.child = scope.$new()
+                alight.applyBindings self.child, self.item, { skip_attr:env.skippedAttr() }
             watchModel: ->
                 w = scope.$watch name, self.updateDom, { readOnly:true }
-                init_value = !!w.value
+                self.init_value = w.value
             initUpdate: ->
-                self.updateDom init_value
+                self.updateDom self.init_value
             removeDom: (element) ->
                 f$.remove element
             insertDom: (base, element) ->
@@ -342,9 +344,13 @@ dirs.if =
 dirs.ifnot =
     priority: 700
     init: (element, name, scope, env) ->
-        dirs = alight.directives.al.if.init.apply @, arguments
-        dirs.direction = false
-        dirs
+        self = alight.directives.al.if.init.apply @, arguments
+        self.updateDom = (value) ->
+            if value
+                self.removeBlock()
+            else
+                self.insertBlock()
+        self
 
 
 dirs.show = (element, exp, scope) ->
@@ -525,12 +531,6 @@ dirs.src = (element, name, scope) ->
     setter r.value
 
 
-alight.directives.bo.src = (element, name, scope) ->
-    value = scope.$evalText name
-    if value
-        f$.attr element, 'src', value
-
-
 dirs.enable = (element, exp, scope) ->
     setter = (value) ->
         if value
@@ -659,50 +659,20 @@ dirs.style = (element, name, scope) ->
         init: true
 
 
-dirs.with = (element, name, scope, env) ->
-    baseElement = null
-    topElement = null
-    child = null
-    activeElement = null
-    initValue = null
-    self =
-        owner: true
-        start: ->
-            self.prepare()
-            self.watchModel()
-            self.initUpdate()
-        prepare: ->
-            baseElement = element
-            topElement = f$.createComment " #{env.attrName}: #{name} "
-            f$.before element, topElement
-            f$.remove element
-        watchModel: ->
-            w = scope.$watch name, (value) ->
+dirs.with =
+    priority: 500
+    init: (element, name, scope, env) ->
+        self = dirs.if.init element, name, scope, env
+        self.insertBlock = (value) ->
+            if self.child
                 self.removeBlock()
-                self.insertBlock value
-            initValue = w.value
-            scope.$watch '$destroy', ->
-                self.removeBlock()
-        removeBlock: ->
-            if child
-                child.$destroy()
-                child = null
-            if activeElement
-                self.removeDom activeElement
-                activeElement = null
-        insertBlock: (value) ->
             if not f$.isObject value
                 return
-            activeElement = f$.clone baseElement
-            self.insertDom topElement, activeElement
-            child = alight.Scope
+            self.item = f$.clone self.base_element
+            self.insertDom self.top_element, self.item
+            self.child = alight.Scope
                 prototype: value
                 root: scope.$system.root
                 attachParent: scope
-            alight.applyBindings child, activeElement, { skip_attr:env.skippedAttr() }
-        removeDom: (element) ->
-            f$.remove element
-        insertDom: (base, element) ->
-            f$.after base, element
-        initUpdate: ->
-            self.insertBlock initValue
+            alight.applyBindings self.child, self.item, { skip_attr:env.skippedAttr() }
+        self
