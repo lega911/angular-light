@@ -1,21 +1,53 @@
+###
+    Scope
+        prototype
+        parent
+        root
+        useObserver
 
+###
 Scope = (conf) ->
     return @ if @ instanceof Scope
     conf = conf or {}
 
     if conf.prototype
         scope = conf.prototype
+        if not scope.$new
+            if Object.setPrototypeOf
+                proto = scope
+                objectProto = ({}).__proto__
+                while proto.__proto__ isnt objectProto
+                    proto = proto.__proto__
 
-        for k, v of Scope::
-            scope[k] = v
+                Object.setPrototypeOf proto, Scope.prototype
+            else
+                for k, v of Scope::
+                    scope[k] = v
     else
         scope = new Scope()
 
-    root = conf.root or alight.core.root
-        useObserver: (alight.debug.useObserver or conf.useObserver) and alight.observer.support()
+    if conf.parent
+        if conf.root
+            throw 'Conflict new Scope, root and parent together'
+        parent = conf.parent
+        if not parent.$system.exChildConstructor
+            parent.$system.exChildConstructor = ->
+            parent.$system.exChildConstructor:: = parent
+        scope = new parent.$system.exChildConstructor
+        root = parent.$system.root
+        isRoot = false
+
+    if conf.root
+        root = conf.root
+        isRoot = false
+    if not root
+        root = alight.core.root
+            useObserver: (alight.debug.useObserver or conf.useObserver) and alight.observer.support()
+        isRoot = true
+
     scope.$system = root.node scope,
         keywords: ['$system', '$parent', '$ns']
-    scope.$system.exIsRoot = true
+    scope.$system.exIsRoot = isRoot
     scope.$system.exChildren = []
 
     if scope.$system.ob
@@ -43,22 +75,10 @@ Scope::$new = (isolate) ->
         scope = alight.Scope
             root: parent.$system.root
     else
-        if not parent.$system.exChildConstructor
-            parent.$system.exChildConstructor = ->
-            parent.$system.exChildConstructor:: = parent
-        scope = new parent.$system.exChildConstructor
+        scope = alight.Scope
+            parent: parent
 
-    scope.$system = parent.$system.root.node scope,
-        keywords: ['$system', '$parent', '$ns']
-    scope.$system.exChildren = []
     scope.$parent = parent
-
-    if scope.$system.ob
-        scope.$system.ob.rootEvent = (key, value) ->
-            for child in scope.$system.exChildren
-                child.$$rebuildObserve key, value
-            null
-
     parent.$system.exChildren.push scope
     scope
 

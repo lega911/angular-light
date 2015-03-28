@@ -416,7 +416,6 @@ dirs.include =
         initValue = null
         self =
             owner: true
-            topElement: null
             start: ->
                 self.prepare()
                 self.watchModel()
@@ -658,3 +657,52 @@ dirs.style = (element, name, scope) ->
     scope.$watch name, setter,
         deep: true
         init: true
+
+
+dirs.with = (element, name, scope, env) ->
+    baseElement = null
+    topElement = null
+    child = null
+    activeElement = null
+    initValue = null
+    self =
+        owner: true
+        start: ->
+            self.prepare()
+            self.watchModel()
+            self.initUpdate()
+        prepare: ->
+            baseElement = element
+            topElement = f$.createComment " #{env.attrName}: #{name} "
+            f$.before element, topElement
+            f$.remove element
+        watchModel: ->
+            w = scope.$watch name, (value) ->
+                self.removeBlock()
+                self.insertBlock value
+            initValue = w.value
+            scope.$watch '$destroy', ->
+                self.removeBlock()
+        removeBlock: ->
+            if child
+                child.$destroy()
+                child = null
+            if activeElement
+                self.removeDom activeElement
+                activeElement = null
+        insertBlock: (value) ->
+            if not f$.isObject value
+                return
+            activeElement = f$.clone baseElement
+            self.insertDom topElement, activeElement
+            child = alight.Scope
+                prototype: value
+                root: scope.$system.root
+            child.$parent = scope
+            alight.applyBindings child, activeElement, { skip_attr:env.skippedAttr() }
+        removeDom: (element) ->
+            f$.remove element
+        insertDom: (base, element) ->
+            f$.after base, element
+        initUpdate: ->
+            self.insertBlock initValue

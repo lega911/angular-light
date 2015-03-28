@@ -64,10 +64,8 @@ alight.utilits.clone = clone = (d) ->
         # Object
         r = {}
         for k, v of d
-            if k is '$alite_id'  # specific attribute
+            if k[0] is '$'  # specific attribute
                 continue
-            if k is '$$observer'
-                continue                
             r[k] = clone v
         return r
     return d
