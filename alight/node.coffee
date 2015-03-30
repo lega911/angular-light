@@ -445,7 +445,9 @@ scan_core2 = (root, result) ->
     # observed
     if root.observer
         root.observer.deliver()
-        for x in root.obList
+        obList = root.obList
+        root.obList = []
+        for x in obList
             node = x[0]
             w = x[1]
             scope = node.scope
@@ -465,8 +467,7 @@ scan_core2 = (root, result) ->
                 if extraLoopFlag and w.extraLoop
                     extraLoop = true
 
-        obTotal += root.obList.length
-        root.obList.length = 0
+        obTotal += obList.length
 
     node = root.nodeHead
     while node
@@ -474,7 +475,7 @@ scan_core2 = (root, result) ->
 
         # default watchers
         total += node.watchList.length
-        for w in node.watchList
+        for w in node.watchList.slice()
             result.src = w.src
             last = w.value
             value = w.exp scope

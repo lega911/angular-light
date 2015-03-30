@@ -3,15 +3,10 @@ alight.text.bindonce = (callback, expression, scope, env) ->
     env.finally scope.$eval expression
 
 alight.text.oneTimeBinding = (callback, expression, scope, env) ->
-    setted = false
     w = scope.$watch expression, (value) ->
         if value is undefined
             return
-        if setted
-            return
-        setted = true
-        scope.$scan ->
-            w.stop()
+        w.stop()
         env.finally value
     ,
         init: true
@@ -658,7 +653,10 @@ dirs.style = (element, name, scope) ->
         deep: true
         init: true
 
-
+###
+    al-with="some.long.path"
+    al-with="some.long.path as item"
+###
 dirs.with =
     priority: 500
     init: (element, name, scope, env) ->
