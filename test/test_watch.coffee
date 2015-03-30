@@ -1,8 +1,8 @@
 
 
 # test $watchText
-Test('$watchText #0').run ($test, alight) ->
-    $test.start 2
+Test('$watchText #1', 'watch-text-1').run ($test, alight) ->
+    $test.start 5
     scope = alight.Scope()
     scope.one = 'one'
 
@@ -10,17 +10,26 @@ Test('$watchText #0').run ($test, alight) ->
     scope.$watchText '{{one}} {{two}}', (value) ->
         result = value
 
+    count = 0
+    scope.$watch ->
+        count++
+        null
+    , ->
+
+    $test.equal count, 1
     scope.two = 'two'
     scope.$scan ->
-        $test.check result is 'one two'
+        $test.equal result, 'one two'
+        $test.equal count, 3
 
         scope.two = 'three'
         scope.$scan ->
-            $test.check result is 'one three'
+            $test.equal result, 'one three'
+            $test.equal count, 5
             $test.close()
 
 
-Test('$watchText #1').run ($test, alight) ->
+Test('$watchText #1b').run ($test, alight) ->
     $test.start 2
     scope = alight.Scope()
     scope.data =
@@ -133,3 +142,40 @@ Test('$watch $destroy', 'watch-destroy').run ($test, alight) ->
     $test.equal c2, 1
 
     $test.close()
+
+
+Test('$watchText #5', 'watch-text-5').run ($test, alight) ->
+    $test.start 10
+
+    el = $('<div>{{one}} {{two}}</div>')[0]
+    scope = alight.Scope()
+    scope.one = 'A'
+
+    alight.applyBindings scope, el
+
+    count = 0
+    scope.$watch ->
+        count++
+        null
+    , ->
+
+    $test.equal count, 1
+    $test.equal el.innerHTML, 'A '
+    scope.$scan ->
+        $test.equal count, 2
+        $test.equal el.innerHTML, 'A '
+
+        scope.one = 'X'
+        scope.$scan ->
+            $test.equal count, 3
+            $test.equal el.innerHTML, 'X '
+
+            scope.two = 'Y'
+            scope.$scan ->
+                $test.equal count, 4
+                $test.equal el.innerHTML, 'X Y'
+
+                scope.$scan ->
+                    $test.equal count, 5
+                    $test.equal el.innerHTML, 'X Y'
+                    $test.close()

@@ -522,7 +522,8 @@ dirs.src = (element, name, scope) ->
         if not value
             value = ''
         f$.attr element, 'src', value
-    r = scope.$watchText name, setter, { readOnly:true }
+        '$scanNoChanges'
+    r = scope.$watchText name, setter
     setter r.value
 
 

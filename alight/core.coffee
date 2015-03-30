@@ -205,8 +205,8 @@ attrBinding = (element, value, scope, attrName) ->
 
     setter = (result) ->
         f$.attr element, attrName, result
-    w = scope.$watchText text, setter,
-        readOnly: true
+        '$scanNoChanges'
+    w = scope.$watchText text, setter
     setter w.value
 
 
@@ -216,8 +216,8 @@ textBinding = (scope, node) ->
         return
     setter = (result) ->
         node.nodeValue = result
-    w = scope.$watchText text, setter,
-        readOnly: true
+        '$scanNoChanges'
+    w = scope.$watchText text, setter
     setter w.value
 
 
