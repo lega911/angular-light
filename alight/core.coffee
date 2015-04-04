@@ -1,8 +1,8 @@
 # Angular light
-# version: 0.8.32 / 2015-03-30
+# version: 0.8.33 / 2015-04-04
 
 # init
-alight.version = '0.8.32'
+alight.version = '0.8.33'
 alight.debug =
     useObserver: false
     observer: 0
@@ -13,7 +13,7 @@ alight.debug =
     parser: false
 alight.controllers = {}
 alight.filters = {}
-alight.utilits = {}
+alight.utilits = alight.utils = {}
 alight.directives =
     al: {}
     bo: {}
@@ -210,7 +210,7 @@ attrBinding = (element, value, scope, attrName) ->
     setter w.value
 
 
-textBinding = (scope, node) ->
+bindText = (scope, node) ->
     text = node.data
     if text.indexOf(alight.utilits.pars_start_tag) < 0
         return
@@ -268,7 +268,7 @@ bindComment = (scope, element) ->
             element: element
 
 
-process = do ->
+bindElement = do ->
     takeAttr = (name, skip) ->
         if arguments.length is 1
             skip = true
@@ -351,15 +351,22 @@ process = do ->
             for node in f$.childNodes element
                 if not node
                     continue
-                fn = nodeTypeBind[node.nodeType]
-                if fn
-                    fn scope, node
+                bindNode scope, node
         null
 
+
 nodeTypeBind =
-    1: process      # element
-    3: textBinding  # text
+    1: bindElement      # element
+    3: bindText  # text
     8: bindComment  # comment
+
+
+bindNode = (scope, node, option) ->
+    if alight.utils.getData node, 'skipBinding'
+        return
+    fn = nodeTypeBind[node.nodeType]
+    if fn
+        fn scope, node, option
 
 
 alight.nextTick = do ->
@@ -423,7 +430,7 @@ alight.applyBindings = (scope, element, config) ->
 
     config = config or {}
 
-    process scope, element, config
+    bindNode scope, element, config
     
     if finishBinding
         root.finishBinding_lock = false

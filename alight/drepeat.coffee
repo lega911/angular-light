@@ -13,6 +13,7 @@
 
 alight.directives.al.repeat =
     priority: 1000
+    restrict: 'AM'
     init: (element, exp, scope, env) ->
         self =
             owner: true
@@ -20,17 +21,19 @@ alight.directives.al.repeat =
                 self.prepare()
                 self.parsExpression()
                 self.prepareDom()
+                self.buildUpdateDom()
                 self.watchModel()
                 self.initUpdateDom()
 
             prepare: ->
                 # get controller
+                self.childController = null
+                if element.nodeType is 8
+                    return
                 controllerName = env.takeAttr 'al-controller'
                 if controllerName
                     alController = alight.directives.al.controller.init null, controllerName, null
                     self.childController = alController.callController
-                else
-                    self.childController = null
 
             parsExpression: ->
                 s = exp
@@ -62,10 +65,27 @@ alight.directives.al.repeat =
                 self.updateDom self.watch.value
 
             prepareDom: ->
-                self.base_element = element
-                self.top_element = f$.createComment " #{exp} "
-                f$.before element, self.top_element
-                f$.remove element
+                if element.nodeType is 8
+                    self.top_element = element
+                    self.element_list = element_list = []
+                    el = element.nextSibling
+                    while el
+                        if el.nodeType is 8
+                            t = el.nodeValue
+                            if t.trim() is '/directive: al-repeat'
+                                alight.utils.setData el, 'skipBinding', true
+                                break
+                        element_list.push el
+                        el = el.nextSibling
+                    for el in element_list
+                        f$.remove el
+                        alight.utils.setData el, 'skipBinding', true
+                    null
+                else
+                    self.base_element = element
+                    self.top_element = f$.createComment " #{exp} "
+                    f$.before element, self.top_element
+                    f$.remove element
 
             makeChild: (item, index, list) ->
                 child_scope = scope.$new()
@@ -87,23 +107,44 @@ alight.directives.al.repeat =
                     f$.after it.after, it.element
                 null
 
-            updateDom: do ->
-                nodes = []
-                node_by_id = null
-                
-                node_set = null
-                node_get = null
-                node_del = null
-                index = 0
+            buildUpdateDom: ->
+                self.updateDom = do ->
+                    nodes = []
+                    index = 0
 
-                (list) ->
-                    # make mapper
-                    if not node_get
-                        if self.trackExpression is '$index'
+                    if self.trackExpression is '$index'
+                        node_by_id = {}
+                        node_get = (item) ->
+                            $id = index
+                            node_by_id[$id] or null
+
+                        node_del = (node) ->
+                            $id = node.$id
+                            if $id
+                                delete node_by_id[$id]
+                            null
+
+                        node_set = (item, node) ->
+                            $id = index
+                            node.$id = $id
+                            node_by_id[$id] = node
+                            null
+                    else
+                        if self.trackExpression
                             node_by_id = {}
+                            _getId = scope.$compile self.trackExpression, { input:['$id', self.nameOfKey] }
+                            _id = (item) ->
+                                id = item.$alite_id
+                                if id
+                                    return id
+                                id = item.$alite_id = alight.utilits.getId()
+                                id
+
                             node_get = (item) ->
-                                $id = index
-                                node_by_id[$id] or null
+                                $id = _getId _id, item
+                                if $id
+                                    return node_by_id[$id]
+                                null
 
                             node_del = (node) ->
                                 $id = node.$id
@@ -112,23 +153,29 @@ alight.directives.al.repeat =
                                 null
 
                             node_set = (item, node) ->
-                                $id = index
+                                $id = _getId _id, item
                                 node.$id = $id
                                 node_by_id[$id] = node
                                 null
-                        else
-                            if self.trackExpression
-                                node_by_id = {}
-                                _getId = scope.$compile self.trackExpression, { input:['$id', self.nameOfKey] }
-                                _id = (item) ->
-                                    id = item.$alite_id
-                                    if id
-                                        return id
-                                    id = item.$alite_id = alight.utilits.getId()
-                                    id
 
+                        else
+                            if window.Map
+                                node_by_id = new Map()
                                 node_get = (item) ->
-                                    $id = _getId _id, item
+                                    node_by_id.get item
+
+                                node_del = (node) ->
+                                    node_by_id.delete node.item
+                                    null
+
+                                node_set = (item, node) ->
+                                    node_by_id.set item, node
+                                    null
+
+                            else
+                                node_by_id = {}
+                                node_get = (item) ->
+                                    $id = item.$alite_id
                                     if $id
                                         return node_by_id[$id]
                                     null
@@ -140,162 +187,251 @@ alight.directives.al.repeat =
                                     null
 
                                 node_set = (item, node) ->
-                                    $id = _getId _id, item
+                                    $id = alight.utilits.getId()
+                                    item.$alite_id = $id
                                     node.$id = $id
                                     node_by_id[$id] = node
                                     null
 
-                            else
-                                if window.Map
-                                    node_by_id = new Map()
-                                    node_get = (item) ->
-                                        node_by_id.get item
+                    if self.element_list
+                        (list) ->
+                            if not list or not list.length  # is it list?
+                                list = []
 
-                                    node_del = (node) ->
-                                        node_by_id.delete node.item
-                                        null
+                            last_element = self.top_element
 
-                                    node_set = (item, node) ->
-                                        node_by_id.set item, node
-                                        null
+                            dom_inserts = []
+                            nodes2 = []
 
-                                else
-                                    node_by_id = {}
-                                    node_get = (item) ->
-                                        $id = item.$alite_id
-                                        if $id
-                                            return node_by_id[$id]
-                                        null
+                            # find removed
+                            for node in nodes
+                                node.active = false
+                            for item, index in list
+                                node = node_get item
+                                if node
+                                    node.active = true
 
-                                    node_del = (node) ->
-                                        $id = node.$id
-                                        if $id
-                                            delete node_by_id[$id]
-                                        null
+                            dom_removes = []
+                            for node in nodes
+                                if node.active
+                                    continue
+                                if node.prev
+                                    node.prev.next = node.next
+                                if node.next
+                                    node.next.prev = node.prev
+                                node_del node
+                                node.scope.$destroy()
+                                for el in node.element_list
+                                    dom_removes.push el
 
-                                    node_set = (item, node) ->
-                                        $id = alight.utilits.getId()
-                                        item.$alite_id = $id
-                                        node.$id = $id
-                                        node_by_id[$id] = node
-                                        null
+                            applyList = []
+                            # change positions and make new children
+                            pid = null
+                            child_scope
+                            prev_node = null
+                            elLast = self.element_list.length - 1
+                            for item, index in list
+                                item_value = item
+                                item = item or {}
 
-                    if not list or not list.length  # is it list?
-                        list = []
+                                node = node_get item
 
-                    last_element = self.top_element
+                                if node
+                                    self.updateChild node.scope, item, index, list
+                                    if node.prev is prev_node
+                                        # next loop
+                                        prev_node = node
+                                        last_element = node.element_list[elLast]
+                                        node.active = true
+                                        nodes2.push node
+                                        continue
 
-                    dom_inserts = []
-                    nodes2 = []
+                                    # make insert
+                                    node.prev = prev_node
+                                    if prev_node
+                                        prev_node.next = node
+                                    for el in node.element_list
+                                        dom_inserts.push
+                                            element: el
+                                            after: last_element
+                                        last_element = el
 
-                    # find removed
-                    for node in nodes
-                        node.active = false
-                    for item, index in list
-                        node = node_get item
-                        if node
-                            node.active = true
+                                    # next loop
+                                    prev_node = node
+                                    node.active = true
+                                    nodes2.push node
+                                    continue
 
-                    dom_removes = for node in nodes
-                        if node.active
-                            continue
-                        if node.prev
-                            node.prev.next = node.next
-                        if node.next
-                            node.next.prev = node.prev
-                        node_del node
-                        node.scope.$destroy()
-                        node.element
+                                child_scope = self.makeChild item_value, index, list
 
+                                element_list = for bel in self.element_list
+                                    el = f$.clone bel
+                                    applyList.push [child_scope, el]
 
-                    applyList = []
-                    # change positions and make new children
-                    pid = null
-                    child_scope
-                    prev_node = null
-                    for item, index in list
-                        item_value = item
-                        item = item or {}
+                                    dom_inserts.push
+                                        element: el
+                                        after: last_element
+                                    last_element = el
 
-                        node = node_get item
+                                node =
+                                    scope: child_scope
+                                    element_list: element_list
+                                    prev: prev_node
+                                    next: null
+                                    active: true
+                                    item: item
 
-                        if node
-                            self.updateChild node.scope, item, index, list
-                            if node.prev is prev_node
-                                # next loop
+                                node_set item, node
+                                if prev_node
+                                    next2 = prev_node.next
+                                    prev_node.next = node
+                                    node.next = next2
+                                    if next2
+                                        next2.prev = node
+                                else if index is 0 and nodes[0]
+                                    next2 = nodes[0]
+                                    node.next = next2
+                                    next2.prev = node
+
+                                # for next loop
                                 prev_node = node
-                                last_element = node.element
-                                node.active = true
                                 nodes2.push node
-                                continue
 
-                            # make insert
-                            node.prev = prev_node
-                            if prev_node
-                                prev_node.next = node
-                            dom_inserts.push
-                                element: node.element
-                                after: if prev_node then prev_node.element else self.top_element
-                            
-                            # next loop
-                            last_element = node.element
-                            prev_node = node
-                            node.active = true
-                            nodes2.push node
-                            continue
+                            nodes = nodes2
 
-                        child_scope = self.makeChild item_value, index, list
+                            self.rawUpdateDom dom_removes, dom_inserts
 
-                        element = f$.clone self.base_element
-                        applyList.push [child_scope, element]
-                        #alight.applyBindings child_scope, element, { skip_attr:env.attrName }
+                            #applying
+                            skippedAttrs = env.skippedAttr()
+                            for it in applyList
+                                alight.applyBindings it[0], it[1], { skip_attr:skippedAttrs }
 
-                        dom_inserts.push
-                            element: element
-                            after: last_element
+                            if self.storeTo
+                                scope.$setValue self.storeTo, list
+                                return
 
-                        node =
-                            scope: child_scope
-                            element: element
-                            prev: prev_node
-                            next: null
-                            active: true
-                            item: item
+                            if scope.$system.ob  # observer
+                                return
 
-                        node_set item, node
-                        if prev_node
-                            next2 = prev_node.next
-                            prev_node.next = node
-                            node.next = next2
-                            if next2
-                                next2.prev = node
-                        else if index is 0 and nodes[0]
-                            next2 = nodes[0]
-                            node.next = next2
-                            next2.prev = node
+                            return '$scanNoChanges'
+                    else
+                        (list) ->
+                            if not list or not list.length  # is it list?
+                                list = []
 
-                        # for next loop
-                        prev_node = node
-                        last_element = element
-                        nodes2.push node
+                            last_element = self.top_element
 
-                    nodes = nodes2
+                            dom_inserts = []
+                            nodes2 = []
 
-                    self.rawUpdateDom dom_removes, dom_inserts
+                            # find removed
+                            for node in nodes
+                                node.active = false
+                            for item, index in list
+                                node = node_get item
+                                if node
+                                    node.active = true
 
-                    #applying
-                    skippedAttrs = env.skippedAttr()
-                    for it in applyList
-                        alight.applyBindings it[0], it[1], { skip_attr:skippedAttrs }
+                            dom_removes = for node in nodes
+                                if node.active
+                                    continue
+                                if node.prev
+                                    node.prev.next = node.next
+                                if node.next
+                                    node.next.prev = node.prev
+                                node_del node
+                                node.scope.$destroy()
+                                node.element
 
-                    if self.storeTo
-                        scope.$setValue self.storeTo, list
-                        return
 
-                    if scope.$system.ob  # observer
-                        return
+                            applyList = []
+                            # change positions and make new children
+                            pid = null
+                            child_scope
+                            prev_node = null
+                            for item, index in list
+                                item_value = item
+                                item = item or {}
 
-                    return '$scanNoChanges'
+                                node = node_get item
+
+                                if node
+                                    self.updateChild node.scope, item, index, list
+                                    if node.prev is prev_node
+                                        # next loop
+                                        prev_node = node
+                                        last_element = node.element
+                                        node.active = true
+                                        nodes2.push node
+                                        continue
+
+                                    # make insert
+                                    node.prev = prev_node
+                                    if prev_node
+                                        prev_node.next = node
+                                    dom_inserts.push
+                                        element: node.element
+                                        after: if prev_node then prev_node.element else self.top_element
+
+                                    # next loop
+                                    last_element = node.element
+                                    prev_node = node
+                                    node.active = true
+                                    nodes2.push node
+                                    continue
+
+                                child_scope = self.makeChild item_value, index, list
+
+                                element = f$.clone self.base_element
+                                applyList.push [child_scope, element]
+                                #alight.applyBindings child_scope, element, { skip_attr:env.attrName }
+
+                                dom_inserts.push
+                                    element: element
+                                    after: last_element
+
+                                node =
+                                    scope: child_scope
+                                    element: element
+                                    prev: prev_node
+                                    next: null
+                                    active: true
+                                    item: item
+                                last_element = element
+
+                                node_set item, node
+                                if prev_node
+                                    next2 = prev_node.next
+                                    prev_node.next = node
+                                    node.next = next2
+                                    if next2
+                                        next2.prev = node
+                                else if index is 0 and nodes[0]
+                                    next2 = nodes[0]
+                                    node.next = next2
+                                    next2.prev = node
+
+                                # for next loop
+                                prev_node = node
+                                nodes2.push node
+
+                            nodes = nodes2
+
+                            self.rawUpdateDom dom_removes, dom_inserts
+
+                            #applying
+                            skippedAttrs = env.skippedAttr()
+                            for it in applyList
+                                alight.applyBindings it[0], it[1], { skip_attr:skippedAttrs }
+
+                            if self.storeTo
+                                scope.$setValue self.storeTo, list
+                                return
+
+                            if scope.$system.ob  # observer
+                                return
+
+                            return '$scanNoChanges'
 
 
 alight.directives.bo.repeat =
@@ -306,6 +442,7 @@ alight.directives.bo.repeat =
             self.prepare()
             self.parsExpression()
             self.prepareDom()
+            self.buildUpdateDom()
             self.watch =
                 value: scope.$eval self.expression
             self.initUpdateDom()

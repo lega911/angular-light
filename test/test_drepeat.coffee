@@ -23,8 +23,8 @@ do ->
         * change an item
     ###
 
-    run = (name, html, results) ->
-        Test('al-repeat ' + name).run ($test, alight) ->
+    run = (name, html, results, makeResult) ->
+        Test('al-repeat ' + name, 'al-repeat-'+name).run ($test, alight) ->
             $test.start 8
             setupAlight alight
 
@@ -45,9 +45,12 @@ do ->
             alight.applyBindings scope, dom[0]
 
             result = ->
-                r = for e in dom.find('div')
-                    $(e).text()
-                r.join ', '
+                if makeResult
+                    return makeResult dom
+                else
+                    r = for e in dom.find('div')
+                        $(e).text()
+                    r.join ', '
             $test.check result() is results[0], result()
 
             scope.list.push { text: 'e' }
@@ -138,6 +141,18 @@ do ->
         5: 'aa:1, bb:2, cc:3, dd:4'
         6: 'aa:1, bb:2, cc:3, dd:4'
         7: 'aa:1, bb:2, cc:3, dd:4'
+
+    run 'restrict-m', '<div> <!-- directive: al-repeat item in list--><span>{{item.text}}</span>:{{=numerator()}}:<span>{{item.text}}</span> <!-- /directive: al-repeat --> </div>',
+        0: 'a:1:a b:2:b c:3:c d:4:d'
+        1: 'a:1:a b:2:b c:3:c d:4:d e:5:e'
+        2: 'f:6:f a:1:a b:2:b c:3:c d:4:d e:5:e'
+        3: 'f:6:f a:1:a g:7:g h:8:h b:2:b c:3:c d:4:d e:5:e'
+        4: 'a:1:a g:7:g h:8:h b:2:b c:3:c d:4:d e:5:e'
+        5: 'a:1:a g:7:g h:8:h b:2:b c:3:c d:4:d'
+        6: 'a:1:a g:7:g c:3:c d:4:d'
+        7: 'a:1:a i:9:i c:3:c d:4:d'
+    , (dom) ->
+        $(dom).text().trim()
 
     Test('by $index, primitives', 'by-index-primitives').run ($test, alight) ->
         $test.start 8
@@ -349,3 +364,30 @@ Test('al-repeat store to', 'repeat-store-to-0').run ($test, alight) ->
             $test.equal flen, 3
 
             $test.close()
+
+
+###
+Test('al-repeat restrict M #0', 'al-repeat-restrict-m-0').run ($test, alight) ->
+    $test.start 1
+
+    el = document.createElement 'div'
+    el.innerHTML = "<div>
+                        <!-- directive: al-repeat item in list-->
+                            <b>{{$index}}</b>
+                            <i>{{item.kind}}</i>
+                            {{item.name}}
+                        <!-- /directive: al-repeat -->
+                    </div>"
+
+    scope = alight.Scope()
+    scope.list = [
+        {kind: 'linux', name: 'Ubuntu 14'}
+        {kind: 'macos', name: 'X'}
+        {kind: 'windows', name: '10'}
+        {kind: 'freebsd', name: '7'}
+    ]
+    alight.applyBindings scope, el
+
+    #$test.equal alight.f$.text(alight.f$.find(el, 'p')[0]).trimLeft(), 'Hello World!'
+    $test.close()
+###
