@@ -1,8 +1,8 @@
 # Angular light
-# version: 0.8.34 / 2015-04-20
+# version: 0.8.35 / 2015-04-20
 
 # init
-alight.version = '0.8.34'
+alight.version = '0.8.35'
 alight.debug =
     useObserver: false
     observer: 0
@@ -11,15 +11,6 @@ alight.debug =
     watch: false
     watchText: false
     parser: false
-alight.controllers = {}
-alight.filters = {}
-alight.utilits = alight.utils = {}
-alight.directives =
-    al: {}
-    bo: {}
-    ctrl: {}
-alight.text = {}
-alight.apps = {}
 
 
 alight.directivePreprocessor = directivePreprocessor = (attrName, args) ->
@@ -84,7 +75,7 @@ alight.directivePreprocessor = directivePreprocessor = (attrName, args) ->
             result: {}
             
             isDeferred: false
-            procLine: directivePreprocessor.ext
+            procLine: alight.hooks.directive
             makeDeferred: ->
                 dscope.isDeferred = true
                 dscope.result.owner = true  # stop binding
@@ -100,7 +91,7 @@ alight.directivePreprocessor = directivePreprocessor = (attrName, args) ->
 
 
 do ->
-    directivePreprocessor.ext = ext = []
+    directivePreprocessor.ext = ext = alight.hooks.directive
 
     ext.push
         code: 'init'
@@ -364,6 +355,12 @@ nodeTypeBind =
 bindNode = (scope, node, option) ->
     if alight.utils.getData node, 'skipBinding'
         return
+    if alight.hooks.binding.length
+        for h in alight.hooks.binding
+            r = h.fn scope, node, option
+            if r and r.owner  # take control
+                return
+
     fn = nodeTypeBind[node.nodeType]
     if fn
         fn scope, node, option

@@ -2,9 +2,26 @@
     function buildAlight(alightConfig) {
         alightConfig = alightConfig || {};
         var enableGlobalControllers = alightConfig.globalControllers;
-        var alight = {};
+        var alight = {
+            core: {},
+            controllers: {},
+            filters: {},
+            text: {},
+            apps: {},
+            utils: {},
+            directives: {
+                al: {},
+                bo: {},
+                ctrl: {}
+            },
+            hooks: {
+                directive: [],
+                binding: []
+            }
+        };
         var f$ = {};
         alight.f$ = f$;
+        alight.utilits = alight.utils;
 
 
         var removeItem = function(list, item) {

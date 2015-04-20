@@ -37,7 +37,7 @@ root.destroy()
 
 ###
 
-alight.core = self = {}
+self = alight.core
 
 
 self.root = (conf) ->
