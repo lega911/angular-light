@@ -72,7 +72,8 @@ alight.directives.al.repeat =
                     while el
                         if el.nodeType is 8
                             t = el.nodeValue
-                            if t.trim() is '/directive: al-repeat'
+                            t2 = t.trim().split(/\s+/)
+                            if t2[0] is '/directive:' and t2[1] is 'al-repeat'
                                 alight.utils.setData el, 'skipBinding', true
                                 break
                         element_list.push el

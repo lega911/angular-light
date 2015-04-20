@@ -142,7 +142,7 @@ do ->
         6: 'aa:1, bb:2, cc:3, dd:4'
         7: 'aa:1, bb:2, cc:3, dd:4'
 
-    run 'restrict-m', '<div> <!-- directive: al-repeat item in list--><span>{{item.text}}</span>:{{=numerator()}}:<span>{{item.text}}</span> <!-- /directive: al-repeat --> </div>',
+    run 'restrict-m', '<div> <!-- directive: al-repeat item in list--><span>{{item.text}}</span>:{{=numerator()}}:<span>{{item.text}}</span> <!--  /directive:  al-repeat --> </div>',
         0: 'a:1:a b:2:b c:3:c d:4:d'
         1: 'a:1:a b:2:b c:3:c d:4:d e:5:e'
         2: 'f:6:f a:1:a b:2:b c:3:c d:4:d e:5:e'
