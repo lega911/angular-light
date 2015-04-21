@@ -68,6 +68,14 @@ alight.utilits.parsExpression = (line, cfg) ->
                 if ap isnt '=' and an isnt '=' # assignment in prev variable
                     variable_assignment[variable_assignment.length-1] = true
 
+            if a is '+'
+                if an is '+' or an is '='
+                    variable_assignment[variable_assignment.length-1] = true
+
+            if a is '-'
+                if an is '-' or an is '='
+                    variable_assignment[variable_assignment.length-1] = true
+
             if a is '(' and not is_string
                 if var_before
                     variable_fn[variable_fn.length-1] = true  # it's function

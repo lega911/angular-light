@@ -1,5 +1,5 @@
 
-Test('parsExpression').run ($test, alight) ->
+Test('parsExpression', 'parsing').run ($test, alight) ->
     pars = (line, expected, cfg) ->
         $test.start 1
         result = alight.utilits.parsExpression line, cfg
@@ -47,6 +47,12 @@ Test('parsExpression').run ($test, alight) ->
     pars "info.user.acl('write', 're_type:546a1d07bb05aa73a632807d')", ["(($$=$$scope.info,$$==null)?undefined:$$.user).acl('write', 're_type:546a1d07bb05aa73a632807d')"]
     cyWord = "\u041f\u0440\u043e\u0432\u0435\u0440\u043a\u0430\u041a\u0438\u0440\u0438\u043b\u0438\u0446\u044b\u0401\u0451\u0419\u0439"
     pars "Form.#{cyWord}", ["(($$=$$scope.Form,$$==null)?undefined:$$.#{cyWord})"]
+    pars 'a++', ["$$scope.a++"]
+    pars 'a.b--', ["$$scope.a.b--"]
+    pars 'a.b.c+=5', ["$$scope.a.b.c+=5"]
+    pars 'a=1', ["$$scope.a=1"]
+    pars 'a.b=1', ["$$scope.a.b=1"]
+    pars 'a.b.c=1', ["$$scope.a.b.c=1"]
     #pars '=obj.items.short_name || obj.name', []
 
     $test.close()
