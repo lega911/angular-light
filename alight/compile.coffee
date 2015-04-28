@@ -42,7 +42,6 @@ self.expression = (src, cfg) ->
     no_return = cfg.no_return or false
     ffResult = alight.utilits.parsExpression exp,
         input: cfg.input
-        fullResponse: true
     ff = ffResult.result
     if ffResult.isSimple
         # check variables

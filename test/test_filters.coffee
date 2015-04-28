@@ -36,7 +36,7 @@ Test('filter slice').run ($test, alight) ->
             $test.close()
 
 
-Test('filter date').run ($test, alight) ->
+Test('filter date', 'filter-date').run ($test, alight) ->
     $test.start 9
     scope = alight.Scope()
     scope.value = null
@@ -101,3 +101,123 @@ Test('$compile filter').run ($test, alight) ->
     $test.equal a2(scope), '2014-06-132014-06-13'
     $test.equal b2(), '2014-06-132014-06-13'
     $test.close()
+
+
+Test('$filter async #0', 'filter-async-0').run ($test, alight) ->
+    $test.start 55
+
+    fdouble = 0
+    fadd = 0
+    alight.filters.double = (exp, scope, env) ->
+        (value) ->
+            fdouble++
+            value + value
+
+    alight.filters.add = (exp, scope, env) ->
+        (value) ->
+            fadd++
+            value + exp.trim()
+
+    setters = []
+    async = []
+    result0 = []
+    result1 = []
+    result2 = []
+    alight.filters.get = (exp, scope, env) ->
+        setters.push env.setValue
+        onChange: (value) ->
+            async.push value
+
+    scope = alight.Scope()
+    scope.value = 'one'
+    scope.$watch 'value | double | get | add:EX', (value) ->
+        result0.push value
+
+    $test.equal fdouble, 0
+    $test.equal fadd, 0
+    $test.equal result0.length, 0
+    $test.equal setters.length, 1
+    $test.equal async.length, 0
+
+    scope.$watch 'value | add:PRE | get | double', (value) ->
+        result1.push value
+    ,
+        init: true
+
+    scope.$watch 'value | add:BEGIN | double | add:END', (value) ->
+        result2.push value
+    ,
+        init: true
+
+    $test.equal fdouble, 0
+    $test.equal fadd, 2
+    $test.equal result0.length, 0
+    $test.equal result1.length, 0
+    $test.equal result2.length, 0
+    $test.equal setters.length, 2
+    $test.equal async.length, 0
+
+    scope.$scan ->
+        $test.equal fdouble, 1
+        $test.equal fadd, 3
+        $test.equal result0.length, 0
+        $test.equal result1.length, 0
+        $test.equal result2.length, 1
+        $test.equal result2[0], 'oneBEGINoneBEGINEND'
+        $test.equal setters.length, 2
+        $test.equal async.length, 1
+        $test.equal async[0], 'onePRE'
+        async.length = 0
+
+        scope.value = 'two'
+        scope.$scan ->
+            $test.equal fdouble, 3, '# step 2'
+            $test.equal fadd, 6
+            $test.equal result0.length, 0
+            $test.equal result1.length, 0
+            $test.equal result2.length, 2
+            $test.equal result2[1], 'twoBEGINtwoBEGINEND'
+            $test.equal setters.length, 2
+            $test.equal async.length, 2
+            $test.equal async.indexOf('twotwo')>=0, true
+            $test.equal async.indexOf('twoPRE')>=0, true
+            async.length = 0
+
+            alight.nextTick ->
+                setters[0] 'async-two'
+                scope.$scan ->
+
+                    $test.equal fdouble, 3, '# step 3'
+                    $test.equal fadd, 7
+                    $test.equal result0.length, 1
+                    $test.equal result0[0], 'async-twoEX'
+                    $test.equal result1.length, 0
+                    $test.equal result2.length, 2
+                    $test.equal setters.length, 2
+                    $test.equal async.length, 0
+
+                    setters[1] 'async-three'
+                    scope.$scan ->
+
+                        $test.equal fdouble, 4, '# step 4'
+                        $test.equal fadd, 7
+                        $test.equal result0.length, 1
+                        $test.equal result1.length, 1
+                        $test.equal result1[0], 'async-threeasync-three'
+                        $test.equal result2.length, 2
+                        $test.equal setters.length, 2
+                        $test.equal async.length, 0
+
+                        setters[1] 'async-four'
+                        scope.$scan ->
+
+                            $test.equal fdouble, 5, '# step 5'
+                            $test.equal fadd, 7
+                            $test.equal result0.length, 1
+                            $test.equal result1.length, 2
+                            $test.equal result1[1], 'async-fourasync-four'
+                            $test.equal result2.length, 2
+                            $test.equal setters.length, 2
+                            $test.equal async.length, 0
+
+                            $test.close()

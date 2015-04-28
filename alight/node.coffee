@@ -155,6 +155,51 @@ Node::destroy = ->
             root.nodeTail = p
 
 
+makeFilterChain = do ->
+    index = 1
+    getId = ->
+        'wf' + (index++)
+
+    (node, pe, baseCallback, option) ->
+        scope = node.scope
+        root = node.root
+
+        prevCallback = baseCallback
+        rindex = pe.result.length - 1
+        while rindex > 0
+            filterExp = pe.result[rindex--].trim()
+            i = filterExp.indexOf ':'
+            if i>0
+                filterName = filterExp[..i-1]
+                filterArg = filterExp[i+1..]
+            else
+                filterName = filterExp
+                filterArg = null
+
+            filterBuilder = alight.getFilter filterName, scope, filterArg
+
+            key = getId()
+            setter = do (key=key) ->
+                (value) ->
+                    root.private[key] = value
+
+            filter = filterBuilder filterArg, scope,
+                setValue: setter
+
+            node.watch key, prevCallback,
+                private: true
+
+            if f$.isFunction filter
+                prevCallback = do (key=key, filter=filter) ->
+                    (value) ->
+                        root.private[key] = filter value
+            else
+                prevCallback = filter.onChange
+
+        node.watch pe.expression, prevCallback,
+            init: option.init
+
+
 WA = (callback) ->
     @.cb = callback
 
@@ -232,10 +277,14 @@ Node::watch = (name, callback, option) ->
                     isSimple: if option.watchText.simpleVariables then 2 else 0
                     simpleVariables: option.watchText.simpleVariables
             else
-                ce = node.compile name,
-                    noBind: true
-                    full: true
-                exp = ce.fn
+                pe = alight.utilits.parsExpression name
+                if pe.result.length > 1  # has filters
+                    return makeFilterChain node, pe, callback, option
+                else
+                    ce = node.compile name,
+                        noBind: true
+                        full: true
+                    exp = ce.fn
         returnValue = value = exp scope
         if option.deep
             value = alight.utilits.clone value

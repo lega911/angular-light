@@ -101,6 +101,7 @@ alight.utilits.parsExpression = (line, cfg) ->
         check_variabe()
 
     pars(0, null, true)
+    expression = result[0]
     if variables.length
         exp = result[0]
         for n, i in variables by -1
@@ -158,12 +159,12 @@ alight.utilits.parsExpression = (line, cfg) ->
     if result.length > 1  # it has filters
         isSimple = false
 
-    if cfg.fullResponse
+    {
         result: result
+        expression: expression
         simpleVariables: simpleVariables
         isSimple: isSimple
-    else
-        result
+    }
 
 
 alight.utilits.pars_start_tag = '{{'

@@ -128,7 +128,7 @@ Test('$scan root #0', 'scan-root-0').run ($test, alight) ->
 						$test.check c2 is 4
 						$test.close()
 
-Test('$scan late').run ($test, alight) ->
+Test('$scan late', 'scan-late').run ($test, alight) ->
 	$test.start 18
 
 	c0 = 0

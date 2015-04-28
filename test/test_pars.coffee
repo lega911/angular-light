@@ -2,7 +2,8 @@
 Test('parsExpression', 'parsing').run ($test, alight) ->
     pars = (line, expected, cfg) ->
         $test.start 1
-        result = alight.utilits.parsExpression line, cfg
+        pe = alight.utilits.parsExpression line, cfg
+        result = pe.result
         ok = true
         if result.length is expected.length
             for i in [0..result.length-1] by 1
