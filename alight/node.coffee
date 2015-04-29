@@ -339,7 +339,7 @@ Node::watch = (name, callback, option) ->
             if f$.isArray value
                 d.value = value.slice()
             else
-                d.value = null
+                d.value = undefined
             returnValue = d.value
 
         if not isObserved

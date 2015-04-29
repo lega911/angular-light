@@ -287,7 +287,7 @@ Test('al-repeat skippedAttr').run ($test, alight) ->
     $test.close()
 
 
-Test('al-repeat one-time-bindings').run ($test, alight) ->
+Test('al-repeat one-time-bindings', 'al-repeat-one-time-bindings').run ($test, alight) ->
     $test.start 6
     setupAlight alight
 
