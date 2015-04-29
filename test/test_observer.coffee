@@ -145,6 +145,96 @@ Test('observer #1').run ($test, alight) ->
     null
 
 
+Test('observer #2', 'observer-2').run ($test, alight) ->
+    if not alight.debug.useObserver
+        $test.close()
+        return
+    $test.start 25
+
+    map = new Map()
+
+    alight.observer._objectObserve = (s, fn) ->
+        #console.log '-> observe', s
+        map.set s, true
+        Object.observe s, fn
+    alight.observer._objectUnobserve = (s, fn) ->
+        #console.log '-> unobserve', s
+        map.delete s
+        Object.unobserve s, fn
+
+    data =
+        $key: 'data'
+
+    scope =
+        $key: 'root'
+        data0: data
+        data1: data
+
+    observer = alight.observer.create()
+
+    c0 = 0
+    c1 = 0
+    c2 = 0
+    ob = observer.observe scope
+    ob.watch 'data0.name', ->
+        c0++
+    ob.watch 'data1.name', ->
+        c1++
+
+    ob2 = observer.observe data
+    ob2.watch 'name', ->
+        c2++
+
+    observer.deliver()
+    $test.equal c0, 0
+    $test.equal c1, 0
+    $test.equal c2, 0
+
+    data.name = 'linux'
+    observer.deliver()
+    $test.equal c0, 1
+    $test.equal c1, 1
+    $test.equal c2, 1
+    $test.equal map.size, 2
+
+    scope.data0 =
+        $key: 'tmp'
+    observer.deliver()
+    $test.equal c0, 2, 'add tmp'
+    $test.equal c1, 1
+    $test.equal c2, 1
+    $test.equal map.size, 3
+
+    data.name = 'check first scope'
+    observer.deliver()
+    $test.equal c0, 2
+    $test.equal c1, 2
+    $test.equal c2, 2
+    $test.equal map.size, 3
+
+    scope.data0 = data
+    observer.deliver()
+    $test.equal c0, 3, 'del tmp'
+    $test.equal c1, 2
+    $test.equal c2, 2
+    $test.equal map.size, 2
+
+    ob.destroy()
+    $test.equal map.size, 1, 'destroy ob'
+
+    data.name = 'one more change'
+    observer.deliver()
+    $test.equal c0, 3
+    $test.equal c1, 2
+    $test.equal c2, 3
+    $test.equal map.size, 1
+
+    observer.destroy()
+    $test.equal map.size, 0
+
+    $test.close()
+
+
 Test('observer array#0').run ($test, alight) ->
     if not alight.debug.useObserver
         $test.close()
@@ -219,6 +309,58 @@ Test('observer array#1').run ($test, alight) ->
     $test.equal wlist, 0
 
     $test.equal !scope.data.list[0].$$observer, true
+    $test.close()
+
+
+Test('observer array#2', 'observer-array-2').run ($test, alight) ->
+    if not alight.debug.useObserver
+        $test.close()
+        return
+    $test.start 7
+
+    list0 = [1, 2]
+    list1 = [3]
+
+    scope =
+        list: list0
+
+    observer = alight.observer.create()
+    ob = observer.observe scope
+
+    wlist = 0
+    w0 = ob.watch 'list', ->
+        wlist++
+
+    observer.deliver()
+    $test.equal wlist, 0
+
+    list0.push 4
+    observer.deliver()
+    $test.equal wlist, 1
+
+    scope.list = list1
+    observer.deliver()
+    $test.equal wlist, 2
+
+    scope.list = list0
+    observer.deliver()
+    $test.equal wlist, 3
+
+    scope.list = list1
+    observer.deliver()
+    $test.equal wlist, 4
+
+    scope.list = list0
+    observer.deliver()
+    $test.equal wlist, 5
+
+    list0.push 5
+    observer.deliver()
+    $test.equal wlist, 6
+
+    ob.destroy()
+    observer.destroy()
+
     $test.close()
 
 

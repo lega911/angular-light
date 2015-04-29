@@ -1,4 +1,4 @@
-Test('filter slice').run ($test, alight) ->
+Test('filter slice', 'filter-slice').run ($test, alight) ->
     $test.start 4
     scope = alight.Scope()
     scope.lst = [0,1,2,3,4,5,6,7,8,9];
@@ -9,10 +9,14 @@ Test('filter slice').run ($test, alight) ->
     result2 = null
     scope.$watch 'lst | slice:a', (value) ->
         result = value
-    , { isArray: true, init: true }
+    ,
+        isArray: true
+        init: true
     scope.$watch 'lst | slice:a,b', (value) ->
         result2 = value
-    , { isArray: true, init: true }
+    ,
+        isArray: true
+        init: true
 
     equal = (a, b) ->
         if a.length isnt b.length

@@ -79,18 +79,22 @@ do ->
         if checkingScope and checkingScope isnt tree[$scope]
             console.error 'Observe: fake scope'
         scope = tree[$scope]
-
-        if f$.isArray scope
-            tree[$isArray] = null
-            self._arrayUnobserve scope, node.observer.handler
-        else
-            self._objectUnobserve scope, node.observer.handler
-
         scopeTree = node.observer.treeByScope.get scope
-        delete scopeTree[node.id]
+        delete scopeTree[node.id+'#'+tree[$path]]
         tree[$node] = null
         tree[$scope] = null
         tree[$path] = null
+
+        # unobserve
+        if scopeTree.observed and Object.keys(scopeTree).length is 1
+            scopeTree.observed = false
+            if f$.isArray scope
+                tree[$isArray] = null
+                self._arrayUnobserve scope, node.observer.handler
+            else
+                self._objectUnobserve scope, node.observer.handler
+
+        # clean children
         for k, v of tree
             if node.keywords[k]
                 continue
@@ -137,7 +141,8 @@ do ->
                 treeByScope.set scope, scopeTree
 
             #if scope[$tree]
-            if scopeTree[node.id]
+            stp = node.id+'#'+path
+            if scopeTree[stp]
                 continue
                 #throw 'ERROR: scope has already observed'
 
@@ -150,12 +155,16 @@ do ->
             tree[$path] = path
             tree[$scope] = scope
             #scope[$tree] = tree
-            scopeTree[node.id] = tree
+            scopeTree[stp] = tree
             if f$.isArray scope
                 tree[$isArray] = true
-                self._arrayObserve scope, node.observer.handler
+                if not scopeTree.observed
+                    scopeTree.observed = true
+                    self._arrayObserve scope, node.observer.handler
             else
-                self._objectObserve scope, node.observer.handler
+                if not scopeTree.observed
+                    scopeTree.observed = true
+                    self._objectObserve scope, node.observer.handler
         null
 
 
@@ -185,7 +194,7 @@ do ->
             scopeTree = {}
             observer.treeByScope.set scope, scopeTree
 
-        if scopeTree[node.id]
+        if scopeTree[node.id+'#']
             throw 'ERROR: scope has already observed'
 
         if tree[$scope]
@@ -194,8 +203,10 @@ do ->
         tree[$node] = node
         tree[$path] = ''
         tree[$scope] = scope
-        scopeTree[node.id] = tree
-        self._objectObserve scope, node.observer.handler
+        scopeTree[node.id+'#'] = tree
+        if not scopeTree.observed
+            scopeTree.observed = true
+            self._objectObserve scope, node.observer.handler
 
         @
 
@@ -260,7 +271,9 @@ do ->
                     console.warn 'Why we are here?'
                     continue
 
-                for _, tree of scopeTree
+                for k, tree of scopeTree
+                    if k is 'observed'
+                        continue
                     node = tree[$node]
                     if tree[$isArray]
                         node.fire tree[$path], null
@@ -282,7 +295,7 @@ do ->
                             node.fire keyPath, value
                         else if ch.type is 'update'
                             if tree[key] and isObjectOrArray ch.oldValue
-                                cleanTree node, tree[key], ch.oldValue
+                                cleanTree node, tree[key]
                             if isObjectOrArray value
                                 ensureTree node, keyPath
                             node.fire keyPath, value

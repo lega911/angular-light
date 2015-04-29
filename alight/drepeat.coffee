@@ -23,7 +23,7 @@ alight.directives.al.repeat =
                 self.prepareDom()
                 self.buildUpdateDom()
                 self.watchModel()
-                self.initUpdateDom()
+                #self.initUpdateDom()
 
             prepare: ->
                 # get controller
@@ -60,6 +60,7 @@ alight.directives.al.repeat =
             watchModel: ->
                 self.watch = scope.$watch self.expression, self.updateDom,
                     isArray: true
+                    init: true
 
             initUpdateDom: ->
                 self.updateDom self.watch.value

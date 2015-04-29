@@ -51,36 +51,38 @@ do ->
                     r = for e in dom.find('div')
                         $(e).text()
                     r.join ', '
-            $test.check result() is results[0], result()
 
-            scope.list.push { text: 'e' }
             scope.$scan ->
-                $test.check result() is results[1], result()
+                $test.check result() is results[0], result()
 
-                scope.list.splice 0, 0, { text: 'f' }
+                scope.list.push { text: 'e' }
                 scope.$scan ->
-                    $test.equal result(), results[2], result()
+                    $test.check result() is results[1], result()
 
-                    scope.list.splice 2, 0, { text: 'g' }, { text: 'h' }
+                    scope.list.splice 0, 0, { text: 'f' }
                     scope.$scan ->
-                        $test.check result() is results[3], result()
+                        $test.equal result(), results[2], result()
 
-                        scope.list.splice 0, 1
+                        scope.list.splice 2, 0, { text: 'g' }, { text: 'h' }
                         scope.$scan ->
-                            $test.check result() is results[4], result()
+                            $test.check result() is results[3], result()
 
-                            scope.list.splice 6, 1
+                            scope.list.splice 0, 1
                             scope.$scan ->
-                                $test.check result() is results[5], result()
+                                $test.check result() is results[4], result()
 
-                                scope.list.splice 2, 2
+                                scope.list.splice 6, 1
                                 scope.$scan ->
-                                    $test.check result() is results[6], result()
+                                    $test.check result() is results[5], result()
 
-                                    scope.list[1] = { text:'i' }
+                                    scope.list.splice 2, 2
                                     scope.$scan ->
-                                        $test.check result() is results[7], result()
-                                        $test.close()
+                                        $test.check result() is results[6], result()
+
+                                        scope.list[1] = { text:'i' }
+                                        scope.$scan ->
+                                            $test.check result() is results[7], result()
+                                            $test.close()
 
     run 'default', '<div al-repeat="it in list">{{it.text}}:{{=numerator()}}</div>',
         0: 'a:1, b:2, c:3, d:4'
@@ -122,7 +124,7 @@ do ->
         6: 'a:1, g:2, c:3, d:4'
         7: 'a:1, i:2, c:3, d:4'
 
-    run 'filter + controller', '<div al-repeat="it in list | slice:0,3" al-controller="testRepeat">{{r}}:{{=numerator()}}</div>',
+    run 'filter-controller', '<div al-repeat="it in list | slice:0,3" al-controller="testRepeat">{{r}}:{{=numerator()}}</div>',
         0: 'aa:1, bb:2, cc:3'
         1: 'aa:1, bb:2, cc:3'
         2: 'ff:4, aa:1, bb:2'
@@ -324,9 +326,11 @@ Test('al-repeat one-time-bindings').run ($test, alight) ->
 Test('al-repeat store to', 'repeat-store-to-0').run ($test, alight) ->
     $test.start 6
 
-    alight.filters.myfilter = ->
-        ->
-            makeResult
+    setter = null
+    alight.filters.myfilter = (_a, _b, env) ->
+        setter = env.setValue
+        onChange: (value) ->
+            env.setValue makeResult
 
     scope = alight.Scope()
     dom = document.createElement 'div'
@@ -359,6 +363,7 @@ Test('al-repeat store to', 'repeat-store-to-0').run ($test, alight) ->
         $test.equal flen, 6
 
         makeResult = [list[1], list[2], list[3]]
+        setter makeResult
         scope.$scan ->
             $test.equal fcount, 2
             $test.equal flen, 3

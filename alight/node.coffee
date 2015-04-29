@@ -196,8 +196,11 @@ makeFilterChain = do ->
             else
                 prevCallback = filter.onChange
 
-        node.watch pe.expression, prevCallback,
+        w = node.watch pe.expression, prevCallback,
             init: option.init
+            isArray: option.isArray
+        w.value = undefined
+        w
 
 
 WA = (callback) ->
