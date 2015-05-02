@@ -188,3 +188,4 @@ do ->
         doUpdate()
         w = scope.$watch key, callback,
             private: true
+            init: config.init

@@ -224,28 +224,8 @@ Test('$filter async #1', 'filter-async-1').run ($test, alight) ->
     $test.close()
 
 
-Test('$filter async #2', 'filter-async-2').run ($test, alight) ->
+Test('$filter async #2', 'filter-async-2').run ($test, alight, timeout) ->
     $test.start 14
-
-    step = do ->
-        list = []
-        add: (delay, callback) ->
-            list.push [delay, callback]
-        next: ->
-            if not list.length
-                return false
-            min = Infinity
-            active = null
-            for it in list
-                if it[0] < min
-                    active = it
-                    min = it[0]
-            list.splice list.indexOf(active), 1
-            delay = active[0]
-            for it in list
-                it[0] -= delay
-            active[1]()
-            true
 
     rdestroy = 0
     alight.filters.foo = (exp, scope, env) ->
@@ -254,9 +234,9 @@ Test('$filter async #2', 'filter-async-2').run ($test, alight) ->
         setter = ->
             if not active
                 return
-            step.add 100, setter
+            timeout.add 100, setter
             env.setValue value
-        step.add 100, setter
+        timeout.add 100, setter
 
         scope.$watch '$destroy', ->
             rdestroy++
@@ -282,19 +262,19 @@ Test('$filter async #2', 'filter-async-2').run ($test, alight) ->
     $test.equal rcount, 0
     $test.equal rvalue, ''
 
-    step.add 150, ->
+    timeout.add 150, ->
         $test.equal rcount>0, true
         $test.equal rvalue, 'one'
         rcount = 0
 
         scope.r = 'two'
-        step.add 100, ->
+        timeout.add 100, ->
             $test.equal rcount>0, true
             $test.equal rvalue, 'one'
             rcount = 0
 
             scope.$scan ->
-                step.add 100, ->
+                timeout.add 100, ->
                     $test.equal rcount>0, true
                     $test.equal rvalue, 'two'
                     rcount = 0
@@ -302,14 +282,76 @@ Test('$filter async #2', 'filter-async-2').run ($test, alight) ->
                     scope.r = 'three'
                     scope.$destroy()
                     $test.equal rdestroy, 1
-                    step.add 200, ->
+                    timeout.add 200, ->
                         $test.equal rcount, 0
                         $test.equal rvalue, 'two'
                         $test.equal rdestroy, 1
 
                         $test.close()
 
-    while true
-        if not step.next()
-            break
-    null
+
+Test('async filter + watchText #0', 'async-filter-watch-text-0').run ($test, alight, timeout) ->
+    $test.start 24
+
+    alight.filters.foo = (exp, scope, env) ->
+        (value) ->
+            rfoo++
+            value+':'+value
+
+    alight.filters.get = (exp, scope, env) ->
+        onChange: (value) ->
+            rasync++
+            timeout.add 10, ->
+                env.setValue value + ':async'
+
+    scope = alight.Scope()
+    scope.value = 'one'
+
+    rfoo = 0
+    rasync = 0
+    rcount = 0
+    rvalue = ''
+    scope.$watchText 'pre {{value | foo | get}} fix', (value) ->
+        rcount++
+        rvalue = value
+    ,
+        init: true
+
+    $test.equal rfoo, 1
+    $test.equal rasync, 1
+    $test.equal rcount, 1
+    $test.equal rvalue, 'pre  fix'
+
+    scope.$scan ->
+        $test.equal rfoo, 1
+        $test.equal rasync, 1
+        $test.equal rcount, 1
+        $test.equal rvalue, 'pre  fix'
+
+        timeout.add 15, ->
+            $test.equal rfoo, 1
+            $test.equal rasync, 1
+            $test.equal rcount, 1
+            $test.equal rvalue, 'pre  fix'
+
+            scope.$scan ->
+                $test.equal rfoo, 1
+                $test.equal rasync, 1
+                $test.equal rcount, 2
+                $test.equal rvalue, 'pre one:one:async fix'
+
+                scope.value = 'two'
+                scope.$scan ->
+                    $test.equal rfoo, 2
+                    $test.equal rasync, 2
+                    $test.equal rcount, 2
+                    $test.equal rvalue, 'pre one:one:async fix'
+
+                    timeout.add 15, ->
+                        scope.$scan ->
+                            $test.equal rfoo, 2
+                            $test.equal rasync, 2
+                            $test.equal rcount, 3
+                            $test.equal rvalue, 'pre two:two:async fix'
+
+                        $test.close()
