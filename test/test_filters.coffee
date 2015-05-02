@@ -227,3 +227,122 @@ Test('$filter async #0', 'filter-async-0').run ($test, alight) ->
                             $test.equal async.length, 0
 
                             $test.close()
+
+Test('$filter async #1', 'filter-async-1').run ($test, alight) ->
+    $test.start 4
+
+    alight.filters.foo = (exp, scope, env) ->
+        onChange: (value) ->
+            r = value.slice()
+            r.push 'E'
+            env.setValue r
+
+    scope = alight.Scope()
+
+    scope.list = [1,2,3,4,5,6,7,8,9]
+
+    rcount = 0
+    rlen = 0
+    w = scope.$watch 'list | slice:2,5 | foo', (value) ->
+        rcount++
+        rlen = value.length
+
+    $test.equal rcount, 0
+    $test.equal rlen, 0
+
+    w.fire()
+    $test.equal rcount, 1
+    $test.equal rlen, 4
+
+    $test.close()
+
+
+Test('$filter async #2', 'filter-async-2').run ($test, alight) ->
+    $test.start 14
+
+    step = do ->
+        list = []
+        add: (delay, callback) ->
+            list.push [delay, callback]
+        next: ->
+            if not list.length
+                return false
+            min = Infinity
+            active = null
+            for it in list
+                if it[0] < min
+                    active = it
+                    min = it[0]
+            list.splice list.indexOf(active), 1
+            delay = active[0]
+            for it in list
+                it[0] -= delay
+            active[1]()
+            true
+
+    rdestroy = 0
+    alight.filters.foo = (exp, scope, env) ->
+        value = null
+        active = true
+        setter = ->
+            if not active
+                return
+            step.add 100, setter
+            env.setValue value
+        step.add 100, setter
+
+        scope.$watch '$destroy', ->
+            rdestroy++
+            active = false
+
+        onChange: (input) ->
+            value = input
+
+    scope = alight.Scope()
+
+    scope.r = 'one'
+
+    rcount = 0
+    rvalue = ''
+    w = scope.$watch 'r | foo', (value) ->
+        rcount++
+        rvalue = value
+
+    $test.equal rcount, 0
+    $test.equal rvalue, ''
+
+    w.fire()
+    $test.equal rcount, 0
+    $test.equal rvalue, ''
+
+    step.add 150, ->
+        $test.equal rcount>0, true
+        $test.equal rvalue, 'one'
+        rcount = 0
+
+        scope.r = 'two'
+        step.add 100, ->
+            $test.equal rcount>0, true
+            $test.equal rvalue, 'one'
+            rcount = 0
+
+            scope.$scan ->
+                step.add 100, ->
+                    $test.equal rcount>0, true
+                    $test.equal rvalue, 'two'
+                    rcount = 0
+
+                    scope.r = 'three'
+                    scope.$destroy()
+                    $test.equal rdestroy, 1
+                    step.add 200, ->
+                        $test.equal rcount, 0
+                        $test.equal rvalue, 'two'
+                        $test.equal rdestroy, 1
+
+                        $test.close()
+
+    while true
+        if not step.next()
+            break
+    null
