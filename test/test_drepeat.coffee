@@ -52,37 +52,36 @@ do ->
                         $(e).text()
                     r.join ', '
 
+            $test.check result() is results[0], result()
+
+            scope.list.push { text: 'e' }
             scope.$scan ->
-                $test.check result() is results[0], result()
+                $test.check result() is results[1], result()
 
-                scope.list.push { text: 'e' }
+                scope.list.splice 0, 0, { text: 'f' }
                 scope.$scan ->
-                    $test.check result() is results[1], result()
+                    $test.equal result(), results[2], result()
 
-                    scope.list.splice 0, 0, { text: 'f' }
+                    scope.list.splice 2, 0, { text: 'g' }, { text: 'h' }
                     scope.$scan ->
-                        $test.equal result(), results[2], result()
+                        $test.check result() is results[3], result()
 
-                        scope.list.splice 2, 0, { text: 'g' }, { text: 'h' }
+                        scope.list.splice 0, 1
                         scope.$scan ->
-                            $test.check result() is results[3], result()
+                            $test.check result() is results[4], result()
 
-                            scope.list.splice 0, 1
+                            scope.list.splice 6, 1
                             scope.$scan ->
-                                $test.check result() is results[4], result()
+                                $test.check result() is results[5], result()
 
-                                scope.list.splice 6, 1
+                                scope.list.splice 2, 2
                                 scope.$scan ->
-                                    $test.check result() is results[5], result()
+                                    $test.check result() is results[6], result()
 
-                                    scope.list.splice 2, 2
+                                    scope.list[1] = { text:'i' }
                                     scope.$scan ->
-                                        $test.check result() is results[6], result()
-
-                                        scope.list[1] = { text:'i' }
-                                        scope.$scan ->
-                                            $test.check result() is results[7], result()
-                                            $test.close()
+                                        $test.check result() is results[7], result()
+                                        $test.close()
 
     run 'default', '<div al-repeat="it in list">{{it.text}}:{{=numerator()}}</div>',
         0: 'a:1, b:2, c:3, d:4'

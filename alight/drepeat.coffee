@@ -23,7 +23,7 @@ alight.directives.al.repeat =
                 self.prepareDom()
                 self.buildUpdateDom()
                 self.watchModel()
-                #self.initUpdateDom()
+                self.initUpdateDom()
 
             prepare: ->
                 # get controller
@@ -60,10 +60,9 @@ alight.directives.al.repeat =
             watchModel: ->
                 self.watch = scope.$watch self.expression, self.updateDom,
                     isArray: true
-                    init: true
 
             initUpdateDom: ->
-                self.updateDom self.watch.value
+                self.watch.fire()
 
             prepareDom: ->
                 if element.nodeType is 8
@@ -440,12 +439,8 @@ alight.directives.bo.repeat =
     priority: 1000
     init: (element, exp, scope, env) ->
         self = alight.directives.al.repeat.init element, exp, scope, env
+        originalStart = self.start
         self.start = ->
-            self.prepare()
-            self.parsExpression()
-            self.prepareDom()
-            self.buildUpdateDom()
-            self.watch =
-                value: scope.$eval self.expression
-            self.initUpdateDom()
+            originalStart()
+            self.watch.stop()  # stop watching
         self

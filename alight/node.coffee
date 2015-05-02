@@ -350,6 +350,11 @@ Node::watch = (name, callback, option) ->
     r =
         $: d
         value: returnValue
+        fire: ->
+            if d.isArray
+                callback exp scope
+            else
+                callback d.value
 
     if option.oneTime
         realCallback = callback

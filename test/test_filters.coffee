@@ -108,7 +108,7 @@ Test('$compile filter').run ($test, alight) ->
 
 
 Test('$filter async #0', 'filter-async-0').run ($test, alight) ->
-    $test.start 55
+    $test.start 57
 
     fdouble = 0
     fadd = 0
@@ -143,10 +143,8 @@ Test('$filter async #0', 'filter-async-0').run ($test, alight) ->
     $test.equal setters.length, 1
     $test.equal async.length, 0
 
-    scope.$watch 'value | add:PRE | get | double', (value) ->
+    w1 = scope.$watch 'value | add:PRE | get | double', (value) ->
         result1.push value
-    ,
-        init: true
 
     scope.$watch 'value | add:BEGIN | double | add:END', (value) ->
         result2.push value
@@ -154,12 +152,16 @@ Test('$filter async #0', 'filter-async-0').run ($test, alight) ->
         init: true
 
     $test.equal fdouble, 1
-    $test.equal fadd, 3
+    $test.equal fadd, 2
     $test.equal result0.length, 0
     $test.equal result1.length, 0
     $test.equal result2.length, 1
     $test.equal result2[0], 'oneBEGINoneBEGINEND'
     $test.equal setters.length, 2
+    $test.equal async.length, 0
+
+    w1.fire()
+    $test.equal fadd, 3
     $test.equal async.length, 1
     $test.equal async[0], 'onePRE'
 
