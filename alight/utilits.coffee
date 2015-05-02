@@ -17,30 +17,6 @@ alight.utilits.getId = do ->
         return prefix + '#' + index++
 
 
-alight.utilits.filterBuilder = (scope, func, line) ->
-    if not line or not line.length
-        return func
-    for f in line
-        d = f.match(/\s*([\w\d_]+?)\s*:\s*(.*?)\s*$/)
-        if d
-            fname = d[1]
-            param = d[2]
-        else
-            fname = f.trim()
-            param = null
-
-        fbase = alight.getFilter fname, scope, param
-        filter = fbase.call scope, param, scope
-
-        if func
-            func = do (fl = filter, fn = func) ->
-                (value) ->
-                    fl fn value
-        else
-            func = filter
-    func
-
-
 alight.utilits.clone = clone = (d) ->
     # null, undefined
     if not d

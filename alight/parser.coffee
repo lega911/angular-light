@@ -156,15 +156,15 @@ alight.utilits.parsExpression = (line, cfg) ->
     if alight.debug.parser
         console.log 'parser', result
 
-    if result.length > 1  # it has filters
+    hasFilters = result.length > 1
+    if hasFilters
         isSimple = false
 
-    {
-        result: result
-        expression: expression
-        simpleVariables: simpleVariables
-        isSimple: isSimple
-    }
+    result: result
+    expression: expression
+    simpleVariables: simpleVariables
+    isSimple: isSimple
+    hasFilters: hasFilters
 
 
 alight.utilits.pars_start_tag = '{{'

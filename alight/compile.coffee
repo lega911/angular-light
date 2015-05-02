@@ -26,7 +26,12 @@ self.Function = Function
 
 
 self.expression = (src, cfg) ->
-    hash = cfg.hash
+    src = src.trim()
+    hash = src + '#'
+    hash += if cfg.no_return then '+' else '-'
+    hash += if cfg.string then 's' else 'v'
+    if cfg.input
+        hash += cfg.input.join ','
 
     funcCache = self.cache[hash]
     if funcCache

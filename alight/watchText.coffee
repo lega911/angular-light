@@ -13,7 +13,7 @@ do ->
             stop: function to stop watch
 
 
-        expressin points
+        kind of expressions
             simple: {{model}}
             text-directive: {{#dir model}} {{=staticModel}} {{::oneTimeBinding}}
             with function: {{fn()}}
@@ -82,7 +82,6 @@ do ->
         watchCount = 0
         canUseObserver = true
         canUseSimpleBuilder = true
-        hasDirectives = false
         noCache = false
 
         doUpdate = doFinally = ->
@@ -110,27 +109,37 @@ do ->
                     noCache = true
                     if d.type isnt 'text'
                         watchCount++
-                        hasDirectives = true
                         canUseObserver = false
                         canUseSimpleBuilder = false
                 else
-                    ce = scope.$compile exp,
-                        string: true
-                        full: true
-                        rawExpression: true
-                        noBind: true
+                    pe = alight.utils.parsExpression exp
+                    if pe.isSimple
+                        ce = scope.$compile pe.expression,
+                            string: true
+                            full: true
+                            rawExpression: true
+                            noBind: true
 
-                    d.fn = ce.fn
-                    if ce.rawExpression
+                        d.fn = ce.fn
+                        if not ce.rawExpression
+                            throw 'Error'
                         d.re = ce.rawExpression
                         if ce.isSimple > 1
                             d.simpleVariables = ce.simpleVariables
                         else
                             canUseObserver = false
+                        watchCount++
                     else
+                        watchCount++
                         canUseObserver = false
                         canUseSimpleBuilder = false
-                    watchCount++
+                        do (d) ->
+                            scope.$watch exp, (value) ->
+                                `if(value == null) value = ''`
+                                d.value = value
+                                doUpdate()
+                            ,
+                                init: true
 
         if not watchCount
             # static text
@@ -157,12 +166,6 @@ do ->
             return scope.$watch expression, callback,
                 watchText:
                     fn: st.fn
-        if not hasDirectives
-            data.scope = scope
-            fn = alight.utilits.compile.buildText expression, data
-            return scope.$watch expression, callback,
-                watchText:
-                    fn: fn
 
         w = null
         key = getId()

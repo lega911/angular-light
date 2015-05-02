@@ -5,7 +5,7 @@ Test('$compile#0').run ($test, alight) ->
     scope.foo = 'one'
 
     r0 = scope.$compile 'foo',
-        stringOrOneTime: true
+        string: true
         full: true
         rawExpression: true
         noBind: true
@@ -14,7 +14,7 @@ Test('$compile#0').run ($test, alight) ->
     $test.equal r0.fn(scope), 'one'
 
     r1 = scope.$compile 'foo',
-        stringOrOneTime: true
+        string: true
         full: true
         rawExpression: true
         noBind: true

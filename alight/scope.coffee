@@ -120,7 +120,6 @@ Scope::$watch = (name, callback, option) ->
     cfg:
         no_return   - method without return (exec)
         string      - method will return result as string
-        stringOrOneTime
         input   - list of input arguments
         full    - full response
         noBind  - get function without bind to scope

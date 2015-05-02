@@ -40,12 +40,8 @@ Test('utilits.equal').run ($test, alight) ->
 	$test.close()
 
 
-Test('$compile + filter').run ($test, alight) ->
+Test('$compile').run ($test, alight) ->
 	$test.start 2
-
-	alight.filters.test0 = (exp, scope) ->
-		(value) ->
-			value + ':' + scope.name
 
 	s0 = alight.Scope()
 	s1 = alight.Scope()
@@ -53,9 +49,9 @@ Test('$compile + filter').run ($test, alight) ->
 	s0.name = 'debian'
 	s1.name = 'ubuntu'
 
-	f0 = s0.$compile 'name | test0'
-	f1 = s1.$compile 'name | test0'
+	f0 = s0.$compile 'name'
+	f1 = s1.$compile 'name'
 
-	$test.equal f0(), 'debian:debian'
-	$test.equal f1(), 'ubuntu:ubuntu'
+	$test.equal f0(), 'debian'
+	$test.equal f1(), 'ubuntu'
 	$test.close()

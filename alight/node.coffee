@@ -392,49 +392,22 @@ Node::watch = (name, callback, option) ->
 
 Node::compile = (src_exp, cfg) ->
     scope = @.scope
+
     cfg = cfg or {}
-    # make hash
-    resp = {}
-    src_exp = src_exp.trim()
-    if src_exp[0..1] is '::'
-        src_exp = src_exp[2..]
-        resp.oneTime = true
-
-    if cfg.stringOrOneTime
-        cfg.string = not resp.oneTime
-
-    hash = src_exp + '#'
-    hash += if cfg.no_return then '+' else '-'
-    hash += if cfg.string then 's' else 'v'
-    if cfg.input
-        hash += cfg.input.join ','
-
-    cr = alight.utilits.compile.expression src_exp,
-        scope: scope
-        hash: hash
-        no_return: cfg.no_return
-        string: cfg.string
-        input: cfg.input
-        rawExpression: cfg.rawExpression
+    cr = alight.utilits.compile.expression src_exp, cfg
+    if cr.filters
+        throw 'Compile doesn\'t support filters'
 
     func = cr.fn
-    filters = cr.filters
-
-    resp.rawExpression = cr.rawExpression
-    resp.isSimple = cr.isSimple
-    resp.simpleVariables = cr.simpleVariables
-
-    if filters and filters.length
-        func = alight.utilits.filterBuilder scope, func, filters
-        if cfg.string
-            f1 = func
-            func = ->
-                __ = f1.apply this, arguments
-                "" + (__ or (__ ? ''))
+    resp =
+        rawExpression: cr.rawExpression
+        isSimple: cr.isSimple
+        simpleVariables: cr.simpleVariables
 
     if cfg.noBind
         resp.fn = func
     else
+        # bind to scope + try-catch
         if (cfg.input || []).length < 4
             resp.fn = ->
                 try

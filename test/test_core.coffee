@@ -214,54 +214,8 @@ Test('$watchArray#2').run ($test, alight) ->
                     $test.close()
 
 
-# test filter
-Test('filter').run ($test, alight) ->
-    $test.start 2
-
-    alight.filters.double = ->
-        (value) ->
-            value + value
-
-    alight.filters.minus = (exp, scope) ->
-        delta = scope.$eval exp
-        (value) ->
-            value - delta
-
-    scope = alight.Scope()
-
-    N = 15
-    fn = ->
-        N
-
-    filter = alight.utilits.filterBuilder scope, fn, [' double ', ' minus:3']
-    $test.check filter() is 27
-    N = 50
-    $test.check filter() is 97
-    $test.close()
-
-
-Test('filter2').run ($test, alight) ->
-    $test.start 2
-
-    alight.filters.double = ->
-        (value) ->
-            value + value
-
-    alight.filters.minus = (exp, scope) ->
-        delta = scope.$eval exp
-        (value) ->
-            value - delta
-
-    scope = alight.Scope()
-
-    filter = alight.utilits.filterBuilder scope, null, [' double ', ' minus:3']
-    $test.check filter(15) is 27
-    $test.check filter(50) is 97
-    $test.close()
-
-
-Test('binding').run ($test, alight) ->
-    $test.start 2
+Test('binding 0', 'binding-0').run ($test, alight) ->
+    $test.start 4
 
     alight.filters.double = ->
         (value) ->
@@ -273,11 +227,13 @@ Test('binding').run ($test, alight) ->
 
     alight.applyBindings scope, dom[0]
 
-    $test.check dom.text() is 'Text 30' and dom.attr('attr') is '20'
+    $test.equal dom.text(), 'Text 30'
+    $test.equal dom.attr('attr'), '20'
 
     scope.num = 50
     scope.$scan ->
-        $test.check dom.text() is 'Text 100' and dom.attr('attr') is '55'
+        $test.equal dom.text(), 'Text 100'
+        $test.equal dom.attr('attr'), '55'
         $test.close()
 
 
@@ -288,7 +244,7 @@ Test('bindonce').run ($test, alight) ->
         (value) ->
             value + value
 
-    dom = $ '<div attr="{{= num + 5 }}">Text {{= num | double }}</div>'
+    dom = $ '<div attr="{{= num + 5 }}">Text {{= num + num }}</div>'
     scope = alight.Scope()
     scope.num = 15
 

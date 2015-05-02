@@ -74,39 +74,6 @@ Test('filter date', 'filter-date').run ($test, alight) ->
                 $test.close()
 
 
-Test('$compile filter').run ($test, alight) ->
-    $test.start 8
-
-    alight.filters.double = ->
-        (value) ->
-            value + value
-    
-    scope = alight.Scope()
-    scope.value = null
-
-    a = scope.$compile 'value | date:yyyy-mm-dd',
-        noBind: true
-    b = scope.$compile 'value | date:yyyy-mm-dd',
-        noBind: false
-    a2 = scope.$compile 'value | date:yyyy-mm-dd | double',
-        noBind: true
-    b2 = scope.$compile 'value | date:yyyy-mm-dd | double',
-        noBind: false
-
-    $test.equal a(scope), ''
-    $test.equal b(), ''
-    $test.equal a2(scope), ''
-    $test.equal b2(), ''
-
-    scope.value = new Date(2014, 5, 13, 3, 44, 55);
-
-    $test.equal a(scope), '2014-06-13'
-    $test.equal b(), '2014-06-13'
-    $test.equal a2(scope), '2014-06-132014-06-13'
-    $test.equal b2(), '2014-06-132014-06-13'
-    $test.close()
-
-
 Test('$filter async #0', 'filter-async-0').run ($test, alight) ->
     $test.start 57
 
