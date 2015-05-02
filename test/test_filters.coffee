@@ -153,24 +153,24 @@ Test('$filter async #0', 'filter-async-0').run ($test, alight) ->
     ,
         init: true
 
-    $test.equal fdouble, 0
-    $test.equal fadd, 2
+    $test.equal fdouble, 1
+    $test.equal fadd, 3
     $test.equal result0.length, 0
     $test.equal result1.length, 0
-    $test.equal result2.length, 0
+    $test.equal result2.length, 1
+    $test.equal result2[0], 'oneBEGINoneBEGINEND'
     $test.equal setters.length, 2
-    $test.equal async.length, 0
+    $test.equal async.length, 1
+    $test.equal async[0], 'onePRE'
 
     scope.$scan ->
-        $test.equal fdouble, 1
+        $test.equal fdouble, 1, 'scan0'
         $test.equal fadd, 3
         $test.equal result0.length, 0
         $test.equal result1.length, 0
         $test.equal result2.length, 1
-        $test.equal result2[0], 'oneBEGINoneBEGINEND'
         $test.equal setters.length, 2
         $test.equal async.length, 1
-        $test.equal async[0], 'onePRE'
         async.length = 0
 
         scope.value = 'two'

@@ -178,21 +178,13 @@ makeFilterChain = do ->
 
             filterBuilder = alight.getFilter filterName, scope, filterArg
 
-            key = getId()
-            setter = do (key=key) ->
-                (value) ->
-                    root.private[key] = value
-
             filter = filterBuilder filterArg, scope,
-                setValue: setter
-
-            node.watch key, prevCallback,
-                private: true
+                setValue: prevCallback
 
             if f$.isFunction filter
-                prevCallback = do (key=key, filter=filter) ->
+                prevCallback = do (filter, prevCallback) ->
                     (value) ->
-                        root.private[key] = filter value
+                        prevCallback filter value
             else
                 prevCallback = filter.onChange
 
