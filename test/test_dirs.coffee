@@ -263,3 +263,22 @@ Test('al-value setter').run ($test, alight) ->
 			$test.close()
 		, 50
 	, 50
+
+
+Test('al-text').run ($test, alight) ->
+	$test.start 2
+
+	scope = alight.Scope()
+	scope.name = 'one'
+
+	el = $('<div al-text="name"></div>')[0]
+
+	alight.applyBindings scope, el
+
+	$test.equal el.innerText, 'one'
+
+	scope.name = 'two'
+	scope.$scan ->
+		$test.equal el.innerText, 'two'
+
+		$test.close()

@@ -17,16 +17,9 @@ alight.text.oneTimeBinding = (callback, expression, scope, env) ->
 
 dirs = alight.directives.al
 
-dirs.debug =
-    priority: 5000
-    init: (element, name, scope) ->
-        if name
-            alight.debug = scope.$eval name
-        else
-            alight.debug = -1
 
 dirs.text = (element, name, scope) ->
-    init_value = ''
+    watch = null
     self =
         start: ->
             self.watchModel()
@@ -36,14 +29,14 @@ dirs.text = (element, name, scope) ->
                 value = ''
             f$.text element, value
         watchModel: ->
-            exp = scope.$watch name, self.updateDom, { readOnly:true }
-            init_value = exp.value
+            watch = scope.$watch name, self.updateDom,
+                readOnly: true
         initDom: ->
-            self.updateDom init_value
+            watch.fire()
 
 
 dirs.value = (element, variable, scope) ->
-    init_value = null
+    watch = null
     self =
         changing: false
         onDom: ->
@@ -61,15 +54,15 @@ dirs.value = (element, variable, scope) ->
                 scope.$scan ->
                     self.changing = false
         watchModel: ->
-            exp = scope.$watch variable, self.updateDom, { readOnly:true }
-            init_value = exp.value
+            watch = scope.$watch variable, self.updateDom,
+                readOnly: true
         updateDom: (value) ->
             if self.changing
                 return
             value ?= ''
             f$.val element, value
         initDom: ->
-            self.updateDom init_value
+            watch.fire()
         start: ->
             self.onDom()
             self.watchModel()
@@ -166,7 +159,7 @@ dirs.controller =
 dirs.checked =
     priority: 100
     init: (element, name, scope) ->
-        init_value = false
+        watch = false
         self =
             changing: false
             start: ->
@@ -185,20 +178,20 @@ dirs.checked =
                 scope.$scan ->
                     self.changing = false
             watchModel: ->
-                w = scope.$watch name, self.updateDom, { readOnly:true }
-                init_value = !!w.value
+                watch = scope.$watch name, self.updateDom,
+                    readOnly: true
             updateDom: (value) ->
                 if self.changing
                     return
                 f$.prop element, 'checked', !!value
             initDom: ->
-                self.updateDom init_value
+                watch.fire()
 
 
 dirs.radio =
     priority: 10
     init: (element, name, scope, env) ->
-        init_value = false
+        watch = null
         self =
             changing: false
             start: ->
@@ -224,15 +217,14 @@ dirs.radio =
                 scope.$scan ->
                     self.changing = false
             watchModel: ->
-                w = scope.$watch name, self.updateDom,
+                watch = scope.$watch name, self.updateDom,
                     readOnly: true
-                init_value = w.value
             updateDom: (value) ->
                 if self.changing
                     return
                 f$.prop element, 'checked', value is self.value
             initDom: ->
-                self.updateDom init_value
+                watch.fire()
 
 
 # al-css="class:exp"
@@ -265,7 +257,7 @@ dirs.class = dirs.css =
                         (value) ->
                             self.draw item, value
 
-                    result = scope.$watch item.exp, color,
+                    scope.$watch item.exp, color,
                         readOnly: true
                         init: true
                 null
@@ -300,7 +292,7 @@ dirs.if =
             child: null
             base_element: null
             top_element: null
-            init_value: false
+            watch: null
             start: ->
                 self.prepare()
                 self.watchModel()
@@ -330,10 +322,9 @@ dirs.if =
                 self.child = scope.$new()
                 alight.applyBindings self.child, self.item, { skip_attr:env.skippedAttr() }
             watchModel: ->
-                w = scope.$watch name, self.updateDom, { readOnly:true }
-                self.init_value = w.value
+                self.watch = scope.$watch name, self.updateDom, { readOnly:true }
             initUpdate: ->
-                self.updateDom self.init_value
+                self.watch.fire()
             removeDom: (element) ->
                 f$.remove element
             insertDom: (base, element) ->
@@ -353,7 +344,7 @@ dirs.ifnot =
 
 
 dirs.show = (element, exp, scope) ->
-    init_value = false
+    watch = null
     self =
         showDom: ->
             f$.show element
@@ -365,10 +356,10 @@ dirs.show = (element, exp, scope) ->
             else
                 self.hideDom()
         watchModel: ->
-            w = scope.$watch exp, self.updateDom, { readOnly:true }
-            init_value = w.value
+            watch = scope.$watch exp, self.updateDom,
+                readOnly: true
         initDom: ->
-            self.updateDom init_value
+            watch.fire()
         start: ->
             self.watchModel()
             self.initDom()
@@ -418,7 +409,7 @@ dirs.include =
         baseElement = null
         topElement = null
         activeElement = null
-        initValue = null
+        watch = null
         self =
             owner: true
             start: ->
@@ -460,11 +451,10 @@ dirs.include =
             insertDom: (base, element) ->
                 f$.after base, element
             watchModel: ->
-                w = scope.$watch name, self.updateDom,
+                watch = scope.$watch name, self.updateDom,
                     readOnly: true
-                initValue = w.value
             initUpdate: ->
-                self.updateDom initValue
+                watch.fire()
 
         self
 
@@ -484,10 +474,11 @@ dirs.html =
             child = scope.$new()
             alight.applyBindings child, element, { skip_attr:env.skippedAttr() }
 
-        r = scope.$watch name, setter, { readOnly:true }
-        setter r.value
+        scope.$watch name, setter,
+            readOnly: true
+            init: true
 
-        return { owner: true }
+        owner: true
 
 
 alight.directives.bo.switch =
@@ -527,8 +518,9 @@ dirs.src = (element, name, scope) ->
             value = ''
         f$.attr element, 'src', value
         '$scanNoChanges'
-    r = scope.$watchText name, setter
-    setter r.value
+
+    scope.$watchText name, setter
+        init: true
 
 
 dirs.enable = (element, exp, scope) ->
@@ -538,8 +530,9 @@ dirs.enable = (element, exp, scope) ->
         else
             f$.attr element, 'disabled', 'disabled'
 
-    w = scope.$watch exp, setter, { readOnly:true }
-    setter w.value
+    scope.$watch exp, setter,
+        readOnly: true
+        init: true
 
 
 dirs.disable = (element, exp, scope) ->
@@ -549,16 +542,18 @@ dirs.disable = (element, exp, scope) ->
         else
             f$.removeAttr element, 'disabled'
 
-    w = scope.$watch exp, setter, { readOnly:true }
-    setter w.value
+    scope.$watch exp, setter,
+        readOnly: true
+        init: true
 
 
 dirs.readonly = (element, exp, scope) ->
     setter = (value) ->
         f$.prop element, 'readOnly', !!value
 
-    w = scope.$watch exp, setter, { readOnly:true }
-    setter w.value
+    scope.$watch exp, setter,
+        readOnly: true
+        init: true
 
 
 for key in ['keydown', 'keypress', 'keyup', 'mousedown', 'mouseenter', 'mouseleave', 'mousemove', 'mouseover', 'mouseup', 'focus', 'blur', 'change']
@@ -596,7 +591,7 @@ dirs.cloak = (element, name, scope, env) ->
 
 
 dirs.focused = (element, name, scope) ->
-    init_value = false
+    watch = false
     safe =
         changing: false
         updateModel: (value) ->
@@ -629,11 +624,11 @@ dirs.focused = (element, name, scope) ->
             safe.changing = false
 
         watchModel: ->
-            w = scope.$watch name, safe.updateDom, { readOnly:true }
-            init_value = w.value
+            watch = scope.$watch name, safe.updateDom,
+                readOnly: true
 
         initDom: ->
-            safe.updateDom init_value
+            watch.fire()
 
         start: ->
             safe.onDom()
