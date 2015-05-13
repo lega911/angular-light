@@ -179,3 +179,58 @@ Test('$watchText #5', 'watch-text-5').run ($test, alight) ->
                     $test.equal count, 5
                     $test.equal el.innerHTML, 'X Y'
                     $test.close()
+
+
+Test('$watchText #6', 'watch-text-6').run ($test, alight) ->
+    $test.start 9
+    scope = alight.Scope()
+    scope.data =
+        name: 'linux'
+
+    # static text
+    result = null
+    scope.$watchText 'static text', (value) ->
+        result = value
+    ,
+        init: true
+    $test.equal result, 'static text'
+
+    result = null
+    watch = scope.$watchText 'linux ubuntu', (value) ->
+        result = value
+    $test.equal result, null
+    watch.fire()
+    $test.equal result, 'linux ubuntu'
+
+    # static expression
+    result = null
+    scope.$watchText '1{{"static"}}2', (value) ->
+        result = value
+    ,
+        init: true
+    $test.equal result, '1static2'
+
+    result = null
+    watch = scope.$watchText '1{{"linux"}}2', (value) ->
+        result = value
+    $test.equal result, null
+    watch.fire()
+    $test.equal result, '1linux2'
+
+    # expression
+    result = null
+    scope.$watchText '1{{data.name}}2', (value) ->
+        result = value
+    ,
+        init: true
+    $test.equal result, '1linux2'
+
+    result = null
+    watch = scope.$watchText '1{{data.name}}2', (value) ->
+        result = value
+    $test.equal result, null
+    watch.fire()
+    $test.equal result, '1linux2'
+
+
+    $test.close()

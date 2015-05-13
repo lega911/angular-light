@@ -123,12 +123,16 @@ do ->
                         d.fn = ce.fn
                         if not ce.rawExpression
                             throw 'Error'
-                        d.re = ce.rawExpression
-                        if ce.isSimple > 1
-                            d.simpleVariables = ce.simpleVariables
+                        if ce.isSimple and ce.simpleVariables.length is 0  # static expression
+                            d.type = 'text'
+                            d.value = d.fn()
                         else
-                            canUseObserver = false
-                        watchCount++
+                            d.re = ce.rawExpression
+                            if ce.isSimple > 1
+                                d.simpleVariables = ce.simpleVariables
+                            else
+                                canUseObserver = false
+                            watchCount++
                     else
                         watchCount++
                         canUseObserver = false
@@ -146,9 +150,13 @@ do ->
             value = ''
             for d in data
                 value += d.value
+            if config.init
+                callback value
             return {
                 isStatic: true
                 value: value
+                fire: ->
+                    callback value
             }
 
         if canUseObserver
@@ -158,6 +166,7 @@ do ->
                 st = alight.utilits.compile.buildSimpleText expression, data
             return scope.$watch expression, callback,
                 watchText: st
+                init: config.init
         if canUseSimpleBuilder
             if noCache
                 st = alight.utilits.compile.buildSimpleText null, data
@@ -166,6 +175,7 @@ do ->
             return scope.$watch expression, callback,
                 watchText:
                     fn: st.fn
+                init: config.init
 
         w = null
         key = getId()
