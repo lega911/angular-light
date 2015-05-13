@@ -519,7 +519,7 @@ dirs.src = (element, name, scope) ->
         f$.attr element, 'src', value
         '$scanNoChanges'
 
-    scope.$watchText name, setter
+    scope.$watchText name, setter,
         init: true
 
 
