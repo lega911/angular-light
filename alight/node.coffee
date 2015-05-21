@@ -164,6 +164,7 @@ makeFilterChain = do ->
         scope = node.scope
         root = node.root
 
+        modeDeep = false
         prevCallback = baseCallback
         rindex = pe.result.length - 1
         while rindex > 0
@@ -186,11 +187,14 @@ makeFilterChain = do ->
                     (value) ->
                         prevCallback filter value
             else
+                if filter.watchMode is 'deep'
+                    modeDeep = true
                 prevCallback = filter.onChange
 
         w = node.watch pe.expression, prevCallback,
             init: option.init
             isArray: option.isArray
+            deep: modeDeep
         w.value = undefined
         w
 

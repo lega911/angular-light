@@ -119,5 +119,7 @@ alight.filters.generator = (exp, scope) ->
 makeJson = (value) ->
     JSON.stringify alight.utilits.clone(value), null, 4
 
-alight.filters.json = ->
-    makeJson
+alight.filters.json = (exp, scope, env) ->
+    watchMode: 'deep'
+    onChange: (value) ->
+        env.setValue makeJson value

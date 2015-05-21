@@ -355,3 +355,28 @@ Test('async filter + watchText #0', 'async-filter-watch-text-0').run ($test, ali
                             $test.equal rvalue, 'pre two:two:async fix'
 
                         $test.close()
+
+
+Test('filter json', 'filter-json').run ($test, alight) ->
+    $test.start 2
+    scope = alight.Scope()
+    scope.data =
+        name: 'linux'
+
+    result = ''
+    scope.$watch 'data | json', (value) ->
+        result = value
+    ,
+        init: true
+
+    getr = ->
+        result.replace /\s/g, ''
+
+    $test.equal getr(), '{"name":"linux"}'
+
+    scope.$scan ->
+        scope.data.name = 'ubuntu'
+        scope.$scan ->
+            $test.equal getr(), '{"name":"ubuntu"}'
+
+            $test.close()
