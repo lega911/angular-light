@@ -1,15 +1,19 @@
 
-alight.filters.filter = (exp, scope) ->
-    ce = scope.$compile exp
-    (value) ->
-        e = ce()
+alight.filters.filter = (exp, scope, env) ->
+    filterObject = null
+    value = []
+
+    doFiltering = ->
+        e = filterObject
         if not e
-            return value
+            env.setValue value
+            return null
         if typeof(e) is 'string'
             e =
                 $: e
         else if typeof(e) isnt 'object'
-            return value
+            env.setValue value
+            return null
 
         result = for r in value
             if typeof r is 'object'
@@ -26,11 +30,13 @@ alight.filters.filter = (exp, scope) ->
                     if not f
                         continue
 
-                f = true
                 for k, v of e
+                    if k is '$'
+                        continue
                     a = r[k]
                     if not a
-                        continue
+                        f = false
+                        break
                     if (''+a).toLowerCase().indexOf((''+v).toLowerCase()) < 0
                         f = false
                         break
@@ -45,7 +51,19 @@ alight.filters.filter = (exp, scope) ->
                     continue
                 r
 
-        result
+        env.setValue result
+        null
+
+    scope.$watch exp, (input) ->
+        filterObject = input
+        doFiltering()
+    ,
+        init: true
+        deep: true
+
+    onChange: (input) ->
+        value = input
+        doFiltering()
 
 
 alight.filters.slice = (exp, scope, env) ->

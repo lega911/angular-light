@@ -380,3 +380,55 @@ Test('filter json', 'filter-json').run ($test, alight) ->
             $test.equal getr(), '{"name":"ubuntu"}'
 
             $test.close()
+
+
+Test('filter filter', 'filter-filter').run ($test, alight) ->
+    $test.start 5
+
+    scope = alight.Scope()
+    scope.list = [
+        { name: 'linux 1' }
+        { name: 'ubuntu 2' }
+        { name: 'red hat 4', k: 'kind' }
+        { name: 'windows 8', k: 'kind' }
+    ]
+    scope.text = ''
+
+    resultList = []
+    scope.$watch 'list | filter:text', (value) ->
+        resultList = value
+    ,
+        isArray: true
+        init: true
+
+    result = ->
+        sum = 0
+        for i in resultList
+            sum += Number i.name.match(/\d+/)
+        sum
+
+    $test.equal result(), 15    
+
+    scope.list.push
+        name: 'macos X 16'
+    scope.list.push
+        name: 'freebds 32'
+
+    scope.$scan ->
+        $test.equal result(), 63
+
+        scope.text = 'u'
+        scope.$scan ->
+            $test.equal result(), 3
+
+            scope.text = 's'
+            scope.$scan ->
+                $test.equal result(), 8+16+32
+
+                scope.text =
+                    k: 'kind'
+                scope.$scan ->
+                    $test.equal result(), 12
+
+                    $test.close()
+
