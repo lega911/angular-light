@@ -234,3 +234,33 @@ Test('$watchText #6', 'watch-text-6').run ($test, alight) ->
 
 
     $test.close()
+
+
+Test('$watch #1', 'watch-1').run ($test, alight) ->
+    $test.start 5
+
+    scope = alight.Scope()
+    scope.list = [1,2,3]
+
+    count = 0
+    counter = ->
+        count++
+
+    w0 = scope.$watch 'list', counter,
+        isArray: true
+
+    $test.equal count, 0
+    w0.fire()
+    $test.equal count, 1
+
+    w1 = scope.$watch 'list', counter,
+        isArray: true
+    $test.equal count, 1
+    w1.fire()
+    $test.equal count, 2
+
+    scope.list.push 4
+    scope.$scan ->
+        $test.equal count, 4
+
+        $test.close()

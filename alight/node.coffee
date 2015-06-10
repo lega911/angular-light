@@ -266,6 +266,7 @@ Node::watch = (name, callback, option) ->
         if not option.readOnly
             d.extraLoop = true
         returnValue = d.value
+        exp = d.exp
     else
         # create watch object
         if not isFunction
