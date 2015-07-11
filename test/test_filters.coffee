@@ -432,3 +432,109 @@ Test('filter filter', 'filter-filter').run ($test, alight) ->
 
                     $test.close()
 
+
+Test('$filter async #3', 'filter-async-3').run ($test, alight, timeout) ->
+    $test.start 25
+
+    fooInited = 0
+    fooStep = 0
+    fooChange = 0
+    fooStop = 0
+    fooDestroy = 0
+    alight.filters.foo = (exp, scope, env) ->
+        fooInited++
+        active = true
+        value = 0
+        step = ->
+            fooStep++
+            value++
+            env.setValue '#' + value
+            if active
+                timeout.add 100, step
+        timeout.add 100, step
+
+        scope.$watch '$destroy', ->
+            fooDestroy++
+            active = false
+
+        onChange: (input) ->
+            value = input
+            fooChange++
+        onStop: ->
+            active = false
+            fooStop++
+
+    c0 = 0
+    v0 = null
+    scope = alight.Scope()
+    scope.one = 5
+    w = scope.$watch '::one | foo', (value) ->
+        c0++
+        v0 = value
+
+    $test.equal c0, 0
+    $test.equal v0, null
+    $test.equal fooInited, 1
+    $test.equal fooStep, 0
+    $test.equal fooChange, 0
+    $test.equal fooStop, 0
+    $test.equal fooDestroy, 0
+
+    timeout.add 105, ->
+        $test.equal fooStep, 1
+        $test.equal c0, 1
+        $test.equal v0, '#1'
+        $test.equal fooChange, 0
+
+        w.fire()
+        $test.equal fooStep, 1
+        $test.equal fooChange, 1
+        $test.equal fooStop, 1, 'fooStop'
+
+        timeout.add 100, ->
+            $test.equal fooStep, 2
+            $test.equal c0, 2
+            $test.equal v0, '#6'
+            $test.equal fooChange, 1
+
+            scope.$destroy()
+
+            timeout.add 100, ->
+                $test.equal c0, 2
+                $test.equal v0, '#6'
+                $test.equal fooInited, 1
+                $test.equal fooStep, 2
+                $test.equal fooChange, 1
+                $test.equal fooStop, 1
+                $test.equal fooDestroy, 1
+
+                $test.close()
+
+
+Test('$filter async #4', 'filter-async-4').run ($test, alight, timeout) ->
+    $test.start 4
+
+    fooStop = 0
+    count = 0
+    alight.filters.foo = (exp, scope, env) ->
+        onChange: (input) ->
+            env.setValue '#' + input
+        onStop: ->
+            fooStop++
+
+    scope = alight.Scope()
+    scope.one = 5
+    w = scope.$watch 'one | foo', ->
+        count++
+    ,
+        init: true
+
+    scope.$scan ->
+        $test.equal count, 1
+        $test.equal fooStop, 0
+
+        scope.$destroy()
+        $test.equal count, 1
+        $test.equal fooStop, 1
+
+        $test.close()

@@ -126,11 +126,15 @@ Node::destroy = ->
         node.ob = null
     node.obFire = null
 
-    #
     node.destroy_callbacks.length = 0
     node.watchList.length = 0
-    node.watchers.length = 0
+    watchers = node.watchers
     node.watchers = {}
+    # call watch.onStop
+    for k, d of watchers
+        if d.onStop.length
+            for fn in d.onStop
+                fn()
 
     for wa in node.rwatchers.any
         removeItem root.watchers.any, wa
@@ -167,6 +171,7 @@ makeFilterChain = do ->
         modeDeep = false
         prevCallback = baseCallback
         rindex = pe.result.length - 1
+        onStop = []
         while rindex > 0
             filterExp = pe.result[rindex--].trim()
             i = filterExp.indexOf ':'
@@ -190,11 +195,19 @@ makeFilterChain = do ->
                 if filter.watchMode is 'deep'
                     modeDeep = true
                 prevCallback = filter.onChange
+                if filter.onStop
+                    onStop.push filter.onStop
 
         w = node.watch pe.expression, prevCallback,
             init: option.init
             isArray: option.isArray
             deep: modeDeep
+            oneTime: option.oneTime
+            onStop: ->
+                for fn in onStop
+                    fn()
+                onStop.length = 0
+
         w.value = undefined
         w
 
@@ -216,6 +229,23 @@ watchAny = (node, key, callback) ->
             removeItem root.watchers[key], wa
     }
 
+
+###
+
+    option:
+        isArray (is_array)
+        readOnly
+        oneTime
+        deep
+        init
+        onStop
+
+        private
+        watchText
+
+
+
+###
 
 Node::watch = (name, callback, option) ->
     node = @
@@ -297,6 +327,7 @@ Node::watch = (name, callback, option) ->
             callbacks: []
             exp: exp
             src: '' + name
+            onStop: []
 
         # observe?
         isObserved = false
@@ -369,6 +400,9 @@ Node::watch = (name, callback, option) ->
             r.stop()
             realCallback value
 
+    if option.onStop
+        d.onStop.push option.onStop
+
     d.callbacks.push callback
     r.stop = ->
         removeItem d.callbacks, callback
@@ -388,6 +422,8 @@ Node::watch = (name, callback, option) ->
                 d.obList = null
         else
             removeItem node.watchList, d
+        if option.onStop
+            option.onStop()
 
     if option.init
         callback r.value
