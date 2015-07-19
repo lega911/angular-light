@@ -76,8 +76,15 @@ gulp.task('build_test', function() {
     .pipe(gulp.dest('test'))
 });
 
+gulp.task('build_test_core', function() {
+  return gulp.src('./test/core/*.coffee')
+    //.pipe(coffee({bare: true}).on('error', console.log))
+    .pipe(coffee({}).on('error', console.log))
+    .pipe(gulp.dest('test/core'))
+});
 
-gulp.task('test', ['build_test'], function(){
+
+gulp.task('test', ['build_test', 'build_test_core'], function(){
   var path = require('path');
   var childProcess = require('child_process');
   var phantomjs = require('phantomjs');

@@ -1,6 +1,7 @@
 Makefile
 test/*.js
 test/*.map
+test/core/*.js
 alight/*.js
 alight/*.map
 bin/
