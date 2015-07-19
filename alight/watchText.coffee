@@ -76,6 +76,7 @@ do ->
         if st
             return scope.$watch expression, callback,
                 watchText: st
+                init: config.init
 
         data = alight.utilits.parsText expression
 
