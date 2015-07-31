@@ -296,7 +296,7 @@
     // ready
     if(msie && msie < 9) {
         f$.ready = function(callback) {
-            $(callback);
+            $(function() {callback()});
         }
     } else {
         f$.ready = (function() {
@@ -413,8 +413,18 @@
         f$.blur = function(element) {
             element.blur()
         }
-    }
+    };
 
+    if(msie && msie < 9) {
+        f$.isElement = function(el) {
+            return (typeof el==="object") && (el.nodeType===1) &&
+                    (typeof el.style === "object") && (typeof el.ownerDocument ==="object");
+        };
+    } else {
+        f$.isElement = function(el) {
+            return el instanceof HTMLElement
+        };
+    };
 
     // append classes
     (function(){
