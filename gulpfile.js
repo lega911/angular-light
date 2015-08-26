@@ -43,7 +43,6 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/directives.js',
     './tmp/drepeat.js',
     './tmp/filters.js',
-    './tmp/observer.js',
     './js/postfix.js'
   ];
   return gulp.src(files)

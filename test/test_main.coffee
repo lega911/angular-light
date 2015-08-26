@@ -144,6 +144,7 @@ window.Test = do ->
                     console.error '!!', err
 
                 # test with observer
+                return # observer is off
                 if not Object.observe
                     return
                 alight = buildAlight()

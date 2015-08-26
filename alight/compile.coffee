@@ -18,14 +18,22 @@
 
 ###
 
-alight.utilits.compile = self = {}
+alight.utils.compile = self = {}
 self.cache = {}
 
 
 self.Function = Function
 
+###
+compile expression
+    no_return
+    input
+    string
+    rawExpression
 
+###
 self.expression = (src, cfg) ->
+    cfg = cfg or {}
     src = src.trim()
     hash = src + '#'
     hash += if cfg.no_return then '+' else '-'
@@ -39,23 +47,17 @@ self.expression = (src, cfg) ->
 
     funcCache =
         fn: null
-        isSimple: 0
-        simpleVariables: null
+        # filters
+        # rawExpression
 
     exp = src
 
     no_return = cfg.no_return or false
-    ffResult = alight.utilits.parsExpression exp,
+    ffResult = alight.utils.parsExpression exp,
         input: cfg.input
     ff = ffResult.result
-    if ffResult.isSimple
-        # check variables
-        funcCache.isSimple = 2
-        funcCache.simpleVariables = ffResult.simpleVariables
-        for i in ffResult.simpleVariables
-            if i.indexOf('.') < 0  # root variable
-                funcCache.isSimple = 1
-                break
+    funcCache.isSimple = ffResult.isSimple
+    funcCache.simpleVariables = ffResult.simpleVariables
 
     exp = ff[0]
     filters = ff.slice(1)

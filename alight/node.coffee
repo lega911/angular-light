@@ -17,9 +17,6 @@ Scope::$compile
 Scope::$scan
     Scope::$scanAsync
 
-# other
-Scope::$rebuildObserve
-
 makeWatch = (scope, $system) ->
     (name, callback, options) ->
         baseWatch name, callback, options, scope, $system
@@ -31,7 +28,6 @@ node = root.node(scope)
 root.scan(option)
 
 node.watch(src, callback, option)
-node.compile(src, option)
 node.destroy()
 root.destroy()
 
@@ -63,17 +59,10 @@ Root = (conf) ->
     @.finishBinding_lock = false
     @.lateScan = false
 
-    if conf.useObserver
-        @.obList = []  # contain fired watchers
-        @.observer = alight.observer.create()
-        @.privateOb = @.observer.observe @.private
     @
 
 
 Root::destroy = ->
-    if @.observer
-        @.privateOb.destroy()
-        @.observer.destroy()
     @.watchers.any.length = 0
     @.watchers.finishBinding.length = 0
     @.watchers.finishScan.length = 0
@@ -100,11 +89,6 @@ Node = (root, scope, option) ->
     @.rwatchers =
         any: []
         finishScan: []
-
-    if root.observer
-        # local
-        @.obFire = {}
-        @.ob = root.observer.observe scope, option
     @
 
 
@@ -114,17 +98,6 @@ Node::destroy = ->
 
     for fn in node.destroy_callbacks
         fn()
-
-    # observer
-    if node.ob
-        for k, d of node.watchers
-            #if d.ob
-            #    node.ob.unwatch d.ob
-            if d.privateOb
-                root.privateOb.unwatch d.privateName, d.privateOb
-        node.ob.destroy()
-        node.ob = null
-    node.obFire = null
 
     node.destroy_callbacks.length = 0
     node.watchList.length = 0
@@ -300,21 +273,13 @@ Node::watch = (name, callback, option) ->
     else
         # create watch object
         if not isFunction
-            # options for observer
             if option.watchText
                 exp = option.watchText.fn
-                ce =
-                    isSimple: if option.watchText.simpleVariables then 2 else 0
-                    simpleVariables: option.watchText.simpleVariables
             else
                 pe = alight.utilits.parsExpression name
                 if pe.result.length > 1  # has filters
                     return makeFilterChain node, pe, callback, option
-                else
-                    ce = node.compile name,
-                        noBind: true
-                        full: true
-                    exp = ce.fn
+                exp = alight.utils.compile.expression(name).fn
         returnValue = value = exp scope
         if option.deep
             value = alight.utilits.clone value
@@ -329,59 +294,23 @@ Node::watch = (name, callback, option) ->
             src: '' + name
             onStop: []
 
-        # observe?
-        isObserved = false
-        if root.observer
-            if not isFunction and not option.oneTime and not option.deep
-                if ce.isSimple and ce.simpleVariables.length
-                    isObserved = true
-
-                    if d.isArray
-                        d.value = null
-                    else
-                        if ce.isSimple < 2
-                            isObserved = false
-
-                    if isObserved
-                        d.isObserved = true
-
-                        if option.private
-                            d.privateName = privateName
-                            d.privateOb = root.privateOb.watch privateName, ->
-                                if node.obFire[key]
-                                    return
-                                node.obFire[key] = true
-                                root.obList.push [node, d]
-                        else
-                            d.obList = []
-                            for variable in ce.simpleVariables
-                                d.obList.push
-                                    name: variable
-                                    callback: node.ob.watch variable, ->
-                                        if node.obFire[key]
-                                            return
-                                        node.obFire[key] = true
-                                        root.obList.push [node, d]
-
-        if option.isArray and not isObserved
+        if option.isArray
             if f$.isArray value
                 d.value = value.slice()
             else
                 d.value = undefined
             returnValue = d.value
 
-        if not isObserved
-            node.watchList.push d
-
-            # insert scope into root-chain
-            if not node.lineActive
-                node.lineActive = true
-                t = root.nodeTail
-                if t
-                    root.nodeTail = t.nextSibling = node
-                    node.prevSibling = t
-                else
-                    root.nodeHead = root.nodeTail = node
+        node.watchList.push d
+        # insert scope into root-chain
+        if not node.lineActive
+            node.lineActive = true
+            t = root.nodeTail
+            if t
+                root.nodeTail = t.nextSibling = node
+                node.prevSibling = t
+            else
+                root.nodeHead = root.nodeTail = node
 
     r =
         $: d
@@ -410,18 +339,7 @@ Node::watch = (name, callback, option) ->
             return
         # remove watch
         delete node.watchers[key]
-        if d.isObserved
-            # provate
-            if d.privateOb
-                root.privateOb.unwatch d.privateName, d.privateOb
-                d.privateOb = null
-            # usual
-            if d.obList
-                for t in d.obList
-                    node.ob.unwatch t.name, t.callback
-                d.obList = null
-        else
-            removeItem node.watchList, d
+        removeItem node.watchList, d
         if option.onStop
             option.onStop()
 
@@ -429,49 +347,6 @@ Node::watch = (name, callback, option) ->
         callback r.value
 
     r
-
-
-Node::compile = (src_exp, cfg) ->
-    scope = @.scope
-
-    cfg = cfg or {}
-    cr = alight.utilits.compile.expression src_exp, cfg
-    if cr.filters
-        throw 'Compile doesn\'t support filters'
-
-    func = cr.fn
-    resp =
-        rawExpression: cr.rawExpression
-        isSimple: cr.isSimple
-        simpleVariables: cr.simpleVariables
-
-    if cfg.noBind
-        resp.fn = func
-    else
-        # bind to scope + try-catch
-        if (cfg.input || []).length < 4
-            resp.fn = ->
-                try
-                    func scope, arguments[0], arguments[1], arguments[2]
-                catch e
-                    alight.exceptionHandler e, 'Wrong in expression: ' + src_exp,
-                        src: src_exp
-                        cfg: cfg
-        else
-            resp.fn = ->
-                try
-                    a = [scope]
-                    for i in arguments
-                        a.push i
-                    func.apply null, a
-                catch e
-                    alight.exceptionHandler e, 'Wrong in expression: ' + src_exp,
-                        src: src_exp
-                        cfg: cfg
-
-    if cfg.full
-        return resp
-    resp.fn
 
 
 get_time = do ->
@@ -503,34 +378,6 @@ scan_core2 = (root, result) ->
     extraLoopFlag = false
     changes = 0
     total = 0
-    obTotal = 0
-
-    # observed
-    if root.observer
-        root.observer.deliver()
-        obList = root.obList
-        root.obList = []
-        for x in obList
-            node = x[0]
-            w = x[1]
-            scope = node.scope
-
-            node.obFire = {}
-
-            result.src = w.src
-            last = w.value
-            value = w.exp scope
-            if last isnt value
-                if not w.isArray
-                    w.value = value
-                changes++
-                for callback in w.callbacks.slice()
-                    if callback.call(scope, value) isnt '$scanNoChanges'
-                        extraLoopFlag = true
-                if extraLoopFlag and w.extraLoop
-                    extraLoop = true
-
-        obTotal += obList.length
 
     node = root.nodeHead
     while node
@@ -580,7 +427,6 @@ scan_core2 = (root, result) ->
         node = node.nextSibling
 
     result.total = total
-    result.obTotal = obTotal
     result.changes = changes
     result.extraLoop = extraLoop
 
@@ -615,7 +461,6 @@ Root::scan = (cfg) ->
     try
         result =
             total: 0
-            obTotal: 0
             changes: 0
             extraLoop: false
             src: ''
@@ -635,7 +480,7 @@ Root::scan = (cfg) ->
                 break
         if alight.debug.scan
             duration = get_time() - start
-            console.log "$scan: (#{10-mainLoop}) #{result.total} + #{result.obTotal} / #{duration}ms"
+            console.log "$scan: (#{10-mainLoop}) #{result.total} / #{duration}ms"
     catch e
         alight.exceptionHandler e, '$scan, error in expression: ' + result.src,
             src: result.src

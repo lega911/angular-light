@@ -2,10 +2,8 @@
 # version: 0.9.0 / 2015-06-16
 
 # init
-alight.version = '0.9.0'
+alight.version = '0.10.0'
 alight.debug =
-    useObserver: false
-    observer: 0
     scan: 0
     directive: false
     watch: false

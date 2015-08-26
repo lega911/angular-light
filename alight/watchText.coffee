@@ -72,16 +72,15 @@ do ->
             console.log '$watchText', expression
 
         # test simple text
-        st = alight.utilits.compile.buildSimpleText expression, null
+        st = alight.utils.compile.buildSimpleText expression, null
         if st
             return scope.$watch expression, callback,
                 watchText: st
                 init: config.init
 
-        data = alight.utilits.parsText expression
+        data = alight.utils.parsText expression
 
         watchCount = 0
-        canUseObserver = true
         canUseSimpleBuilder = true
         noCache = false
 
@@ -110,16 +109,14 @@ do ->
                     noCache = true
                     if d.type isnt 'text'
                         watchCount++
-                        canUseObserver = false
                         canUseSimpleBuilder = false
                 else
                     pe = alight.utils.parsExpression exp
                     if pe.isSimple
-                        ce = scope.$compile pe.expression,
+                        ce = alight.utils.compile.expression pe.expression,
                             string: true
                             full: true
                             rawExpression: true
-                            noBind: true
 
                         d.fn = ce.fn
                         if not ce.rawExpression
@@ -129,14 +126,9 @@ do ->
                             d.value = d.fn()
                         else
                             d.re = ce.rawExpression
-                            if ce.isSimple > 1
-                                d.simpleVariables = ce.simpleVariables
-                            else
-                                canUseObserver = false
                             watchCount++
                     else
                         watchCount++
-                        canUseObserver = false
                         canUseSimpleBuilder = false
                         do (d) ->
                             scope.$watch exp, (value) ->
@@ -160,14 +152,6 @@ do ->
                     callback value
             }
 
-        if canUseObserver
-            if noCache
-                st = alight.utilits.compile.buildSimpleText null, data
-            else
-                st = alight.utilits.compile.buildSimpleText expression, data
-            return scope.$watch expression, callback,
-                watchText: st
-                init: config.init
         if canUseSimpleBuilder
             if noCache
                 st = alight.utilits.compile.buildSimpleText null, data

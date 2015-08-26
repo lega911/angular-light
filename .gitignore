@@ -3,6 +3,7 @@ test/*.js
 test/*.map
 test/core/*.js
 alight/*.js
+alight/parser/*.js
 alight/*.map
 bin/
 tmp/

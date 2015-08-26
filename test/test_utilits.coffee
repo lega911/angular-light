@@ -52,6 +52,6 @@ Test('$compile').run ($test, alight) ->
 	f0 = s0.$compile 'name'
 	f1 = s1.$compile 'name'
 
-	$test.equal f0(), 'debian'
-	$test.equal f1(), 'ubuntu'
+	$test.equal f0(s0), 'debian'
+	$test.equal f1(s1), 'ubuntu'
 	$test.close()

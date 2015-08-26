@@ -79,8 +79,6 @@ alight.utilits.equal = equal = (a, b) ->
         for k, v of a
             if k is '$alite_id'
                 continue
-            if k is '$$observer'
-                continue                
             set[k] = true
             if not equal v, b[k]
                 return false
@@ -88,8 +86,6 @@ alight.utilits.equal = equal = (a, b) ->
         for k, v of b
             if k is '$alite_id'
                 continue
-            if k is '$$observer'
-                continue                
             if set[k]
                 continue
             if not equal v, a[k]

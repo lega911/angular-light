@@ -4,7 +4,6 @@
         parent
         attachParent
         root
-        useObserver
 
 ###
 Scope = (conf) ->
@@ -42,8 +41,7 @@ Scope = (conf) ->
         root = conf.root
         isRoot = false
     if not root
-        root = alight.core.root
-            useObserver: (alight.debug.useObserver or conf.useObserver) and alight.observer.support()
+        root = alight.core.root()
         isRoot = true
 
     scope.$system = root.node scope,
@@ -55,23 +53,9 @@ Scope = (conf) ->
         scope.$parent = conf.attachParent
         conf.attachParent.$system.exChildren.push scope
 
-    if scope.$system.ob
-        scope.$system.ob.rootEvent = (key, value) ->
-            for child in scope.$system.exChildren
-                child.$$rebuildObserve key, value
-            null
-
     scope
 
 alight.Scope = Scope
-
-
-Scope::$$rebuildObserve = (key, value) ->
-    scope = @
-    scope.$system.ob.reobserve key
-    for child in scope.$system.exChildren
-        child.$$rebuildObserve key, value
-    scope.$system.ob.fire key, value
 
 
 Scope::$new = (isolate) ->
@@ -122,13 +106,12 @@ Scope::$watch = (name, callback, option) ->
         string      - method will return result as string
         input   - list of input arguments
         full    - full response
-        noBind  - get function without bind to scope
         rawExpression
 
 ###
 
 Scope::$compile = (src, option) ->
-    @.$system.compile src, option
+    alight.utils.compile.expression(src, option).fn
 
 
 Scope::$eval = (exp) ->

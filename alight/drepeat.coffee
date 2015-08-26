@@ -133,7 +133,11 @@ alight.directives.al.repeat =
                     else
                         if self.trackExpression
                             node_by_id = {}
-                            _getId = scope.$compile self.trackExpression, { input:['$id', self.nameOfKey] }
+                            _getId = do ->
+                                fn = scope.$compile self.trackExpression,
+                                    input: ['$id', self.nameOfKey]
+                                (a, b) ->
+                                    fn scope, a, b
                             _id = (item) ->
                                 id = item.$alite_id
                                 if id
@@ -319,9 +323,6 @@ alight.directives.al.repeat =
                                 scope.$setValue self.storeTo, list
                                 return
 
-                            if scope.$system.ob  # observer
-                                return
-
                             return '$scanNoChanges'
                     else
                         (list) ->
@@ -442,9 +443,6 @@ alight.directives.al.repeat =
 
                             if self.storeTo
                                 scope.$setValue self.storeTo, list
-                                return
-
-                            if scope.$system.ob  # observer
                                 return
 
                             return '$scanNoChanges'
