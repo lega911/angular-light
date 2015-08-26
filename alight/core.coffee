@@ -189,7 +189,7 @@ sortByPriority = (a, b) ->
 
 attrBinding = (element, value, scope, attrName) ->
     text = value
-    if text.indexOf(alight.utilits.pars_start_tag) < 0
+    if text.indexOf(alight.utils.pars_start_tag) < 0
         return
 
     setter = (result) ->
@@ -201,7 +201,7 @@ attrBinding = (element, value, scope, attrName) ->
 
 bindText = (scope, node) ->
     text = node.data
-    if text.indexOf(alight.utilits.pars_start_tag) < 0
+    if text.indexOf(alight.utils.pars_start_tag) < 0
         return
     setter = (result) ->
         node.nodeValue = result

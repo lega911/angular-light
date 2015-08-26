@@ -1,5 +1,5 @@
 
-alight.utilits.getId = do ->
+alight.utils.getId = do ->
     prefix = do ->
         symbols = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.split ''
         n = Math.floor((new Date()).valueOf() / 1000) - 1388512800
@@ -17,7 +17,7 @@ alight.utilits.getId = do ->
         return prefix + '#' + index++
 
 
-alight.utilits.clone = clone = (d) ->
+alight.utils.clone = clone = (d) ->
     # null, undefined
     if not d
         return d
@@ -47,7 +47,7 @@ alight.utilits.clone = clone = (d) ->
     return d
 
 
-alight.utilits.equal = equal = (a, b) ->
+alight.utils.equal = equal = (a, b) ->
     # null, undefined
     if not a
         return a is b
@@ -99,17 +99,6 @@ alight.exceptionHandler = (e, title, locals) ->
     console.warn title, (e.message || '') + '\n', locals
     err = if typeof(e) is 'string' then e else e.stack
     console.error err
-
-
-alight.utilits.dataByElement = (el, key) ->
-    al = el.al
-    if not al
-        el.al = al = {}
-    if key
-        if not al[key]
-            al[key] = {}
-        return al[key]
-    return al
 
 
 do ->

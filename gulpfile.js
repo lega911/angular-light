@@ -36,7 +36,7 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/scope.js',
     './tmp/core.js',
     './tmp/watchText.js',
-    './tmp/utilits.js',
+    './tmp/utils.js',
     './tmp/parser/parseExpression.js',
     './tmp/parser/parseText.js',
     './tmp/compile.js',

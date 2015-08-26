@@ -229,7 +229,7 @@ Node::watch = (name, callback, option) ->
         option.isArray = true
     if f$.isFunction name
         exp = name
-        key = alight.utilits.getId()
+        key = alight.utils.getId()
         isFunction = true
     else
         isFunction = false
@@ -276,13 +276,13 @@ Node::watch = (name, callback, option) ->
             if option.watchText
                 exp = option.watchText.fn
             else
-                pe = alight.utilits.parsExpression name
+                pe = alight.utils.parsExpression name
                 if pe.result.length > 1  # has filters
                     return makeFilterChain node, pe, callback, option
                 exp = alight.utils.compile.expression(name).fn
         returnValue = value = exp scope
         if option.deep
-            value = alight.utilits.clone value
+            value = alight.utils.clone value
             option.isArray = false
         node.watchers[key] = d =
             isArray: Boolean option.isArray
@@ -406,9 +406,9 @@ scan_core2 = (root, result) ->
                         else
                             w.value = null
                 else if w.deep
-                    if not alight.utilits.equal last, value
+                    if not alight.utils.equal last, value
                         mutated = true
-                        w.value = alight.utilits.clone value
+                        w.value = alight.utils.clone value
                 else
                     mutated = true
                     w.value = value

@@ -112,7 +112,7 @@ do ->
                         canUseSimpleBuilder = false
                 else
                     pe = alight.utils.parsExpression exp
-                    if pe.isSimple
+                    if not pe.hasFilters
                         ce = alight.utils.compile.expression pe.expression,
                             string: true
                             full: true
@@ -154,9 +154,9 @@ do ->
 
         if canUseSimpleBuilder
             if noCache
-                st = alight.utilits.compile.buildSimpleText null, data
+                st = alight.utils.compile.buildSimpleText null, data
             else
-                st = alight.utilits.compile.buildSimpleText expression, data
+                st = alight.utils.compile.buildSimpleText expression, data
             return scope.$watch expression, callback,
                 watchText:
                     fn: st.fn
@@ -165,7 +165,7 @@ do ->
         w = null
         key = getId()
         data.scope = scope
-        fn = alight.utilits.compile.buildText expression, data
+        fn = alight.utils.compile.buildText expression, data
         doUpdate = ->
             scope.$system.root.private[key] = fn()
         doFinally = ->

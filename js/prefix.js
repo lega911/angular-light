@@ -22,7 +22,7 @@
         var f$ = {};
         alight.f$ = f$;
         alight.utilits = alight.utils;
-
+        alight.d = alight.directives;
 
         var removeItem = function(list, item) {
             var i = list.indexOf(item);

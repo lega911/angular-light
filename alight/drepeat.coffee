@@ -142,7 +142,7 @@ alight.directives.al.repeat =
                                 id = item.$alite_id
                                 if id
                                     return id
-                                id = item.$alite_id = alight.utilits.getId()
+                                id = item.$alite_id = alight.utils.getId()
                                 id
 
                             node_get = (item) ->
@@ -192,7 +192,7 @@ alight.directives.al.repeat =
                                     null
 
                                 node_set = (item, node) ->
-                                    $id = alight.utilits.getId()
+                                    $id = alight.utils.getId()
                                     item.$alite_id = $id
                                     node.$id = $id
                                     node_by_id[$id] = node
