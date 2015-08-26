@@ -230,6 +230,7 @@ alight.directives.al.repeat =
                             pid = null
                             child_scope
                             prev_node = null
+                            prev_moved = false
                             elLast = self.element_list.length - 1
                             for item, index in list
                                 item_value = item
@@ -240,6 +241,12 @@ alight.directives.al.repeat =
                                 if node
                                     self.updateChild node.scope, item, index, list
                                     if node.prev is prev_node
+                                        if prev_moved
+                                            for el in node.element_list
+                                                dom_inserts.push
+                                                    element: el
+                                                    after: last_element
+                                                last_element = el
                                         # next loop
                                         prev_node = node
                                         last_element = node.element_list[elLast]
@@ -256,6 +263,7 @@ alight.directives.al.repeat =
                                             element: el
                                             after: last_element
                                         last_element = el
+                                    prev_moved = true
 
                                     # next loop
                                     prev_node = node
@@ -350,6 +358,7 @@ alight.directives.al.repeat =
                             pid = null
                             child_scope
                             prev_node = null
+                            prev_moved = false
                             for item, index in list
                                 item_value = item
                                 item = item or {}
@@ -359,6 +368,11 @@ alight.directives.al.repeat =
                                 if node
                                     self.updateChild node.scope, item, index, list
                                     if node.prev is prev_node
+                                        if prev_moved
+                                            dom_inserts.push
+                                                element: node.element
+                                                after: prev_node.element
+
                                         # next loop
                                         prev_node = node
                                         last_element = node.element
@@ -372,7 +386,8 @@ alight.directives.al.repeat =
                                         prev_node.next = node
                                     dom_inserts.push
                                         element: node.element
-                                        after: if prev_node then prev_node.element else self.top_element
+                                        after: last_element
+                                    prev_moved = true
 
                                     # next loop
                                     last_element = node.element
