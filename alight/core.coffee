@@ -441,7 +441,7 @@ alight.applyBindings = (scope, element, config) ->
 alight.bootstrap = (input) ->
     if not input
         input = f$.find document, '[al-app]'
-    if input instanceof HTMLElement
+    if f$.isElement input
         input = [input]    
     if f$.isArray(input) or typeof(input.length) is 'number'
         for element in input
@@ -475,7 +475,7 @@ alight.bootstrap = (input) ->
             scope = alight.Scope
                 prototype: input
 
-            if input.$el instanceof HTMLElement
+            if f$.isElement input.$el
                 alight.applyBindings scope, input.$el
             else
                 for el in f$.find(document.body, input.$el)
