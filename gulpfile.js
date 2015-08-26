@@ -7,19 +7,25 @@ var header = require('gulp-header');
 var clean = require('gulp-clean');
 
 
-gulp.task('default', ['compress', 'animate_compress'], function() {
-});
+gulp.task('default', ['compress'], function(){});
 
 gulp.task('clean', function () {
   return gulp.src(['bin', 'tmp'], {read: false})
     .pipe(clean());
 });
 
-gulp.task('compile', ['clean'], function() {
+gulp.task('compile', ['compile_core', 'compile_parser'], function() {});
+
+gulp.task('compile_core', ['clean'], function() {
   return gulp.src('./alight/*.coffee')
-    //.pipe(coffee({bare: true}).on('error', console.log))
     .pipe(coffee({}).on('error', console.log))
     .pipe(gulp.dest('tmp'))
+});
+
+gulp.task('compile_parser', ['clean'], function() {
+  return gulp.src('./alight/parser/*.coffee')
+    .pipe(coffee({}).on('error', console.log))
+    .pipe(gulp.dest('tmp/parser'))
 });
 
 gulp.task('assemble', ['compile'], function() {
@@ -31,7 +37,8 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/core.js',
     './tmp/watchText.js',
     './tmp/utilits.js',
-    './tmp/parser.js',
+    './tmp/parser/parseExpression.js',
+    './tmp/parser/parseText.js',
     './tmp/compile.js',
     './tmp/directives.js',
     './tmp/drepeat.js',
@@ -51,21 +58,6 @@ gulp.task('compress', ['assemble'], function() {
        extname: '.min.js'
      }))
     .pipe(header("/**\n * Angular Light\n * (c) 2015 Oleg Nechaev\n * Released under the MIT License.\n */"))
-    .pipe(gulp.dest('bin'))
-});
-
-gulp.task('animate_build', ['compile'], function() {
-  return gulp.src('tmp/animate.js')
-    .pipe(concat('animate.js'))
-    .pipe(gulp.dest('bin'));
-});
-
-gulp.task('animate_compress', ['animate_build'], function() {
-  return gulp.src('./bin/animate.js')
-    .pipe(uglify())
-    .pipe(rename({
-       extname: '.min.js'
-     }))
     .pipe(gulp.dest('bin'))
 });
 
