@@ -14,18 +14,24 @@ gulp.task('clean', function () {
     .pipe(clean());
 });
 
-gulp.task('compile', ['compile_core', 'compile_parser'], function() {});
+gulp.task('compile', ['compile_core', 'compile_parser', 'compile_filter'], function() {});
 
 gulp.task('compile_core', ['clean'], function() {
   return gulp.src('./alight/*.coffee')
-    .pipe(coffee({}).on('error', console.log))
+    .pipe(coffee({bare: true}).on('error', console.log))
     .pipe(gulp.dest('tmp'))
 });
 
 gulp.task('compile_parser', ['clean'], function() {
   return gulp.src('./alight/parser/*.coffee')
-    .pipe(coffee({}).on('error', console.log))
+    .pipe(coffee({bare: true}).on('error', console.log))
     .pipe(gulp.dest('tmp/parser'))
+});
+
+gulp.task('compile_filter', ['clean'], function() {
+  return gulp.src('./alight/filter/*.coffee')
+    .pipe(coffee({bare: true}).on('error', console.log))
+    .pipe(gulp.dest('tmp/filter'))
 });
 
 gulp.task('assemble', ['compile'], function() {
@@ -42,7 +48,13 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/compile.js',
     './tmp/directives.js',
     './tmp/drepeat.js',
-    './tmp/filters.js',
+
+    './tmp/filter/date.js',
+    './tmp/filter/filter.js',
+    './tmp/filter/generator.js',
+    './tmp/filter/json.js',
+    './tmp/filter/slice.js',
+
     './js/postfix.js'
   ];
   return gulp.src(files)

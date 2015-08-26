@@ -1,5 +1,5 @@
 # Angular light
-# version: 0.9.0 / 2015-06-16
+# version: 0.10.0 / 2015-08-26
 
 # init
 alight.version = '0.10.0'
