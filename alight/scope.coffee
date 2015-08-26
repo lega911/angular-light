@@ -85,7 +85,7 @@ $watch
     callback:
         function
     option:
-        isArray (is_array)
+        isArray
         readOnly
         init
         deep
@@ -115,7 +115,8 @@ Scope::$compile = (src, option) ->
 
 
 Scope::$eval = (exp) ->
-    @.$compile(exp, {noBind: true})(@)
+    fn = @.$compile exp
+    fn @
 
 
 Scope::$getValue = (name) ->
@@ -126,7 +127,6 @@ Scope::$setValue = (name, value) ->
     fn = @.$compile name + ' = $value',
         input: ['$value']
         no_return: true
-        noBind: true
     fn @, value
 
 
@@ -144,27 +144,6 @@ Scope::$destroy = () ->
     node.destroy()
     if scope.$system.exIsRoot
         root.destroy()
-
-    #scope.$system = null
-
-
-    ###
-
-    # fire callbacks
-    for cb in node.destroy_callbacks
-        cb scope
-    node.destroy_callbacks.length = 0
-
-    # remove from parent
-    if scope.$parent
-        removeItem scope.$parent.$system.children, scope
-
-    # remove watch
-    scope.$parent = null
-    node.watchers = {}
-    node.watchList = []
-
-    ###
 
 
 Scope::$scanAsync = (callback) ->

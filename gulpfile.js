@@ -14,7 +14,7 @@ gulp.task('clean', function () {
     .pipe(clean());
 });
 
-gulp.task('compile', ['compile_core', 'compile_parser', 'compile_filter'], function() {});
+gulp.task('compile', ['compile_core', 'compile_parser', 'compile_filter', 'compile_directive'], function() {});
 
 gulp.task('compile_core', ['clean'], function() {
   return gulp.src('./alight/*.coffee')
@@ -34,6 +34,12 @@ gulp.task('compile_filter', ['clean'], function() {
     .pipe(gulp.dest('tmp/filter'))
 });
 
+gulp.task('compile_directive', ['clean'], function() {
+  return gulp.src('./alight/directive/*.coffee')
+    .pipe(coffee({bare: true}).on('error', console.log))
+    .pipe(gulp.dest('tmp/directive'))
+});
+
 gulp.task('assemble', ['compile'], function() {
   var files = [
     './js/prefix.js',
@@ -46,8 +52,32 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/parser/parseExpression.js',
     './tmp/parser/parseText.js',
     './tmp/compile.js',
-    './tmp/directives.js',
-    './tmp/drepeat.js',
+
+    './tmp/directive/app.js',
+    './tmp/directive/bindonce.js',
+    './tmp/directive/checked.js',
+    './tmp/directive/class.js',
+    './tmp/directive/click.js',
+    './tmp/directive/cloak.js',
+    './tmp/directive/controller.js',
+    './tmp/directive/enable.js',
+    './tmp/directive/event.js',
+    './tmp/directive/focused.js',
+    './tmp/directive/html.js',
+    './tmp/directive/if.js',
+    './tmp/directive/include.js',
+    './tmp/directive/init.js',
+    './tmp/directive/radio.js',
+    './tmp/directive/readonly.js',
+    './tmp/directive/showHide.js',
+    './tmp/directive/src.js',
+    './tmp/directive/stop.js',
+    './tmp/directive/style.js',
+    './tmp/directive/submit.js',
+    './tmp/directive/text.js',
+    './tmp/directive/value.js',
+    './tmp/directive/repeat.js',
+    './tmp/textDirective.js',
 
     './tmp/filter/date.js',
     './tmp/filter/filter.js',

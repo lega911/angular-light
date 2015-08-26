@@ -206,7 +206,7 @@ watchAny = (node, key, callback) ->
 ###
 
     option:
-        isArray (is_array)
+        isArray
         readOnly
         oneTime
         deep
@@ -225,8 +225,6 @@ Node::watch = (name, callback, option) ->
     root = node.root
     scope = node.scope
 
-    if option.is_array  # compatibility with old version
-        option.isArray = true
     if f$.isFunction name
         exp = name
         key = alight.utils.getId()
