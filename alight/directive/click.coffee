@@ -1,8 +1,10 @@
 
 clickMaker = (event) ->
     priority: 10
+    stopPropagation: true
     init: (element, name, scope, env) ->
         self =
+            stopPropagation: @.stopPropagation
             callback: scope.$compile name,
                 no_return: true
             start: ->
@@ -16,7 +18,8 @@ clickMaker = (event) ->
             doCallback: (e) ->
                 if not self.stop
                     e.preventDefault()
-                    e.stopPropagation()
+                    if self.stopPropagation
+                        e.stopPropagation()
 
                 if f$.attr element, 'disabled'
                     return
@@ -31,7 +34,8 @@ clickMaker = (event) ->
 
                 if self.stop and scope.$eval self.stop
                     e.preventDefault()
-                    e.stopPropagation()
+                    if self.stopPropagation
+                        e.stopPropagation()
 
                 scope.$scan()
 

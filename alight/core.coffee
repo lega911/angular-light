@@ -1,8 +1,8 @@
 # Angular light
-# version: 0.10.1 / 2015-08-28
+# version: 0.10.2 / 2015-08-28
 
 # init
-alight.version = '0.10.1'
+alight.version = '0.10.2'
 alight.debug =
     scan: 0
     directive: false
