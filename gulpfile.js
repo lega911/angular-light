@@ -84,6 +84,7 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/filter/generator.js',
     './tmp/filter/json.js',
     './tmp/filter/slice.js',
+    './tmp/filter/throttle.js',
 
     './js/postfix.js'
   ];

@@ -77,14 +77,14 @@ alight.utils.equal = equal = (a, b) ->
         # Object
         set = {}
         for k, v of a
-            if k is '$alite_id'
+            if k[0] is '$'
                 continue
             set[k] = true
             if not equal v, b[k]
                 return false
 
         for k, v of b
-            if k is '$alite_id'
+            if k[0] is '$'
                 continue
             if set[k]
                 continue

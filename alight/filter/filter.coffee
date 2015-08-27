@@ -10,7 +10,7 @@ alight.filters.filter = (exp, scope, env) ->
             return null
         if typeof(e) is 'string'
             e =
-                $: e
+                __all: e
         else if typeof(e) isnt 'object'
             env.setValue value
             return null
@@ -18,9 +18,9 @@ alight.filters.filter = (exp, scope, env) ->
         result = for r in value
             if typeof r is 'object'
                 f = true
-                if e.$
+                if e.__all
                     f = false
-                    a = e.$.toLowerCase()
+                    a = e.__all.toLowerCase()
                     for k, v of r
                         if k is '$alite_id'
                             continue
@@ -31,7 +31,7 @@ alight.filters.filter = (exp, scope, env) ->
                         continue
 
                 for k, v of e
-                    if k is '$'
+                    if k is '__all'
                         continue
                     a = r[k]
                     if not a
@@ -44,9 +44,9 @@ alight.filters.filter = (exp, scope, env) ->
                     continue
                 r
             else
-                if not e.$
+                if not e.__all
                     continue
-                a = e.$.toLowerCase()
+                a = e.__all.toLowerCase()
                 if (''+r).toLowerCase().indexOf(a) < 0
                     continue
                 r

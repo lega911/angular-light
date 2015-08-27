@@ -4,6 +4,8 @@ test/*.map
 test/core/*.js
 alight/*.js
 alight/parser/*.js
+alight/filter/*.js
+alight/directive/*.js
 alight/*.map
 bin/
 tmp/
