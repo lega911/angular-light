@@ -370,6 +370,55 @@ Test('al-repeat store to', 'repeat-store-to-0').run ($test, alight) ->
             $test.close()
 
 
+Test('al-repeat track by 4', 'al-repeat-track-by-4').run ($test, alight) ->
+    $test.start 3
+
+    element = document.createElement 'div'
+    element.innerHTML = '<div class="item" al-repeat="it in list track by $index">{{it}}</div>'
+
+    scope = alight.Scope()
+    scope.list = [0, 1, 2, 3, 4]
+
+    alight.applyBindings scope, element
+
+    getText = ->
+        element.innerText.replace(/\s/g, '')
+
+    $test.equal getText(), '01234'
+    scope.list = []
+    scope.$scan ->
+        $test.equal getText(), ''
+        scope.list = [0, 1, 2, 3, 4]
+        scope.$scan ->
+            $test.equal getText(), '01234'
+            $test.close()
+
+
+Test('al-repeat track by 5', 'al-repeat-track-by-5').run ($test, alight) ->
+    $test.start 2
+
+    index = 1
+    alight.d.al.index = (el, _, scope) ->
+        el.innerHTML = '' + index
+        index++
+
+    element = document.createElement 'div'
+    element.innerHTML = '<div class="item" al-repeat="it in list track by it.k"><i al-index></i>{{it.name}}</div>'
+
+    scope = alight.Scope()
+    scope.list = [{k: 0, name: 'a'}, {k: 1, name: 'b'}, {k: 2, name: 'c'}]
+
+    alight.applyBindings scope, element
+
+    getText = ->
+        element.innerText.replace(/\s/g, '')
+
+    $test.equal getText(), '1a2b3c'
+    scope.list = [{k: 0, name: 'x'}, {k: 1, name: 'y'}, {k: 2, name: 'z'}]
+    scope.$scan ->
+        $test.equal getText(), '1x2y3z'
+        $test.close()
+
 ###
 Test('al-repeat restrict M #0', 'al-repeat-restrict-m-0').run ($test, alight) ->
     $test.start 1

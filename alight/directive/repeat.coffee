@@ -121,8 +121,7 @@ alight.directives.al.repeat =
 
                         node_del = (node) ->
                             $id = node.$id
-                            if $id
-                                delete node_by_id[$id]
+                            `if($id != null) delete node_by_id[$id]`
                             null
 
                         node_set = (item, node) ->
@@ -147,14 +146,12 @@ alight.directives.al.repeat =
 
                             node_get = (item) ->
                                 $id = _getId _id, item
-                                if $id
-                                    return node_by_id[$id]
+                                `if($id != null) return node_by_id[$id]`
                                 null
 
                             node_del = (node) ->
                                 $id = node.$id
-                                if $id
-                                    delete node_by_id[$id]
+                                `if($id != null) delete node_by_id[$id]`
                                 null
 
                             node_set = (item, node) ->
