@@ -71,3 +71,32 @@ Test('$ns').run ($test, alight) ->
         $test.equal f$.text(f$.find(tag, 'p')[0]), 'linux'
         
         $test.close()
+
+
+Test('$ns-0', 'ns-0').run ($test, alight) ->
+    $test.start 2
+    f$ = alight.f$
+
+
+    tag = document.createElement 'div'
+    tag.innerHTML = '<p al-private="title"></p>:<p al-text="title"></p>'
+
+
+    scope = alight.Scope()
+    scope.title = 'title'
+    scope.$ns =
+        directives:
+            al:
+                private: (el, name) ->
+                    f$.text el, name
+
+    try
+        alight.applyBindings scope, tag
+    catch e
+        $test.equal e, 'Directive not found: al-text'
+
+    scope.$ns.inheritGlobal = true
+    alight.applyBindings scope, tag
+
+    $test.equal f$.text(tag), 'title:title'
+    $test.close()

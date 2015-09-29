@@ -1,8 +1,8 @@
 # Angular light
-# version: 0.10.3 / 2015-08-28
+# version: 0.10.4 / 2015-09-29
 
 # init
-alight.version = '0.10.3'
+alight.version = '0.10.4'
 alight.debug =
     scan: 0
     directive: false
@@ -26,16 +26,26 @@ alight.directivePreprocessor = directivePreprocessor = (attrName, args) ->
     name = name.substring(j+1).replace /(-\w)/g, (m) ->
         m.substring(1).toUpperCase()
 
+    raw = null
     if args.scope.$ns and args.scope.$ns.directives
         path = args.scope.$ns.directives[ns]
-    else        
-        path = alight.directives[ns]
-    if not path
-        return { noNs: true }
+        if path
+            raw = path[name]
+            if not raw
+                if not args.scope.$ns.inheritGlobal
+                    return { noDirective: true }
+        else
+            if not args.scope.$ns.inheritGlobal
+                return { noNs: true }
 
-    raw = path[name]
     if not raw
-        return { noDirective: true }
+        path = alight.directives[ns]
+        if not path
+            return { noNs: true }
+
+        raw = path[name]
+        if not raw
+            return { noDirective: true }
 
     dir = {}
     if f$.isFunction raw
@@ -389,9 +399,13 @@ alight.nextTick = do ->
 
 
 alight.getController = (name, scope) ->
+    error = false
     if scope.$ns and scope.$ns.controllers
         ctrl = scope.$ns.controllers[name]
-    else
+        if not ctrl and not scope.$ns.inheritGlobal
+            error = true
+    
+    if not ctrl and not error
         ctrl = alight.controllers[name] or (enableGlobalControllers and window[name])
     if not ctrl
         throw 'Controller isn\'t found: ' + name
@@ -401,9 +415,12 @@ alight.getController = (name, scope) ->
 
 
 alight.getFilter = (name, scope, param) ->
+    error = false
     if scope.$ns and scope.$ns.filters
         filter = scope.$ns.filters[name]
-    else
+        if not filter and not scope.$ns.inheritGlobal
+            error = true
+    if not filter and not error
         filter = alight.filters[name]
     if not filter
         throw 'Filter not found: ' + name
