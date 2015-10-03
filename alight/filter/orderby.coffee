@@ -17,7 +17,7 @@ alight.filters.orderBy = (exp, scope, env) ->
         return 0
 
     doSort = ->
-        if [] instanceof Array
+        if list instanceof Array
             list.sort sortFn
             env.setValue list
 

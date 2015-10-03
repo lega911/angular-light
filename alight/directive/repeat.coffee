@@ -9,6 +9,10 @@
     "item in list track by item.id"
     "item in list | filter store to filteredList"
     "item in list | filter track by trackExpression store to filteredList"
+
+    "(key, value) in object"
+    "(key, value) in object orderBy:key:reverse store to filteredList"
+    "(key, value) in object | filter orderBy:key,reverse store to filteredList"
 ###
 
 alight.directives.al.repeat =
@@ -36,30 +40,55 @@ alight.directives.al.repeat =
                     self.childController = alController.callController
 
             parsExpression: ->
-                s = exp
+                s = exp.trim()
 
                 # store to
-                r = s.match /(.*) store to ([\w\.]+)/
+                r = s.match /(.*) store to ([\w\.]+)$/
                 if r
                     self.storeTo = r[2]
                     s = r[1]
 
-                # track by
-                r = s.match /(.*) track by ([\w\.\$\(\)]+)/
-                if r
-                    self.trackExpression = r[2]
-                    s = r[1]
+                if s[0] is '('
+                    # object
+                    self.objectMode = true
+                    r = s.match /\((\w+),\s*(\w+)\)\s+in\s+(.+)\s+orderBy:(.+)\s*$/
+                    if r
+                        self.objectKey = r[1]
+                        self.objectValue = r[2]
+                        self.expression = r[3] + " | toArray:#{self.objectKey},#{self.objectValue} | orderBy:#{r[4]}"
+                        self.nameOfKey = '$item'
+                        self.trackExpression = '$item.' + self.objectKey
+                    else
+                        r = s.match /\((\w+),\s*(\w+)\)\s+in\s+(.+)\s*$/
+                        if not r
+                            throw 'Wrong repeat: ' + exp
+                        self.objectKey = r[1]
+                        self.objectValue = r[2]
+                        self.expression = r[3] + " | toArray:#{self.objectKey},#{self.objectValue}"
+                        self.nameOfKey = '$item'
+                        self.trackExpression = '$item.' + self.objectKey
+                else
+                    # track by
+                    r = s.match /(.*) track by ([\w\.\$\(\)]+)/
+                    if r
+                        self.trackExpression = r[2]
+                        s = r[1]
 
-                # item in list
-                r = s.match /\s*(\w+)\s+in\s+(.+)/
-                if not r
-                    throw 'Wrong repeat: ' + exp
-                self.nameOfKey = r[1]
-                self.expression = r[2]
+                    # item in list
+                    r = s.match /\s*(\w+)\s+in\s+(.+)/
+                    if not r
+                        throw 'Wrong repeat: ' + exp
+                    self.nameOfKey = r[1]
+                    self.expression = r[2]
 
             watchModel: ->
-                self.watch = scope.$watch self.expression, self.updateDom,
-                    isArray: true
+                if self.objectMode
+                    flags =
+                        deep: true
+                else
+                    flags =
+                        isArray: true
+                self.watch = scope.$watch self.expression, self.updateDom, flags
 
             initUpdateDom: ->
                 self.watch.fire()
@@ -96,7 +125,11 @@ alight.directives.al.repeat =
                 child_scope
 
             updateChild: (child_scope, item, index, list) ->
-                child_scope[self.nameOfKey] = item
+                if self.objectMode
+                    child_scope[self.objectKey] = item[self.objectKey]
+                    child_scope[self.objectValue] = item[self.objectValue]
+                else
+                    child_scope[self.nameOfKey] = item
                 child_scope.$index = index
                 child_scope.$first = index is 0
                 child_scope.$last = index is list.length-1
