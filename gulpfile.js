@@ -5,7 +5,8 @@ var concat = require('gulp-concat');
 var rename = require('gulp-rename');
 var header = require('gulp-header');
 var clean = require('gulp-clean');
-
+var replace = require('gulp-replace');
+var version = require('./js/version.js');
 
 gulp.task('default', ['compress', 'animate_compress'], function() {
 });
@@ -41,6 +42,8 @@ gulp.task('assemble', ['compile'], function() {
   ];
   return gulp.src(files)
     .pipe(concat('alight.js'))
+    .pipe(replace('{{{version}}}', version.version))
+    .pipe(header("/**\n * Angular Light " + version.version + "\n * (c) 2015 Oleg Nechaev\n * Released under the MIT License.\n * " + version.date + ", http://angularlight.org/ \n */"))
     .pipe(gulp.dest('bin'));
 });
 
@@ -50,7 +53,7 @@ gulp.task('compress', ['assemble'], function() {
     .pipe(rename({
        extname: '.min.js'
      }))
-    .pipe(header("/**\n * Angular Light\n * (c) 2015 Oleg Nechaev\n * Released under the MIT License.\n */"))
+    .pipe(header("/**\n * Angular Light " + version.version + "\n * (c) 2015 Oleg Nechaev\n * Released under the MIT License.\n * " + version.date + ", http://angularlight.org/ \n */"))
     .pipe(gulp.dest('bin'))
 });
 
