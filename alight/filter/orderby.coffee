@@ -38,5 +38,8 @@ alight.filters.orderBy = (exp, scope, env) ->
             init: true
 
     onChange: (input) ->
-        list = input
+        if input instanceof Array
+            list = input.slice()
+        else
+            list = null
         doSort()
