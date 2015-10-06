@@ -58,10 +58,17 @@ Scope = (conf) ->
 alight.Scope = Scope
 
 
+###
+    isolate:
+        true / false / 'root'
+###
 Scope::$new = (isolate) ->
     parent = @
     
-    if isolate
+    if isolate is 'root'
+        scope = alight.Scope
+            attachParent: parent
+    else if isolate
         scope = alight.Scope
             root: parent.$system.root
             attachParent: parent

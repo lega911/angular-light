@@ -141,7 +141,10 @@ do ->
         fn: ->
             if @.directive.scope
                 parentScope = @.scope
-                @.scope = parentScope.$new(@.directive.scope is 'isolate')
+                if @.directive.scope is 'root'
+                    @.scope = parentScope.$new 'root'
+                else
+                    @.scope = parentScope.$new(@.directive.scope is 'isolate')
                 @.result.owner = true
                 @.doBinding = true
 
