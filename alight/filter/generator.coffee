@@ -1,10 +1,11 @@
 
-alight.filters.generator = (exp, scope) ->
+alight.filters.generator = (exp, scope, env) ->
     list = []
-    (size) ->
+    watchMode: 'simple'
+    onChange: (size) ->
         if list.length >= size
             list.length = size
         else
             while list.length < size
                 list.push {}
-        list
+        env.setValue list

@@ -141,7 +141,13 @@ makeFilterChain = do ->
         scope = node.scope
         root = node.root
 
-        modeDeep = false
+        # watchMode: simple, deep, array
+        if option.isArray
+            watchMode = 'array'
+        else if option.deep
+            watchMode = 'deep'
+        else
+            watchMode = 'simple'
         prevCallback = baseCallback
         rindex = pe.result.length - 1
         onStop = []
@@ -165,21 +171,24 @@ makeFilterChain = do ->
                     (value) ->
                         prevCallback filter value
             else
-                if filter.watchMode is 'deep'
-                    modeDeep = true
+                if filter.watchMode
+                    watchMode = filter.watchMode
                 prevCallback = filter.onChange
                 if filter.onStop
                     onStop.push filter.onStop
 
-        w = node.watch pe.expression, prevCallback,
+        watchOptions =
             init: option.init
-            isArray: option.isArray
-            deep: modeDeep
             oneTime: option.oneTime
             onStop: ->
                 for fn in onStop
                     fn()
                 onStop.length = 0
+        if watchMode is 'array'
+            watchOptions.isArray = true
+        else if watchMode is 'deep'
+            watchOptions.deep = true
+        w = node.watch pe.expression, prevCallback, watchOptions
 
         w.value = undefined
         w
