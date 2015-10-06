@@ -264,3 +264,37 @@ Test('$watch #1', 'watch-1').run ($test, alight) ->
         $test.equal count, 4
 
         $test.close()
+
+
+Test('$watch static #0', 'watch-static-0').run ($test, alight) ->
+    $test.start 4
+
+    scope = alight.Scope()
+    scope.name = 'linux'
+
+    counter = 0
+    w0 = scope.$watch '"one"', ->
+        counter += 1
+    w1 = scope.$watch '2', ->
+        counter += 1
+    w2 = scope.$watch 'true', ->
+        counter += 1
+    w3 = scope.$watch 'false', ->
+        counter += 1
+    w4 = scope.$watch '5 + 5', ->
+        counter += 1
+
+    $test.equal counter, 0
+    w0.fire()
+    w1.fire()
+    w2.fire()
+    w3.fire()
+    w4.fire()
+    $test.equal counter, 5
+
+    r = scope.$scan()
+
+    $test.equal r.total, 0
+    $test.equal r.changes, 0
+
+    $test.close()

@@ -270,6 +270,7 @@ Node::watch = (name, callback, option) ->
         exp = d.exp
     else
         # create watch object
+        isStatic = false
         if not isFunction
             if option.watchText
                 exp = option.watchText.fn
@@ -277,12 +278,15 @@ Node::watch = (name, callback, option) ->
                 pe = alight.utils.parsExpression name
                 if pe.result.length > 1  # has filters
                     return makeFilterChain node, pe, callback, option
-                exp = alight.utils.compile.expression(name).fn
+                ce = alight.utils.compile.expression(name)
+                isStatic = ce.isSimple and ce.simpleVariables.length is 0 and not option.isArray
+                exp = ce.fn
         returnValue = value = exp scope
         if option.deep
             value = alight.utils.clone value
             option.isArray = false
-        node.watchers[key] = d =
+        d =
+            isStatic: isStatic
             isArray: Boolean option.isArray
             extraLoop: not option.readOnly
             deep: option.deep
@@ -299,16 +303,18 @@ Node::watch = (name, callback, option) ->
                 d.value = undefined
             returnValue = d.value
 
-        node.watchList.push d
-        # insert scope into root-chain
-        if not node.lineActive
-            node.lineActive = true
-            t = root.nodeTail
-            if t
-                root.nodeTail = t.nextSibling = node
-                node.prevSibling = t
-            else
-                root.nodeHead = root.nodeTail = node
+        if not isStatic
+            node.watchers[key] = d
+            node.watchList.push d
+            # insert scope into root-chain
+            if not node.lineActive
+                node.lineActive = true
+                t = root.nodeTail
+                if t
+                    root.nodeTail = t.nextSibling = node
+                    node.prevSibling = t
+                else
+                    root.nodeHead = root.nodeTail = node
 
     r =
         $: d
@@ -336,8 +342,9 @@ Node::watch = (name, callback, option) ->
         if d.callbacks.length isnt 0
             return
         # remove watch
-        delete node.watchers[key]
-        removeItem node.watchList, d
+        if not d.isStatic
+            delete node.watchers[key]
+            removeItem node.watchList, d
         if option.onStop
             option.onStop()
 
@@ -478,7 +485,7 @@ Root::scan = (cfg) ->
                 break
         if alight.debug.scan
             duration = get_time() - start
-            console.log "$scan: (#{10-mainLoop}) #{result.total} / #{duration}ms"
+            console.log "$scan: loops: (#{10-mainLoop}), last-loop changes: #{result.changes}, watches: #{result.total} / #{duration}ms"
     catch e
         alight.exceptionHandler e, '$scan, error in expression: ' + result.src,
             src: result.src
@@ -492,3 +499,5 @@ Root::scan = (cfg) ->
 
     if mainLoop is 0
         throw 'Infinity loop detected'
+
+    result
