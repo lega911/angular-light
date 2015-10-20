@@ -7,10 +7,8 @@ alight.text.bindonce = (callback, expression, scope, env) ->
         env.finally scope.$eval expression
 
 alight.text.oneTimeBinding = (callback, expression, scope, env) ->
-    w = scope.$watch expression, (value) ->
-        if value is undefined
-            return
-        w.stop()
+    scope.$watch expression, (value) ->
         env.finally value
     ,
         init: true
+        oneTime: true
