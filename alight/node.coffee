@@ -389,7 +389,6 @@ notEqual = (a, b) ->
 
 scan_core2 = (root, result) ->
     extraLoop = false
-    extraLoopFlag = false
     changes = 0
     total = 0
 
@@ -430,6 +429,7 @@ scan_core2 = (root, result) ->
                 if mutated
                     mutated = false
                     changes++
+                    extraLoopFlag = false
                     for callback in w.callbacks.slice()
                         if callback.call(scope, value) isnt '$scanNoChanges'
                             extraLoopFlag = true
