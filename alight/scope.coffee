@@ -23,10 +23,7 @@ Scope = (conf) ->
             else
                 for k, v of Scope::
                     scope[k] = v
-    else
-        scope = new Scope()
-
-    if conf.parent
+    else if conf.parent
         if conf.root
             throw 'Conflict new Scope, root and parent together'
         parent = conf.parent
@@ -36,6 +33,8 @@ Scope = (conf) ->
         scope = new parent.$system.exChildConstructor
         root = parent.$system.root
         isRoot = false
+    else
+        scope = new Scope()
 
     if conf.root
         root = conf.root
