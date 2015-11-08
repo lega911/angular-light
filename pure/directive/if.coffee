@@ -1,7 +1,7 @@
 
 alight.d.al.if =
     priority: 700
-    init: (element, name, scope, env) ->
+    init: (node, element, name, env) ->
         self =
             owner: true
             item: null
@@ -23,6 +23,7 @@ alight.d.al.if =
                     self.insertBlock value
                 else
                     self.removeBlock()
+                '$scanNoChanges'
             removeBlock: ->
                 if not self.child
                     return
@@ -35,10 +36,10 @@ alight.d.al.if =
                     return
                 self.item = f$.clone self.base_element
                 self.insertDom self.top_element, self.item
-                self.child = scope.$new()
+                self.child = node.new()
                 alight.applyBindings self.child, self.item, { skip_attr:env.skippedAttr() }
             watchModel: ->
-                self.watch = scope.$watch name, self.updateDom, { readOnly:true }
+                self.watch = node.watch name, self.updateDom
             initUpdate: ->
                 self.watch.fire()
             removeDom: (element) ->
@@ -49,7 +50,7 @@ alight.d.al.if =
 
 alight.d.al.ifnot =
     priority: 700
-    init: (element, name, scope, env) ->
+    init: (node, element, name, env) ->
         self = alight.d.al.if.init.apply @, arguments
         self.updateDom = (value) ->
             if value

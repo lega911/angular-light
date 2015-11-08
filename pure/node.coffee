@@ -80,6 +80,9 @@ Node = (root, scope) ->
     @.prevSibling = null
     @.nextSibling = null
 
+    @.parent = null
+    @.children = []
+
     #
     @.rwatchers =
         any: []
@@ -87,9 +90,24 @@ Node = (root, scope) ->
     @
 
 
+Node::new = (scope) ->
+    parent = @
+    node = parent.root.node scope or parent.scope
+    node.parent = parent
+    parent.children.push node
+
+    node
+
+
 Node::destroy = ->
     node = @
     root = node.root
+
+    if node.parent
+        removeItem node.parent.children, node
+
+    for child in node.children
+        child.destroy()
 
     for fn in node.destroy_callbacks
         fn()
@@ -444,6 +462,9 @@ scan_core2 = (root, result) ->
 Root::scan = (cfg) ->
     root = @
     cfg = cfg or {}
+    if f$.isFunction cfg
+        cfg =
+            callback: cfg
     if cfg.callback
         root.watchers.finishScanOnce.push cfg.callback
     if cfg.late

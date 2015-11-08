@@ -55,6 +55,8 @@ gulp.task('assemble', ['compile'], function() {
 
     './tmp/directive/click.js',
     './tmp/directive/value.js',
+    './tmp/directive/checked.js',
+    './tmp/directive/if.js',
 
     './pure/js/postfix.js'
   ];

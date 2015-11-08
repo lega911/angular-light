@@ -1,7 +1,7 @@
 
 alight.d.al.checked =
     priority: 100
-    init: (element, name, scope) ->
+    init: (node, element, name) ->
         watch = false
         self =
             changing: false
@@ -11,21 +11,21 @@ alight.d.al.checked =
                 self.initDom()
             onDom: ->
                 f$.on element, 'change', self.updateModel
-                scope.$watch '$destroy', self.offDom
+                node.watch '$destroy', self.offDom
             offDom: ->
                 f$.off element, 'change', self.updateModel
             updateModel: ->
                 value = f$.prop element, 'checked'
                 self.changing = true
-                scope.$setValue name, value
-                scope.$scan ->
+                node.setValue name, value
+                node.scan ->
                     self.changing = false
             watchModel: ->
-                watch = scope.$watch name, self.updateDom,
-                    readOnly: true
+                watch = node.watch name, self.updateDom
             updateDom: (value) ->
                 if self.changing
                     return
                 f$.prop element, 'checked', !!value
+                '$scanNoChanges'
             initDom: ->
                 watch.fire()
