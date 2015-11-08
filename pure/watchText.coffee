@@ -63,18 +63,18 @@ do ->
                 conf.finally()
 
         dir env.setter, exp, scope, env
-            
 
-    alight.Scope::$watchText = (expression, callback, config) ->
+
+    alight.core.Node::watchText = (expression, callback, config) ->
         config = config or {}
-        scope = @
+        node = @
         if alight.debug.watchText
             console.log '$watchText', expression
 
         # test simple text
         st = alight.utils.compile.buildSimpleText expression, null
         if st
-            return scope.$watch expression, callback,
+            return node.watch expression, callback,
                 watchText: st
                 init: config.init
 
@@ -99,7 +99,7 @@ do ->
                 if exp[0] is '#'
                     alight.text.$base
                         exp: exp
-                        scope: scope
+                        node: node
                         point: d
                         update: ->
                             doUpdate()
@@ -131,7 +131,7 @@ do ->
                         watchCount++
                         canUseSimpleBuilder = false
                         do (d) ->
-                            scope.$watch exp, (value) ->
+                            node.watch exp, (value) ->
                                 `if(value == null) value = ''`
                                 d.value = value
                                 doUpdate()
@@ -157,14 +157,14 @@ do ->
                 st = alight.utils.compile.buildSimpleText null, data
             else
                 st = alight.utils.compile.buildSimpleText expression, data
-            return scope.$watch expression, callback,
+            return node.watch expression, callback,
                 watchText:
                     fn: st.fn
                 init: config.init
 
         w = null
         key = getId()
-        data.scope = scope
+        data.scope = node.scope
         fn = alight.utils.compile.buildText expression, data
         doUpdate = ->
             scope.$system.root.private[key] = fn()
@@ -176,11 +176,11 @@ do ->
                     break
             if not i
                 return
-            scope.$watch '$finishScanOnce', ->
+            node.watch '$finishScanOnce', ->
                 w.stop()
             if config.onStatic
                 config.onStatic()
         doUpdate()
-        w = scope.$watch key, callback,
+        w = node.watch key, callback,
             private: true
             init: config.init

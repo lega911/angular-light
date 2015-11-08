@@ -3,10 +3,13 @@ test/*.js
 test/*.map
 test/core/*.js
 alight/*.js
-alight/parser/*.js
 alight/filter/*.js
 alight/directive/*.js
 alight/*.map
+pure/*.js
+pure/parser/*.js
+pure/filter/*.js
+pure/directive/*.js
 bin/
 tmp/
 node_modules

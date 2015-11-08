@@ -33,17 +33,12 @@ root.destroy()
 
 ###
 
-self = alight.core
+alight.Root = (scope) ->
+    root = new Root()
+    root.node scope or {}
 
 
-self.root = (conf) ->
-    conf = conf or {}
-    new Root conf
-
-
-Root = (conf) ->
-    conf = conf or {}
-
+Root = () ->
     @.nodeHead = null
     @.nodeTail = null
     @.private = {}
@@ -69,11 +64,11 @@ Root::destroy = ->
     @.watchers.finishScanOnce.length = 0
 
 
-Root::node = (scope, option) ->
-    new Node @, scope, option
+Root::node = (scope) ->
+    new Node @, scope
 
 
-Node = (root, scope, option) ->
+Node = (root, scope) ->
     # local
     @.scope = scope
     @.root = root
@@ -230,6 +225,7 @@ watchAny = (node, key, callback) ->
 ###
 
 Node::watch = (name, callback, option) ->
+    option = option or {}
     node = @
     root = node.root
     scope = node.scope
@@ -510,3 +506,30 @@ Root::scan = (cfg) ->
         throw 'Infinity loop detected'
 
     result
+
+
+# redirects
+alight.core.Node = Node
+
+Node::compile = (expression, option) ->
+    alight.utils.compile.expression(expression, option).fn
+
+Node::scan = (option) ->
+    @.root.scan option
+
+Node::setValue = (name, value) ->
+    node = @
+    fn = node.compile name + ' = $value',
+        input: ['$value']
+        no_return: true
+    fn node.scope, value
+
+###
+Scope::$eval = (exp) ->
+    fn = @.$compile exp
+    fn @
+
+
+Scope::$getValue = (name) ->
+    @.$eval name
+###
