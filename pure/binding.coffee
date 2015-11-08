@@ -141,11 +141,12 @@ do ->
         code: 'scope'
         fn: ->
             if @.directive.scope
-                parentScope = @.scope
-                if @.directive.scope is 'root'
-                    @.scope = parentScope.$new 'root'
-                else
-                    @.scope = parentScope.$new(@.directive.scope is 'isolate')
+                parentNode = @.node
+                #if @.directive.node is 'root'
+                #    @.scope = parentScope.$new 'root'
+                #else
+                #    @.scope = parentScope.$new(@.directive.scope is 'isolate')
+                @.node = parentNode.new()
                 @.result.owner = true
                 @.doBinding = true
 
@@ -159,7 +160,8 @@ do ->
         code: 'scopeBinding'
         fn: ->
             if @.doBinding
-                alight.applyBindings @.node, @.element, { skip_attr:@.env.skippedAttr() }
+                alight.applyBindings @.node, @.element,
+                    skip_attr:@.env.skippedAttr()
 
 
 testDirective = do ->

@@ -106,7 +106,7 @@ Node::destroy = ->
     if node.parent
         removeItem node.parent.children, node
 
-    for child in node.children
+    for child in node.children.slice()
         child.destroy()
 
     for fn in node.destroy_callbacks
@@ -545,12 +545,9 @@ Node::setValue = (name, value) ->
         no_return: true
     fn node.scope, value
 
-###
-Scope::$eval = (exp) ->
-    fn = @.$compile exp
-    fn @
+Node::$eval = (exp) ->
+    fn = @.compile exp
+    fn @.scope
 
-
-Scope::$getValue = (name) ->
+Node::getValue = (name) ->
     @.$eval name
-###
