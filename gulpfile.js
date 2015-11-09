@@ -6,7 +6,7 @@ var rename = require('gulp-rename');
 var header = require('gulp-header');
 var clean = require('gulp-clean');
 var replace = require('gulp-replace');
-var version = require('./js/version.js');
+var version = require('./pure/js/version.js');
 
 gulp.task('default', ['compress'], function(){});
 
@@ -57,6 +57,7 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/directive/value.js',
     './tmp/directive/checked.js',
     './tmp/directive/if.js',
+    './tmp/directive/repeat.js',
 
     './pure/js/postfix.js'
   ];

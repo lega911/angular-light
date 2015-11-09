@@ -1,6 +1,6 @@
 
 ###
-    al-repeat="item in list" al-controller="itemController"
+    al-repeat="item in list"
     "item in list"
     "item in list | filter"
     "item in list | filter track by trackExpression"
@@ -18,26 +18,15 @@
 alight.directives.al.repeat =
     priority: 1000
     restrict: 'AM'
-    init: (element, exp, scope, env) ->
+    init: (CD, element, exp, env) ->  # Change Detector
         self =
             owner: true
             start: ->
-                self.prepare()
                 self.parsExpression()
                 self.prepareDom()
                 self.buildUpdateDom()
                 self.watchModel()
                 self.initUpdateDom()
-
-            prepare: ->
-                # get controller
-                self.childController = null
-                if element.nodeType is 8
-                    return
-                controllerName = env.takeAttr 'al-controller'
-                if controllerName
-                    alController = alight.directives.al.controller.init null, controllerName, null
-                    self.childController = alController.callController
 
             parsExpression: ->
                 s = exp.trim()
@@ -88,7 +77,7 @@ alight.directives.al.repeat =
                 else
                     flags =
                         isArray: true
-                self.watch = scope.$watch self.expression, self.updateDom, flags
+                self.watch = CD.watch self.expression, self.updateDom, flags
 
             initUpdateDom: ->
                 self.watch.fire()
@@ -118,21 +107,21 @@ alight.directives.al.repeat =
                     f$.remove element
 
             makeChild: (item, index, list) ->
-                child_scope = scope.$new()
-                self.updateChild child_scope, item, index, list
-                if self.childController
-                    self.childController child_scope
-                child_scope
+                childCD = CD.new
+                    $parent: CD.scope
+                self.updateChild childCD, item, index, list
+                childCD
 
-            updateChild: (child_scope, item, index, list) ->
+            updateChild: (childCD, item, index, list) ->
+                scope = childCD.scope
                 if self.objectMode
-                    child_scope[self.objectKey] = item[self.objectKey]
-                    child_scope[self.objectValue] = item[self.objectValue]
+                    scope[self.objectKey] = item[self.objectKey]
+                    scope[self.objectValue] = item[self.objectValue]
                 else
-                    child_scope[self.nameOfKey] = item
-                child_scope.$index = index
-                child_scope.$first = index is 0
-                child_scope.$last = index is list.length-1
+                    scope[self.nameOfKey] = item
+                scope.$index = index
+                scope.$first = index is 0
+                scope.$last = index is list.length-1
 
             rawUpdateDom: (removes, inserts) ->
                 for e in removes
@@ -166,10 +155,10 @@ alight.directives.al.repeat =
                         if self.trackExpression
                             node_by_id = {}
                             _getId = do ->
-                                fn = scope.$compile self.trackExpression,
+                                fn = CD.compile self.trackExpression,
                                     input: ['$id', self.nameOfKey]
                                 (a, b) ->
-                                    fn scope, a, b
+                                    fn CD.scope, a, b
                             _id = (item) ->
                                 id = item.$alite_id
                                 if id
@@ -255,14 +244,13 @@ alight.directives.al.repeat =
                                 if node.next
                                     node.next.prev = node.prev
                                 node_del node
-                                node.scope.$destroy()
+                                node.CD.destroy()
                                 for el in node.element_list
                                     dom_removes.push el
 
                             applyList = []
                             # change positions and make new children
                             pid = null
-                            child_scope
                             prev_node = null
                             prev_moved = false
                             elLast = self.element_list.length - 1
@@ -273,7 +261,7 @@ alight.directives.al.repeat =
                                 node = node_get item
 
                                 if node
-                                    self.updateChild node.scope, item, index, list
+                                    self.updateChild node.CD, item, index, list
                                     if node.prev is prev_node
                                         if prev_moved
                                             for el in node.element_list
@@ -305,11 +293,11 @@ alight.directives.al.repeat =
                                     nodes2.push node
                                     continue
 
-                                child_scope = self.makeChild item_value, index, list
+                                childCD = self.makeChild item_value, index, list
 
                                 element_list = for bel in self.element_list
                                     el = f$.clone bel
-                                    applyList.push [child_scope, el]
+                                    applyList.push [childCD, el]
 
                                     dom_inserts.push
                                         element: el
@@ -317,7 +305,7 @@ alight.directives.al.repeat =
                                     last_element = el
 
                                 node =
-                                    scope: child_scope
+                                    CD: childCD
                                     element_list: element_list
                                     prev: prev_node
                                     next: null
@@ -347,10 +335,11 @@ alight.directives.al.repeat =
                             #applying
                             skippedAttrs = env.skippedAttr()
                             for it in applyList
-                                alight.applyBindings it[0], it[1], { skip_attr:skippedAttrs }
+                                alight.applyBindings it[0], it[1],
+                                    skip_attr: skippedAttrs
 
                             if self.storeTo
-                                scope.$setValue self.storeTo, list
+                                CD.setValue self.storeTo, list
                                 return
 
                             return '$scanNoChanges'
@@ -380,14 +369,13 @@ alight.directives.al.repeat =
                                 if node.next
                                     node.next.prev = node.prev
                                 node_del node
-                                node.scope.$destroy()
+                                node.CD.destroy()
                                 node.element
 
 
                             applyList = []
                             # change positions and make new children
                             pid = null
-                            child_scope
                             prev_node = null
                             prev_moved = false
                             for item, index in list
@@ -397,7 +385,7 @@ alight.directives.al.repeat =
                                 node = node_get item
 
                                 if node
-                                    self.updateChild node.scope, item, index, list
+                                    self.updateChild node.CD, item, index, list
                                     if node.prev is prev_node
                                         if prev_moved
                                             dom_inserts.push
@@ -427,10 +415,10 @@ alight.directives.al.repeat =
                                     nodes2.push node
                                     continue
 
-                                child_scope = self.makeChild item_value, index, list
+                                childCD = self.makeChild item_value, index, list
 
                                 element = f$.clone self.base_element
-                                applyList.push [child_scope, element]
+                                applyList.push [childCD, element]
                                 #alight.applyBindings child_scope, element, { skip_attr:env.attrName }
 
                                 dom_inserts.push
@@ -438,7 +426,7 @@ alight.directives.al.repeat =
                                     after: last_element
 
                                 node =
-                                    scope: child_scope
+                                    CD: childCD
                                     element: element
                                     prev: prev_node
                                     next: null
@@ -472,7 +460,7 @@ alight.directives.al.repeat =
                                 alight.applyBindings it[0], it[1], { skip_attr:skippedAttrs }
 
                             if self.storeTo
-                                scope.$setValue self.storeTo, list
+                                CD.setValue self.storeTo, list
                                 return
 
                             return '$scanNoChanges'
@@ -480,8 +468,8 @@ alight.directives.al.repeat =
 
 alight.directives.bo.repeat =
     priority: 1000
-    init: (element, exp, scope, env) ->
-        self = alight.directives.al.repeat.init element, exp, scope, env
+    init: (CD, element, exp, env) ->
+        self = alight.directives.al.repeat.init CD, element, exp, env
         originalStart = self.start
         self.start = ->
             originalStart()
