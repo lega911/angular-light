@@ -2,7 +2,7 @@
 # al-css="class:exp"
 alight.d.al.class = alight.d.al.css =
     priority: 30
-    init: (element, exp, scope) ->
+    init: (cd, element, exp) ->
         self =
             start: ->
                 self.parsLine()
@@ -16,7 +16,7 @@ alight.d.al.class = alight.d.al.css =
                         alight.exceptionHandler e, 'al-css, error in expression: ' + exp,
                             exp: exp
                             e: e
-                            scope: scope
+                            cd: cd
                             element: element
                     else
                         list.push
@@ -28,9 +28,9 @@ alight.d.al.class = alight.d.al.css =
                     color = do (item) ->
                         (value) ->
                             self.draw item, value
+                            '$scanNoChanges'
 
-                    scope.$watch item.exp, color,
-                        readOnly: true
+                    cd.watch item.exp, color,
                         init: true
                 null
             draw: (item, value) ->

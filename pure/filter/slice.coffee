@@ -1,5 +1,5 @@
 
-alight.filters.slice = (exp, scope, env) ->
+alight.filters.slice = (exp, cd, env) ->
     a = 0
     b = null
     value = null
@@ -13,14 +13,14 @@ alight.filters.slice = (exp, scope, env) ->
             env.setValue value.slice a
 
     d = exp.split ','
-    scope.$watch d[0], (v) ->
+    cd.watch d[0], (v) ->
         a = v
         setter()
     ,
         init: true
 
     if d[1]
-        scope.$watch d[1], (v) ->
+        cd.watch d[1], (v) ->
             b = v
             setter()
         ,

@@ -1,8 +1,8 @@
 
-Test('utilits.equal').run ($test, alight) ->
+Test('utils.equal').run ($test, alight) ->
 	$test.start 8
 
-	u = alight.utilits
+	u = alight.utils
 	a =
 		num: 1
 		str: 'two'
@@ -43,15 +43,15 @@ Test('utilits.equal').run ($test, alight) ->
 Test('$compile').run ($test, alight) ->
 	$test.start 2
 
-	s0 = alight.Scope()
-	s1 = alight.Scope()
+	s0 = alight.ChangeDetector()
+	s1 = alight.ChangeDetector()
 
-	s0.name = 'debian'
-	s1.name = 'ubuntu'
+	s0.scope.name = 'debian'
+	s1.scope.name = 'ubuntu'
 
-	f0 = s0.$compile 'name'
-	f1 = s1.$compile 'name'
+	f0 = s0.compile 'name'
+	f1 = s1.compile 'name'
 
-	$test.equal f0(s0), 'debian'
-	$test.equal f1(s1), 'ubuntu'
+	$test.equal f0(s0.scope), 'debian'
+	$test.equal f1(s1.scope), 'ubuntu'
 	$test.close()

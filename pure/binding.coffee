@@ -224,7 +224,7 @@ bindText = (node, element) ->
         init: true
 
 
-bindComment = (scope, element) ->
+bindComment = (node, element, option) ->
     text = element.nodeValue.trimLeft()
     if text[0..9] isnt 'directive:'
         return
@@ -241,7 +241,7 @@ bindComment = (scope, element) ->
         list: list = []
         element: element
         attr_type: 'M'
-        scope: scope
+        node: node
         skip_attr: []
     
     testDirective dirName, args
@@ -260,14 +260,14 @@ bindComment = (scope, element) ->
     if alight.debug.directive
         console.log 'bind', d.attrName, value, d
     try
-        result = directive.$init element, value, scope, env
+        result = directive.$init node, element, value, env
         if result and result.start
             result.start()
     catch e
         alight.exceptionHandler e, 'Error in directive: ' + d.name,
             value: value
             env: env
-            scope: scope
+            node: node
             element: element
 
 
@@ -402,8 +402,9 @@ alight.nextTick = do ->
         timer = setTimeout exec, 0
 
 
-alight.getFilter = (name, scope, param) ->
+alight.getFilter = (name, node, param) ->
     error = false
+    scope = node.scope
     if scope.$ns and scope.$ns.filters
         filter = scope.$ns.filters[name]
         if not filter and not scope.$ns.inheritGlobal

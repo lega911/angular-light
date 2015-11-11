@@ -47,6 +47,7 @@ gulp.task('assemble', ['compile'], function() {
     './pure/js/fquery.js',
     './tmp/node.js',
     './tmp/watchText.js',
+    './tmp/textDirective.js',
     './tmp/binding.js',
     './tmp/utils.js',
     './tmp/parser/parseExpression.js',
@@ -58,6 +59,11 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/directive/checked.js',
     './tmp/directive/if.js',
     './tmp/directive/repeat.js',
+    './tmp/directive/init.js',
+    './tmp/directive/class.js',
+    './tmp/directive/src.js',
+    
+    './tmp/filter/slice.js',
 
     './pure/js/postfix.js'
   ];

@@ -1,14 +1,14 @@
 
-alight.d.al.init = (element, exp, scope) ->
+alight.d.al.init = (cd, element, exp) ->
     try
-        fn = scope.$compile exp,
+        fn = cd.compile exp,
             no_return: true
-        fn scope
+        fn cd.scope
     catch e
         alight.exceptionHandler e, 'al-init, error in expression: ' + exp,
             exp: exp
-            scope: scope
+            cd: cd
             element: element
 
-    scope.$scan
+    cd.scan
         late: true

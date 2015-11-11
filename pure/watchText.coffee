@@ -39,7 +39,8 @@ do ->
             dirName = exp.slice 1, i
             exp = exp.slice i
 
-        scope = conf.scope
+        node = conf.node
+        scope = node.scope
         if scope.$ns and scope.$ns.text
             dir = scope.$ns.text[dirName]
         else
@@ -62,7 +63,7 @@ do ->
                 point.type = 'text'
                 conf.finally()
 
-        dir env.setter, exp, scope, env
+        dir env.setter, exp, node, env
 
 
     alight.core.Node::watchText = (expression, callback, config) ->

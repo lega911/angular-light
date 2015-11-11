@@ -151,7 +151,6 @@ makeFilterChain = do ->
         'wf' + (index++)
 
     (node, pe, baseCallback, option) ->
-        scope = node.scope
         root = node.root
 
         # watchMode: simple, deep, array
@@ -174,9 +173,9 @@ makeFilterChain = do ->
                 filterName = filterExp
                 filterArg = null
 
-            filterBuilder = alight.getFilter filterName, scope, filterArg
+            filterBuilder = alight.getFilter filterName, node, filterArg
 
-            filter = filterBuilder filterArg, scope,
+            filter = filterBuilder filterArg, node,
                 setValue: prevCallback
 
             if f$.isFunction filter
@@ -550,7 +549,7 @@ Node::setValue = (name, value) ->
         no_return: true
     fn node.scope, value
 
-Node::$eval = (exp) ->
+Node::eval = (exp) ->
     fn = @.compile exp
     fn @.scope
 
