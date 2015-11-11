@@ -62,14 +62,14 @@ gulp.task('assemble', ['compile'], function() {
     './pure/js/postfix.js'
   ];
   return gulp.src(files)
-    .pipe(concat('pure.js'))
+    .pipe(concat('alight.js'))
     .pipe(replace('{{{version}}}', version.version))
     .pipe(header("/**\n * Angular Pure " + version.version + "\n * (c) 2015 Oleg Nechaev\n * Released under the MIT License.\n * " + version.date + ", http://angularlight.org/ \n */"))
     .pipe(gulp.dest('bin'));
 });
 
 gulp.task('compress', ['assemble'], function() {
-  return gulp.src('./bin/pure.js')
+  return gulp.src('./bin/alight.js')
     .pipe(uglify())
     .pipe(rename({
        extname: '.min.js'

@@ -452,19 +452,18 @@ alight.bootstrap = (input) ->
                 continue
             element.ma_bootstrapped = true
             attr = f$.attr element, 'al-app'
-            node = alight.Root()
+            node = alight.ChangeDetector()
             alight.applyBindings node, element, { skip_attr: 'al-app' }
     else
         if f$.isObject(input) and input.$el
-            scope = alight.Scope
-                prototype: input
+            cd = alight.ChangeDetector input
 
             if f$.isElement input.$el
-                alight.applyBindings scope, input.$el
+                alight.applyBindings cd, input.$el
             else
                 for el in f$.find(document.body, input.$el)
-                    alight.applyBindings scope, el
-            return scope
+                    alight.applyBindings cd, el
+            return cd
         else
             alight.exceptionHandler 'Error in bootstrap', 'Error in bootstrap',
                 input: input

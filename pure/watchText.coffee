@@ -167,7 +167,7 @@ do ->
         data.scope = node.scope
         fn = alight.utils.compile.buildText expression, data
         doUpdate = ->
-            scope.$system.root.private[key] = fn()
+            node.root.private[key] = fn()
         doFinally = ->
             i = true
             for d in data
@@ -180,7 +180,8 @@ do ->
                 w.stop()
             if config.onStatic
                 config.onStatic()
+        privateValue = ->
+            node.root.private[key]
         doUpdate()
-        w = node.watch key, callback,
-            private: true
+        w = node.watch privateValue, callback,
             init: config.init

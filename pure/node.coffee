@@ -33,7 +33,7 @@ root.destroy()
 
 ###
 
-alight.Root = (scope) ->
+alight.ChangeDetector = (scope) ->
     root = new Root()
     root.node scope or {}
 
@@ -244,6 +244,10 @@ watchAny = (node, key, callback) ->
 
 Node::watch = (name, callback, option) ->
     option = option or {}
+    if option is true
+        option =
+            isArray: true
+
     node = @
     root = node.root
     scope = node.scope
@@ -260,10 +264,11 @@ Node::watch = (name, callback, option) ->
             name = name[2..]
             option.oneTime = true
         if option.private
+            throw 'private mode is depricated'
             if option.oneTime or option.isArray or option.deep
                 throw 'Conflict $watch option private'
             privateName = name
-            name = '$system.root.private.' + name
+            name = 'root.private.' + name
         key = name
         if key is '$any'
             return watchAny node, 'any', callback

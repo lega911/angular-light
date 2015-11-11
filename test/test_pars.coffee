@@ -2,7 +2,7 @@
 Test('parsExpression', 'parsing').run ($test, alight) ->
     pars = (line, expected, cfg) ->
         $test.start 1
-        pe = alight.utilits.parsExpression line, cfg
+        pe = alight.utils.parsExpression line, cfg
         result = pe.result
         ok = true
         if result.length is expected.length
@@ -62,16 +62,16 @@ Test('parsExpression', 'parsing').run ($test, alight) ->
 Test('parsText').run ($test, alight) ->
     $test.start 5
 
-    r = alight.utilits.parsText '  {{a}} {{b}}  '
+    r = alight.utils.parsText '  {{a}} {{b}}  '
     $test.check r[0].value is '  ' and r[1].list[0] is 'a' and r[2].value is ' ' and r[3].list[0] is 'b' and r[4].value is '  '
 
-    r = alight.utilits.parsText '  {{a}}{{b}}  '
+    r = alight.utils.parsText '  {{a}}{{b}}  '
     $test.check r[0].value is '  ' and r[1].list[0] is 'a' and r[2].list[0] is 'b' and r[3].value is '  '
 
-    r = alight.utilits.parsText '{{a}}{{b}}'
+    r = alight.utils.parsText '{{a}}{{b}}'
     $test.check r[0].list[0] is 'a' and r[1].list[0] is 'b'
 
-    r = alight.utilits.parsText "label {{#get tag.ref -> items.css, $value || 'label-default'}}"
+    r = alight.utils.parsText "label {{#get tag.ref -> items.css, $value || 'label-default'}}"
     $test.equal r[0].value, 'label '
     $test.equal r[1].list[0], "#get tag.ref -> items.css, $value || 'label-default'"
 

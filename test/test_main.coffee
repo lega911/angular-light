@@ -121,7 +121,7 @@ window.Test = do ->
 
         r =
             run: (fn) ->
-                alight = buildAlight()
+                alight = buildAlight.makeInstance()
                 stat.bStarted++;
                 timeout = Timeout()
                 scope = makeScope title
