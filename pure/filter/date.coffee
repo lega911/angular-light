@@ -22,6 +22,6 @@ alight.filters.date = do ->
             r = r.replace d[0], d[1]
         r
 
-    (exp, scope) ->
+    (exp, cd) ->
         (value) ->
             makeDate exp, value

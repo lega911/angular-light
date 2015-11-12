@@ -1,5 +1,5 @@
 
-alight.d.al.text = (element, name, scope) ->
+alight.d.al.text = (cd, element, name) ->
     watch = null
     self =
         start: ->
@@ -8,8 +8,8 @@ alight.d.al.text = (element, name, scope) ->
         updateDom: (value) ->
             `if(value == null) value = ''`
             f$.text element, value
+            '$scanNoChanges'
         watchModel: ->
-            watch = scope.$watch name, self.updateDom,
-                readOnly: true
+            watch = cd.watch name, self.updateDom
         initDom: ->
             watch.fire()

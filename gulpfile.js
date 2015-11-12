@@ -62,8 +62,12 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/directive/init.js',
     './tmp/directive/class.js',
     './tmp/directive/src.js',
+    './tmp/directive/text.js',
     
     './tmp/filter/slice.js',
+    './tmp/filter/date.js',
+    './tmp/filter/json.js',
+    './tmp/filter/filter.js',
 
     './pure/js/postfix.js'
   ];

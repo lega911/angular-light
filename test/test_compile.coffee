@@ -1,8 +1,8 @@
 
 Test('$compile#0').run ($test, alight) ->
     $test.start 4
-    scope = alight.Scope()
-    scope.foo = 'one'
+    scope =
+        foo: 'one'
 
     r0 = alight.utils.compile.expression 'foo',
         string: true
@@ -22,17 +22,19 @@ Test('$compile#0').run ($test, alight) ->
 
 Test('$watchText#0', 'watch-text-0').run ($test, alight) ->
     $test.start 4
-    scope = alight.Scope()
-    scope.os =
-        type: 'linux'
-        name: 'ubuntu'
+    scope =
+        os:
+            type: 'linux'
+            name: 'ubuntu'
 
-    r0 = scope.$watchText 'OS {{os.type}} {{os.name}}', ->
+    cd = alight.ChangeDetector scope
+
+    r0 = cd.watchText 'OS {{os.type}} {{os.name}}', ->
 
     $test.equal r0.value, 'OS linux ubuntu'
     $test.equal r0.$.exp(scope), 'OS linux ubuntu'
 
-    r1 = scope.$watchText 'OS {{os.type}} {{os.name}}', ->
+    r1 = cd.watchText 'OS {{os.type}} {{os.name}}', ->
 
     $test.equal r1.value, 'OS linux ubuntu'
     $test.equal r1.$.exp(scope), 'OS linux ubuntu'

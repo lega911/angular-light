@@ -140,13 +140,15 @@ do ->
     ext.push
         code: 'scope'
         fn: ->
-            if @.directive.scope
+            if @.directive.scope  # true, isolate, root
                 parentNode = @.node
-                #if @.directive.node is 'root'
-                #    @.scope = parentScope.$new 'root'
-                #else
-                #    @.scope = parentScope.$new(@.directive.scope is 'isolate')
-                @.node = parentNode.new()
+
+                if @.directive.scope is 'isolate'
+                    @.node = parentNode.new
+                        $parent: parentNode.scope
+                else
+                    @.node = parentNode.new()
+
                 @.result.owner = true
                 @.doBinding = true
 

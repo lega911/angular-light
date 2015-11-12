@@ -1,5 +1,5 @@
 
-alight.filters.filter = (exp, scope, env) ->
+alight.filters.filter = (exp, cd, env) ->
     filterObject = null
     value = []
 
@@ -54,7 +54,7 @@ alight.filters.filter = (exp, scope, env) ->
         env.setValue result
         null
 
-    scope.$watch exp, (input) ->
+    cd.watch exp, (input) ->
         filterObject = input
         doFiltering()
     ,
