@@ -63,6 +63,8 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/directive/class.js',
     './tmp/directive/src.js',
     './tmp/directive/text.js',
+    './tmp/directive/app.js',
+    './tmp/directive/bindonce.js',
     
     './tmp/filter/slice.js',
     './tmp/filter/date.js',
