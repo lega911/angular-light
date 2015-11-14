@@ -1,5 +1,5 @@
 
-alight.filters.throttle = (delay, scope, env) ->
+alight.filters.throttle = (delay, cd, env) ->
     delay = Number delay
     to = null
 
@@ -9,5 +9,5 @@ alight.filters.throttle = (delay, scope, env) ->
         to = setTimeout ->
             to = null
             env.setValue value
-            scope.$scan()
+            cd.scan()
         , delay

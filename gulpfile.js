@@ -65,11 +65,29 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/directive/text.js',
     './tmp/directive/app.js',
     './tmp/directive/bindonce.js',
-    
+
+    './tmp/directive/cloak.js',
+    './tmp/directive/enable.js',
+    './tmp/directive/focused.js',
+    './tmp/directive/include.js',
+    './tmp/directive/readonly.js',
+    './tmp/directive/stop.js',
+    './tmp/directive/submit.js',
+    './tmp/directive/controller.js',
+    './tmp/directive/event.js',
+    './tmp/directive/html.js',
+    './tmp/directive/radio.js',
+    './tmp/directive/showHide.js',
+    './tmp/directive/style.js',    
+
     './tmp/filter/slice.js',
     './tmp/filter/date.js',
     './tmp/filter/json.js',
     './tmp/filter/filter.js',
+    './tmp/filter/generator.js',
+    './tmp/filter/orderby.js',
+    './tmp/filter/throttle.js',
+    './tmp/filter/toarray.js',
 
     './pure/js/postfix.js'
   ];

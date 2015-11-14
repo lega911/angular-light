@@ -1,7 +1,7 @@
 
 alight.d.al.html =
     priority: 100
-    init: (element, name, scope, env) ->
+    init: (cd, element, name, env) ->
         child = null
         setter = (html) ->
             if child
@@ -11,10 +11,10 @@ alight.d.al.html =
                 f$.html element, ''
                 return
             f$.html element, html
-            child = scope.$new()
+            child = cd.new()
             alight.applyBindings child, element, { skip_attr:env.skippedAttr() }
 
-        scope.$watch name, setter,
+        cd.watch name, setter,
             readOnly: true
             init: true
 

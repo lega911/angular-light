@@ -1,6 +1,6 @@
 
 # | toArray:key, value
-alight.filters.toArray = (exp, scope, env) ->
+alight.filters.toArray = (exp, cd, env) ->
     if exp
         d = exp.split ','
         if d.length is 2

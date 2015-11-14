@@ -1,5 +1,5 @@
 
-alight.d.al.show = (element, exp, scope) ->
+alight.d.al.show = (cd, element, exp) ->
     watch = null
     self =
         showDom: ->
@@ -12,7 +12,7 @@ alight.d.al.show = (element, exp, scope) ->
             else
                 self.hideDom()
         watchModel: ->
-            watch = scope.$watch exp, self.updateDom,
+            watch = cd.watch exp, self.updateDom,
                 readOnly: true
         initDom: ->
             watch.fire()
@@ -21,8 +21,8 @@ alight.d.al.show = (element, exp, scope) ->
             self.initDom()
 
 
-alight.d.al.hide = (element, exp, scope, env) ->
-    self = alight.d.al.show element, exp, scope, env
+alight.d.al.hide = (cd, element, exp, env) ->
+    self = alight.d.al.show cd, element, exp, env
     self.updateDom = (value) ->
         if value
             self.hideDom()

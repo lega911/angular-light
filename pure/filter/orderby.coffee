@@ -1,6 +1,6 @@
 
 # | orderBy: key, reverse
-alight.filters.orderBy = (exp, scope, env) ->
+alight.filters.orderBy = (exp, cd, env) ->
     d = exp.split ','
 
     list = null
@@ -23,7 +23,7 @@ alight.filters.orderBy = (exp, scope, env) ->
 
     # key
     if d[0]
-        scope.$watch d[0].trim(), (v) ->
+        cd.watch d[0].trim(), (v) ->
             key = v
             doSort()
         ,
@@ -31,7 +31,7 @@ alight.filters.orderBy = (exp, scope, env) ->
 
     # reverse
     if d[1]
-        scope.$watch d[1].trim(), (v) ->
+        cd.watch d[1].trim(), (v) ->
             direction = if v then 1 else -1
             doSort()
         ,

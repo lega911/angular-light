@@ -1,5 +1,5 @@
 
-alight.filters.generator = (exp, scope, env) ->
+alight.filters.generator = (exp, cd, env) ->
     list = []
     watchMode: 'simple'
     onChange: (size) ->

@@ -1,5 +1,5 @@
 
-alight.d.al.style = (element, name, scope) ->
+alight.d.al.style = (cd, element, name) ->
     prev = {}
     setter = (style) ->
         for key, v of prev
@@ -12,6 +12,6 @@ alight.d.al.style = (element, name, scope) ->
             prev[key] = v
             element.style[key] = v or ''
 
-    scope.$watch name, setter,
+    cd.watch name, setter,
         deep: true
         init: true
