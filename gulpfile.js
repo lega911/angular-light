@@ -6,7 +6,7 @@ var rename = require('gulp-rename');
 var header = require('gulp-header');
 var clean = require('gulp-clean');
 var replace = require('gulp-replace');
-var version = require('./pure/js/version.js');
+var version = require('./src/js/version.js');
 
 gulp.task('default', ['compress'], function(){});
 
@@ -18,33 +18,33 @@ gulp.task('clean', function () {
 gulp.task('compile', ['compile_core', 'compile_parser', 'compile_filter', 'compile_directive'], function() {});
 
 gulp.task('compile_core', ['clean'], function() {
-  return gulp.src('./pure/*.coffee')
+  return gulp.src('./src/*.coffee')
     .pipe(coffee({bare: true}).on('error', console.log))
     .pipe(gulp.dest('tmp'))
 });
 
 gulp.task('compile_parser', ['clean'], function() {
-  return gulp.src('./pure/parser/*.coffee')
+  return gulp.src('./src/parser/*.coffee')
     .pipe(coffee({bare: true}).on('error', console.log))
     .pipe(gulp.dest('tmp/parser'))
 });
 
 gulp.task('compile_filter', ['clean'], function() {
-  return gulp.src('./pure/filter/*.coffee')
+  return gulp.src('./src/filter/*.coffee')
     .pipe(coffee({bare: true}).on('error', console.log))
     .pipe(gulp.dest('tmp/filter'))
 });
 
 gulp.task('compile_directive', ['clean'], function() {
-  return gulp.src('./pure/directive/*.coffee')
+  return gulp.src('./src/directive/*.coffee')
     .pipe(coffee({bare: true}).on('error', console.log))
     .pipe(gulp.dest('tmp/directive'))
 });
 
 gulp.task('assemble', ['compile'], function() {
   var files = [
-    './pure/js/prefix.js',
-    './pure/js/fquery.js',
+    './src/js/prefix.js',
+    './src/js/fquery.js',
     './tmp/node.js',
     './tmp/watchText.js',
     './tmp/textDirective.js',
@@ -89,12 +89,12 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/filter/throttle.js',
     './tmp/filter/toarray.js',
 
-    './pure/js/postfix.js'
+    './src/js/postfix.js'
   ];
   return gulp.src(files)
     .pipe(concat('alight.js'))
     .pipe(replace('{{{version}}}', version.version))
-    .pipe(header("/**\n * Angular Pure " + version.version + "\n * (c) 2015 Oleg Nechaev\n * Released under the MIT License.\n * " + version.date + ", http://angularlight.org/ \n */"))
+    .pipe(header("/**\n * Angular Light " + version.version + "\n * (c) 2015 Oleg Nechaev\n * Released under the MIT License.\n * " + version.date + ", http://angularlight.org/ \n */"))
     .pipe(gulp.dest('bin'));
 });
 
@@ -104,7 +104,7 @@ gulp.task('compress', ['assemble'], function() {
     .pipe(rename({
        extname: '.min.js'
      }))
-    .pipe(header("/**\n * Angular Pure " + version.version + "\n * (c) 2015 Oleg Nechaev\n * Released under the MIT License.\n * " + version.date + ", http://angularlight.org/ \n */"))
+    .pipe(header("/**\n * Angular Light " + version.version + "\n * (c) 2015 Oleg Nechaev\n * Released under the MIT License.\n * " + version.date + ", http://angularlight.org/ \n */"))
     .pipe(gulp.dest('bin'))
 });
 
