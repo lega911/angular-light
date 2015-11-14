@@ -134,6 +134,7 @@ alight.directives.al.repeat =
                 self.updateDom = do ->
                     nodes = []
                     index = 0
+                    fastBinding = false
 
                     if self.trackExpression is '$index'
                         node_by_id = {}
@@ -344,6 +345,7 @@ alight.directives.al.repeat =
 
                             return '$scanNoChanges'
                     else
+                        # method update for a single element
                         (list) ->
                             if not list or not list.length  # is it list?
                                 list = []
@@ -457,7 +459,13 @@ alight.directives.al.repeat =
                             #applying
                             skippedAttrs = env.skippedAttr()
                             for it in applyList
-                                alight.applyBindings it[0], it[1], { skip_attr:skippedAttrs }
+                                if fastBinding
+                                    fastBinding.bind it[0], it[1]
+                                else
+                                    r = alight.applyBindings it[0], it[1],
+                                        skip_attr: skippedAttrs
+                                    if r.directive is 0 and r.hook is 0
+                                        fastBinding = new alight.core.fastBinding self.base_element
 
                             if self.storeTo
                                 CD.setValue self.storeTo, list

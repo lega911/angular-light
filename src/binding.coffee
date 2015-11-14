@@ -213,6 +213,7 @@ attrBinding = (node, element, value, attrName) ->
         '$scanNoChanges'
     node.watchText text, setter,
         init: true
+    true
 
 
 bindText = (node, element) ->
@@ -224,6 +225,7 @@ bindText = (node, element) ->
         '$scanNoChanges'
     node.watchText text, setter,
         init: true
+    true
 
 
 bindComment = (node, element, option) ->
@@ -271,6 +273,7 @@ bindComment = (node, element, option) ->
             env: env
             node: node
             element: element
+    true
 
 
 bindElement = do ->
@@ -292,6 +295,11 @@ bindElement = do ->
             attr.attrName
 
     (node, element, config) ->
+        bindResult =
+            directive: 0
+            text: 0
+            attr: 0
+            hook: 0
         config = config || {}
         skipChildren = false
         skip_attr = config.skip_attr or []
@@ -325,8 +333,10 @@ bindElement = do ->
                 d.skip = true
                 value = f$.attr element, d.attrName
                 if d.is_attr
-                    attrBinding node, element, value, d.attrName
+                    if attrBinding node, element, value, d.attrName
+                        bindResult.attr++
                 else
+                    bindResult.directive++
                     directive = d.directive
                     env =
                         element: element
@@ -356,28 +366,43 @@ bindElement = do ->
             for childElement in f$.childNodes element
                 if not childElement
                     continue
-                bindNode node, childElement
-        null
+                r = bindNode node, childElement
+                bindResult.directive += r.directive
+                bindResult.text += r.text
+                bindResult.attr += r.attr
+                bindResult.hook += r.hook
 
-
-elementTypeBind =
-    1: bindElement      # element
-    3: bindText         # text
-    8: bindComment      # comment
+        bindResult
 
 
 bindNode = (node, element, option) ->
+    result =
+        directive: 0
+        text: 0
+        attr: 0
+        hook: 0
     if alight.utils.getData element, 'skipBinding'
-        return
+        return result
     if alight.hooks.binding.length
         for h in alight.hooks.binding
+            result.hook += 1
             r = h.fn node, element, option
             if r and r.owner  # take control
-                return
+                return result
 
-    fn = elementTypeBind[element.nodeType]
-    if fn
-        fn node, element, option
+    if element.nodeType is 1
+        r = bindElement node, element, option
+        result.directive += r.directive
+        result.text += r.text
+        result.attr += r.attr
+        result.hook += r.hook
+    else if element.nodeType is 3
+        if bindText node, element, option
+            result.text++
+    else if element.nodeType is 8
+        if bindComment node, element, option
+            result.directive++
+    result
 
 
 alight.nextTick = do ->
@@ -418,7 +443,7 @@ alight.getFilter = (name, node, param) ->
     filter
 
 
-alight.applyBindings = (node, element, config) ->
+alight.applyBindings = (node, element, option) ->
     if not element
         throw 'No element'
 
@@ -430,10 +455,19 @@ alight.applyBindings = (node, element, config) ->
     finishBinding = not root.finishBinding_lock
     if finishBinding
         root.finishBinding_lock = true
+        root.bindingResult =
+            directive: 0
+            text: 0
+            attr: 0
+            hook: 0
 
-    config = config or {}
+    option = option or {}
+    result = bindNode node, element, option
 
-    bindNode node, element, config
+    root.bindingResult.directive += result.directive
+    root.bindingResult.text += result.text
+    root.bindingResult.attr += result.attr
+    root.bindingResult.hook += result.hook
     
     if finishBinding
         root.finishBinding_lock = false
@@ -441,7 +475,8 @@ alight.applyBindings = (node, element, config) ->
         root.watchers.finishBinding.length = 0
         for cb in lst
             cb()
-    null
+        result.total = root.bindingResult
+    result
 
 
 alight.bootstrap = (input) ->

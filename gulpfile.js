@@ -53,6 +53,7 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/parser/parseExpression.js',
     './tmp/parser/parseText.js',
     './tmp/compile.js',
+    './tmp/fastBinding.js',
 
     './tmp/directive/click.js',
     './tmp/directive/value.js',
