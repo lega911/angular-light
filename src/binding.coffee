@@ -482,6 +482,8 @@ alight.applyBindings = (node, element, option) ->
 alight.bootstrap = (input) ->
     if not input
         input = f$.find document, '[al-app]'
+    if typeof(input) is 'string'
+        input = f$.find document, input
     if f$.isElement input
         input = [input]
     if f$.isArray(input) or typeof(input.length) is 'number'

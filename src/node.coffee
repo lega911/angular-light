@@ -35,7 +35,10 @@ root.destroy()
 
 alight.ChangeDetector = (scope) ->
     root = new Root()
-    root.node scope or {}
+
+    node = new Node root, scope or {}
+    root.topNode = node
+    node
 
 
 Root = () ->
@@ -53,6 +56,7 @@ Root = () ->
     @.extraLoop = false
     @.finishBinding_lock = false
     @.lateScan = false
+    @.topNode = null
 
     @
 
@@ -62,10 +66,8 @@ Root::destroy = ->
     @.watchers.finishBinding.length = 0
     @.watchers.finishScan.length = 0
     @.watchers.finishScanOnce.length = 0
-
-
-Root::node = (scope) ->
-    new Node @, scope
+    if @.topNode
+        @.topNode.destroy()
 
 
 Node = (root, scope) ->
@@ -92,7 +94,7 @@ Node = (root, scope) ->
 
 Node::new = (scope) ->
     parent = @
-    node = parent.root.node scope or parent.scope
+    node = new Node parent.root, scope or parent.scope
     node.parent = parent
     parent.children.push node
 
@@ -143,6 +145,10 @@ Node::destroy = ->
         else
             # last scope
             root.nodeTail = p
+
+    if root.topNode is node
+        root.topNode = null
+        root.destroy()
 
 
 makeFilterChain = do ->
