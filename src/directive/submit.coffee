@@ -3,6 +3,7 @@ alight.d.al.submit = (cd, element, name) ->
     self =
         callback: cd.compile name,
             no_return: true
+            input: ['$event']
         start: ->
             self.onDom()
         onDom: ->
@@ -14,7 +15,7 @@ alight.d.al.submit = (cd, element, name) ->
             e.preventDefault()
             e.stopPropagation()
             try
-                self.callback cd.scope
+                self.callback cd.scope, e
             catch e
                 alight.exceptionHandler e, 'al-submit, error in expression: ' + name,
                     name: name

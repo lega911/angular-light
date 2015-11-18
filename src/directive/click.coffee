@@ -7,6 +7,7 @@ clickMaker = (event) ->
             stopPropagation: @.stopPropagation
             callback: node.compile name,
                 no_return: true
+                input: ['$event']
             start: ->
                 self.onDom()
                 self.stop = env.takeAttr 'al-click-stop'
@@ -25,7 +26,7 @@ clickMaker = (event) ->
                     return
 
                 try
-                    self.callback node.scope
+                    self.callback node.scope, e
                 catch e
                     alight.exceptionHandler e, 'al-click, error in expression: ' + name,
                         name: name
