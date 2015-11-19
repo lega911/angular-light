@@ -25,7 +25,7 @@ alight.directivePreprocessor = (attrName, args) ->
         m.substring(1).toUpperCase()
 
     raw = null
-    $ns = args.node.scope.$ns
+    $ns = args.cd.scope.$ns
     if $ns and $ns.directives
         path = $ns.directives[ns]
         if path
@@ -59,7 +59,7 @@ alight.directivePreprocessor = (attrName, args) ->
     if dir.restrict.indexOf(args.attr_type) < 0
         throw 'Directive has wrong binding (attribute/element): ' + name
 
-    dir.$init = (node, element, value, env) ->
+    dir.$init = (cd, element, value, env) ->
 
         doProcess = ->
             l = dscope.procLine
@@ -73,7 +73,7 @@ alight.directivePreprocessor = (attrName, args) ->
         dscope =
             element: element
             value: value
-            node: node
+            cd: cd
             env: env
             ns: ns
             name: name
@@ -104,7 +104,7 @@ do ->
         code: 'init'
         fn: ->
             if @.directive.init
-                @.result = @.directive.init @.node, @.element, @.value, @.env
+                @.result = @.directive.init @.cd, @.element, @.value, @.env
             if not f$.isObject(@.result)
                 @.result = {}
 
@@ -141,13 +141,13 @@ do ->
         code: 'scope'
         fn: ->
             if @.directive.scope  # true, isolate, root
-                parentNode = @.node
+                parentCD = @.cd
 
                 if @.directive.scope is 'isolate'
-                    @.node = parentNode.new
-                        $parent: parentNode.scope
+                    @.cd = parentCD.new
+                        $parent: parentCD.scope
                 else
-                    @.node = parentNode.new()
+                    @.cd = parentCD.new()
 
                 @.result.owner = true
                 @.doBinding = true
@@ -156,14 +156,14 @@ do ->
         code: 'link'
         fn: ->
             if @.directive.link
-                @.directive.link @.node, @.element, @.value, @.env
+                @.directive.link @.cd, @.element, @.value, @.env
 
     ext.push
         code: 'scopeBinding'
         fn: ->
             if @.doBinding
-                alight.applyBindings @.node, @.element,
-                    skip_attr:@.env.skippedAttr()
+                alight.applyBindings @.cd, @.element,
+                    skip_attr: @.env.skippedAttr()
 
 
 testDirective = do ->
@@ -203,7 +203,7 @@ sortByPriority = (a, b) ->
         return 1
 
 
-attrBinding = (node, element, value, attrName) ->
+attrBinding = (cd, element, value, attrName) ->
     text = value
     if text.indexOf(alight.utils.pars_start_tag) < 0
         return
@@ -211,24 +211,24 @@ attrBinding = (node, element, value, attrName) ->
     setter = (result) ->
         f$.attr element, attrName, result
         '$scanNoChanges'
-    node.watchText text, setter,
+    cd.watchText text, setter,
         init: true
     true
 
 
-bindText = (node, element) ->
+bindText = (cd, element) ->
     text = element.data
     if text.indexOf(alight.utils.pars_start_tag) < 0
         return
     setter = (result) ->
         element.nodeValue = result
         '$scanNoChanges'
-    node.watchText text, setter,
+    cd.watchText text, setter,
         init: true
     true
 
 
-bindComment = (node, element, option) ->
+bindComment = (cd, element, option) ->
     text = element.nodeValue.trimLeft()
     if text[0..9] isnt 'directive:'
         return
@@ -245,7 +245,7 @@ bindComment = (node, element, option) ->
         list: list = []
         element: element
         attr_type: 'M'
-        node: node
+        cd: cd
         skip_attr: []
     
     testDirective dirName, args
@@ -264,14 +264,15 @@ bindComment = (node, element, option) ->
     if alight.debug.directive
         console.log 'bind', d.attrName, value, d
     try
-        result = directive.$init node, element, value, env
+        result = directive.$init cd, element, value, env
         if result and result.start
             result.start()
     catch e
         alight.exceptionHandler e, 'Error in directive: ' + d.name,
             value: value
             env: env
-            node: node
+            cd: cd
+            scope: cd.scope
             element: element
     true
 
@@ -294,7 +295,7 @@ bindElement = do ->
                 continue
             attr.attrName
 
-    (node, element, config) ->
+    (cd, element, config) ->
         bindResult =
             directive: 0
             text: 0
@@ -312,7 +313,7 @@ bindElement = do ->
                 element: element
                 skip_attr: skip_attr
                 attr_type: 'E'
-                node: node
+                cd: cd
             
             attrName = element.nodeName.toLowerCase()
             testDirective attrName, args
@@ -333,7 +334,7 @@ bindElement = do ->
                 d.skip = true
                 value = f$.attr element, d.attrName
                 if d.is_attr
-                    if attrBinding node, element, value, d.attrName
+                    if attrBinding cd, element, value, d.attrName
                         bindResult.attr++
                 else
                     bindResult.directive++
@@ -347,14 +348,14 @@ bindElement = do ->
                     if alight.debug.directive
                         console.log 'bind', d.attrName, value, d
                     try
-                        result = directive.$init node, element, value, env
+                        result = directive.$init cd, element, value, env
                         if result and result.start
                             result.start()
                     catch e
                         alight.exceptionHandler e, 'Error in directive: ' + d.attrName,
                             value: value
                             env: env
-                            node: node
+                            cd: cd
                             element: element
 
                     if result and result.owner
@@ -366,7 +367,7 @@ bindElement = do ->
             for childElement in f$.childNodes element
                 if not childElement
                     continue
-                r = bindNode node, childElement
+                r = bindNode cd, childElement
                 bindResult.directive += r.directive
                 bindResult.text += r.text
                 bindResult.attr += r.attr
@@ -375,7 +376,7 @@ bindElement = do ->
         bindResult
 
 
-bindNode = (node, element, option) ->
+bindNode = (cd, element, option) ->
     result =
         directive: 0
         text: 0
@@ -386,21 +387,21 @@ bindNode = (node, element, option) ->
     if alight.hooks.binding.length
         for h in alight.hooks.binding
             result.hook += 1
-            r = h.fn node, element, option
+            r = h.fn cd, element, option
             if r and r.owner  # take control
                 return result
 
     if element.nodeType is 1
-        r = bindElement node, element, option
+        r = bindElement cd, element, option
         result.directive += r.directive
         result.text += r.text
         result.attr += r.attr
         result.hook += r.hook
     else if element.nodeType is 3
-        if bindText node, element, option
+        if bindText cd, element, option
             result.text++
     else if element.nodeType is 8
-        if bindComment node, element, option
+        if bindComment cd, element, option
             result.directive++
     result
 
@@ -429,9 +430,9 @@ alight.nextTick = do ->
         timer = setTimeout exec, 0
 
 
-alight.getFilter = (name, node, param) ->
+alight.getFilter = (name, cd, param) ->
     error = false
-    scope = node.scope
+    scope = cd.scope
     if scope.$ns and scope.$ns.filters
         filter = scope.$ns.filters[name]
         if not filter and not scope.$ns.inheritGlobal
@@ -443,14 +444,14 @@ alight.getFilter = (name, node, param) ->
     filter
 
 
-alight.applyBindings = (node, element, option) ->
+alight.applyBindings = (cd, element, option) ->
     if not element
         throw 'No element'
 
-    if not node
-        throw 'No node'
+    if not cd
+        throw 'No CD'
 
-    root = node.root
+    root = cd.root
 
     finishBinding = not root.finishBinding_lock
     if finishBinding
@@ -462,7 +463,7 @@ alight.applyBindings = (node, element, option) ->
             hook: 0
 
     option = option or {}
-    result = bindNode node, element, option
+    result = bindNode cd, element, option
 
     root.bindingResult.directive += result.directive
     root.bindingResult.text += result.text
@@ -492,8 +493,9 @@ alight.bootstrap = (input) ->
                 continue
             element.ma_bootstrapped = true
             attr = f$.attr element, 'al-app'
-            node = alight.ChangeDetector()
-            alight.applyBindings node, element, { skip_attr: 'al-app' }
+            cd = alight.ChangeDetector()
+            alight.applyBindings cd, element,
+                skip_attr: 'al-app'
     else
         if f$.isObject(input) and input.$el
             cd = alight.ChangeDetector input

@@ -1,7 +1,7 @@
 
 alight.d.al.if =
     priority: 700
-    init: (node, element, name, env) ->
+    init: (cd, element, name, env) ->
         self =
             owner: true
             item: null
@@ -36,10 +36,10 @@ alight.d.al.if =
                     return
                 self.item = f$.clone self.base_element
                 self.insertDom self.top_element, self.item
-                self.child = node.new()
+                self.child = cd.new()
                 alight.applyBindings self.child, self.item, { skip_attr:env.skippedAttr() }
             watchModel: ->
-                self.watch = node.watch name, self.updateDom
+                self.watch = cd.watch name, self.updateDom
             initUpdate: ->
                 self.watch.fire()
             removeDom: (element) ->
@@ -50,8 +50,8 @@ alight.d.al.if =
 
 alight.d.al.ifnot =
     priority: 700
-    init: (node, element, name, env) ->
-        self = alight.d.al.if.init.apply @, arguments
+    init: (cd, element, name, env) ->
+        self = alight.d.al.if.init cd, element, name, env
         self.updateDom = (value) ->
             if value
                 self.removeBlock()

@@ -1,12 +1,12 @@
 
-alight.d.al.value = (node, element, variable) ->
+alight.d.al.value = (cd, element, variable) ->
     watch = null
     self =
         changing: false
         onDom: ->
             f$.on element, 'input', self.updateModel
             f$.on element, 'change', self.updateModel
-            node.watch '$destroy', self.offDom
+            cd.watch '$destroy', self.offDom
         offDom: ->
             f$.off element, 'input', self.updateModel
             f$.off element, 'change', self.updateModel
@@ -14,11 +14,11 @@ alight.d.al.value = (node, element, variable) ->
             alight.nextTick ->
                 value = f$.val element
                 self.changing = true
-                node.setValue variable, value
-                node.scan ->
+                cd.setValue variable, value
+                cd.scan ->
                     self.changing = false
         watchModel: ->
-            watch = node.watch variable, self.updateDom
+            watch = cd.watch variable, self.updateDom
         updateDom: (value) ->
             if self.changing
                 return

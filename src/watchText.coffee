@@ -39,8 +39,8 @@ do ->
             dirName = exp.slice 1, i
             exp = exp.slice i
 
-        node = conf.node
-        scope = node.scope
+        cd = conf.cd
+        scope = cd.scope
         if scope.$ns and scope.$ns.text
             dir = scope.$ns.text[dirName]
         else
@@ -63,19 +63,19 @@ do ->
                 point.type = 'text'
                 conf.finally()
 
-        dir env.setter, exp, node, env
+        dir env.setter, exp, cd, env
 
 
     alight.core.Node::watchText = (expression, callback, config) ->
         config = config or {}
-        node = @
+        cd = @
         if alight.debug.watchText
             console.log '$watchText', expression
 
         # test simple text
         st = alight.utils.compile.buildSimpleText expression, null
         if st
-            return node.watch expression, callback,
+            return cd.watch expression, callback,
                 watchText: st
                 init: config.init
 
@@ -100,7 +100,7 @@ do ->
                 if exp[0] is '#'
                     alight.text.$base
                         exp: exp
-                        node: node
+                        cd: cd
                         point: d
                         update: ->
                             doUpdate()
@@ -132,7 +132,7 @@ do ->
                         watchCount++
                         canUseSimpleBuilder = false
                         do (d) ->
-                            node.watch exp, (value) ->
+                            cd.watch exp, (value) ->
                                 `if(value == null) value = ''`
                                 d.value = value
                                 doUpdate()
@@ -158,17 +158,17 @@ do ->
                 st = alight.utils.compile.buildSimpleText null, data
             else
                 st = alight.utils.compile.buildSimpleText expression, data
-            return node.watch expression, callback,
+            return cd.watch expression, callback,
                 watchText:
                     fn: st.fn
                 init: config.init
 
         w = null
         key = getId()
-        data.scope = node.scope
+        data.scope = cd.scope
         fn = alight.utils.compile.buildText expression, data
         doUpdate = ->
-            node.root.private[key] = fn()
+            cd.root.private[key] = fn()
         doFinally = ->
             i = true
             for d in data
@@ -177,12 +177,12 @@ do ->
                     break
             if not i
                 return
-            node.watch '$finishScanOnce', ->
+            cd.watch '$finishScanOnce', ->
                 w.stop()
             if config.onStatic
                 config.onStatic()
         privateValue = ->
-            node.root.private[key]
+            cd.root.private[key]
         doUpdate()
-        w = node.watch privateValue, callback,
+        w = cd.watch privateValue, callback,
             init: config.init
