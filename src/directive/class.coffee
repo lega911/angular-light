@@ -17,6 +17,7 @@ alight.d.al.class = alight.d.al.css =
                             exp: exp
                             e: e
                             cd: cd
+                            scope: cd.scope
                             element: element
                     else
                         list.push

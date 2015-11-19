@@ -356,6 +356,7 @@ bindElement = do ->
                             value: value
                             env: env
                             cd: cd
+                            scope: cd.scope
                             element: element
 
                     if result and result.owner
@@ -421,6 +422,7 @@ alight.nextTick = do ->
             catch e
                 alight.exceptionHandler e, '$nextTick, error in function',
                     fn: callback
+                    self: self
         null
 
     (callback) ->

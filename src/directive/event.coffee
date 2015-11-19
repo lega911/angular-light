@@ -22,5 +22,6 @@ for key in ['keydown', 'keypress', 'keyup', 'mousedown', 'mouseenter', 'mouselea
                         alight.exceptionHandler e, key + ', error in expression: ' + exp,
                             exp: exp
                             cd: cd
+                            scope: cd.scope
                             element: element
                     cd.scan()

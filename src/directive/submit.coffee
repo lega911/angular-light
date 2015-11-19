@@ -20,5 +20,6 @@ alight.d.al.submit = (cd, element, name) ->
                 alight.exceptionHandler e, 'al-submit, error in expression: ' + name,
                     name: name
                     cd: cd
+                    scope: cd.scope
                     element: element
             cd.scan()

@@ -8,6 +8,7 @@ alight.d.al.init = (cd, element, exp) ->
         alight.exceptionHandler e, 'al-init, error in expression: ' + exp,
             exp: exp
             cd: cd
+            scope: cd.scope
             element: element
 
     cd.scan
