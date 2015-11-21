@@ -1,42 +1,8 @@
 
-###
-
-root = alight.Scope()
-
-Scope::$new
-Scope::$watch
-Scope::$destroy
-
-# can be bindable
-Scope::$compile
-    Scope::$eval
-    Scope::$getValue
-    Scope::$setValue
-
-# only for root
-Scope::$scan
-    Scope::$scanAsync
-
-makeWatch = (scope, $system) ->
-    (name, callback, options) ->
-        baseWatch name, callback, options, scope, $system
-
-# new API
-scope = {}
-root = alight.core.root(conf)
-node = root.node(scope)
-root.scan(option)
-
-node.watch(src, callback, option)
-node.destroy()
-root.destroy()
-
-###
-
 alight.ChangeDetector = (scope) ->
     root = new Root()
 
-    node = new Node root, scope or {}
+    node = new ChangeDetector root, scope or {}
     root.topNode = node
     node
 
@@ -45,7 +11,7 @@ Root = () ->
     @.nodeHead = null
     @.nodeTail = null
     @.private = {}
-    @.watchers =    # $finishBinding, $finishScan, $any
+    @.watchers =
         any: []
         finishBinding: []
         finishScan: []
@@ -70,7 +36,7 @@ Root::destroy = ->
         @.topNode.destroy()
 
 
-Node = (root, scope) ->
+ChangeDetector = (root, scope) ->
     # local
     @.scope = scope
     @.root = root
@@ -92,16 +58,16 @@ Node = (root, scope) ->
     @
 
 
-Node::new = (scope) ->
+ChangeDetector::new = (scope) ->
     parent = @
-    node = new Node parent.root, scope or parent.scope
+    node = new ChangeDetector parent.root, scope or parent.scope
     node.parent = parent
     parent.children.push node
 
     node
 
 
-Node::destroy = ->
+ChangeDetector::destroy = ->
     node = @
     root = node.root
 
@@ -247,7 +213,7 @@ watchAny = (node, key, callback) ->
 
 ###
 
-Node::watch = (name, callback, option) ->
+ChangeDetector::watch = (name, callback, option) ->
     option = option or {}
     if option is true
         option =
@@ -540,24 +506,24 @@ Root::scan = (cfg) ->
 
 
 # redirects
-alight.core.Node = Node
+alight.core.ChangeDetector = ChangeDetector
 
-Node::compile = (expression, option) ->
+ChangeDetector::compile = (expression, option) ->
     alight.utils.compile.expression(expression, option).fn
 
-Node::scan = (option) ->
+ChangeDetector::scan = (option) ->
     @.root.scan option
 
-Node::setValue = (name, value) ->
+ChangeDetector::setValue = (name, value) ->
     node = @
     fn = node.compile name + ' = $value',
         input: ['$value']
         no_return: true
     fn node.scope, value
 
-Node::eval = (exp) ->
+ChangeDetector::eval = (exp) ->
     fn = @.compile exp
     fn @.scope
 
-Node::getValue = (name) ->
+ChangeDetector::getValue = (name) ->
     @.$eval name

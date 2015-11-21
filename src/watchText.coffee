@@ -66,7 +66,7 @@ do ->
         dir env.setter, exp, cd, env
 
 
-    alight.core.Node::watchText = (expression, callback, config) ->
+    alight.core.ChangeDetector::watchText = (expression, callback, config) ->
         config = config or {}
         cd = @
         if alight.debug.watchText
