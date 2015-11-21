@@ -2,9 +2,9 @@
 alight.ChangeDetector = (scope) ->
     root = new Root()
 
-    node = new ChangeDetector root, scope or {}
-    root.topNode = node
-    node
+    cd = new ChangeDetector root, scope or {}
+    root.topCD = cd
+    cd
 
 
 Root = () ->
@@ -22,7 +22,7 @@ Root = () ->
     @.extraLoop = false
     @.finishBinding_lock = false
     @.lateScan = false
-    @.topNode = null
+    @.topCD = null
 
     @
 
@@ -32,8 +32,8 @@ Root::destroy = ->
     @.watchers.finishBinding.length = 0
     @.watchers.finishScan.length = 0
     @.watchers.finishScanOnce.length = 0
-    if @.topNode
-        @.topNode.destroy()
+    if @.topCD
+        @.topCD.destroy()
 
 
 ChangeDetector = (root, scope) ->
@@ -60,47 +60,47 @@ ChangeDetector = (root, scope) ->
 
 ChangeDetector::new = (scope) ->
     parent = @
-    node = new ChangeDetector parent.root, scope or parent.scope
-    node.parent = parent
-    parent.children.push node
+    cd = new ChangeDetector parent.root, scope or parent.scope
+    cd.parent = parent
+    parent.children.push cd
 
-    node
+    cd
 
 
 ChangeDetector::destroy = ->
-    node = @
-    root = node.root
+    cd = @
+    root = cd.root
 
-    if node.parent
-        removeItem node.parent.children, node
+    if cd.parent
+        removeItem cd.parent.children, cd
 
-    for child in node.children.slice()
+    for child in cd.children.slice()
         child.destroy()
 
-    for fn in node.destroy_callbacks
+    for fn in cd.destroy_callbacks
         fn()
 
-    node.destroy_callbacks.length = 0
-    node.watchList.length = 0
-    watchers = node.watchers
-    node.watchers = {}
+    cd.destroy_callbacks.length = 0
+    cd.watchList.length = 0
+    watchers = cd.watchers
+    cd.watchers = {}
     # call watch.onStop
     for k, d of watchers
         if d.onStop.length
             for fn in d.onStop
                 fn()
 
-    for wa in node.rwatchers.any
+    for wa in cd.rwatchers.any
         removeItem root.watchers.any, wa
-    node.rwatchers.any.length = 0
-    for wa in node.rwatchers.finishScan
+    cd.rwatchers.any.length = 0
+    for wa in cd.rwatchers.finishScan
         removeItem root.watchers.finishScan, wa
-    node.rwatchers.finishScan.length = 0
+    cd.rwatchers.finishScan.length = 0
 
-    if node.lineActive
-        node.lineActive = false
-        p = node.prevSibling
-        n = node.nextSibling
+    if cd.lineActive
+        cd.lineActive = false
+        p = cd.prevSibling
+        n = cd.nextSibling
         if p
             p.nextSibling = n
         else
@@ -112,8 +112,8 @@ ChangeDetector::destroy = ->
             # last scope
             root.nodeTail = p
 
-    if root.topNode is node
-        root.topNode = null
+    if root.topCD is cd
+        root.topCD = null
         root.destroy()
 
 
@@ -122,8 +122,8 @@ makeFilterChain = do ->
     getId = ->
         'wf' + (index++)
 
-    (node, pe, baseCallback, option) ->
-        root = node.root
+    (cd, pe, baseCallback, option) ->
+        root = cd.root
 
         # watchMode: simple, deep, array
         if option.isArray
@@ -145,9 +145,9 @@ makeFilterChain = do ->
                 filterName = filterExp
                 filterArg = null
 
-            filterBuilder = alight.getFilter filterName, node, filterArg
+            filterBuilder = alight.getFilter filterName, cd, filterArg
 
-            filter = filterBuilder filterArg, node,
+            filter = filterBuilder filterArg, cd,
                 setValue: prevCallback
 
             if f$.isFunction filter
@@ -172,7 +172,7 @@ makeFilterChain = do ->
             watchOptions.isArray = true
         else if watchMode is 'deep'
             watchOptions.deep = true
-        w = node.watch pe.expression, prevCallback, watchOptions
+        w = cd.watch pe.expression, prevCallback, watchOptions
 
         w.value = undefined
         w
@@ -181,17 +181,17 @@ makeFilterChain = do ->
 WA = (callback) ->
     @.cb = callback
 
-watchAny = (node, key, callback) ->
-    root = node.root
+watchAny = (cd, key, callback) ->
+    root = cd.root
 
     wa = new WA callback
 
-    node.rwatchers[key].push wa
+    cd.rwatchers[key].push wa
     root.watchers[key].push wa
 
     return {
         stop: ->
-            removeItem node.rwatchers[key], wa
+            removeItem cd.rwatchers[key], wa
             removeItem root.watchers[key], wa
     }
 
@@ -219,9 +219,9 @@ ChangeDetector::watch = (name, callback, option) ->
         option =
             isArray: true
 
-    node = @
-    root = node.root
-    scope = node.scope
+    cd = @
+    root = cd.root
+    scope = cd.scope
 
     if f$.isFunction name
         exp = name
@@ -242,13 +242,13 @@ ChangeDetector::watch = (name, callback, option) ->
             name = 'root.private.' + name
         key = name
         if key is '$any'
-            return watchAny node, 'any', callback
+            return watchAny cd, 'any', callback
         if key is '$finishScan'
-            return watchAny node, 'finishScan', callback
+            return watchAny cd, 'finishScan', callback
         if key is '$finishScanOnce'
             return root.watchers.finishScanOnce.push callback
         if key is '$destroy'
-            return node.destroy_callbacks.push callback
+            return cd.destroy_callbacks.push callback
         if key is '$finishBinding'
             return root.watchers.finishBinding.push callback
         if option.deep
@@ -261,7 +261,7 @@ ChangeDetector::watch = (name, callback, option) ->
     if alight.debug.watch
         console.log '$watch', name
 
-    d = node.watchers[key]
+    d = cd.watchers[key]
     if d
         if not option.readOnly
             d.extraLoop = true
@@ -276,7 +276,7 @@ ChangeDetector::watch = (name, callback, option) ->
             else
                 pe = alight.utils.parsExpression name
                 if pe.result.length > 1  # has filters
-                    return makeFilterChain node, pe, callback, option
+                    return makeFilterChain cd, pe, callback, option
                 ce = alight.utils.compile.expression(name)
                 isStatic = ce.isSimple and ce.simpleVariables.length is 0 and not option.isArray
                 exp = ce.fn
@@ -303,17 +303,17 @@ ChangeDetector::watch = (name, callback, option) ->
             returnValue = d.value
 
         if not isStatic
-            node.watchers[key] = d
-            node.watchList.push d
+            cd.watchers[key] = d
+            cd.watchList.push d
             # insert scope into root-chain
-            if not node.lineActive
-                node.lineActive = true
+            if not cd.lineActive
+                cd.lineActive = true
                 t = root.nodeTail
                 if t
-                    root.nodeTail = t.nextSibling = node
-                    node.prevSibling = t
+                    root.nodeTail = t.nextSibling = cd
+                    cd.prevSibling = t
                 else
-                    root.nodeHead = root.nodeTail = node
+                    root.nodeHead = root.nodeTail = cd
 
     r =
         $: d
@@ -342,8 +342,8 @@ ChangeDetector::watch = (name, callback, option) ->
             return
         # remove watch
         if not d.isStatic
-            delete node.watchers[key]
-            removeItem node.watchList, d
+            delete cd.watchers[key]
+            removeItem cd.watchList, d
         if option.onStop
             option.onStop()
 
@@ -382,13 +382,13 @@ scan_core2 = (root, result) ->
     changes = 0
     total = 0
 
-    node = root.nodeHead
-    while node
-        scope = node.scope
+    cd = root.nodeHead
+    while cd
+        scope = cd.scope
 
         # default watchers
-        total += node.watchList.length
-        for w in node.watchList.slice()
+        total += cd.watchList.length
+        for w in cd.watchList.slice()
             result.src = w.src
             last = w.value
             value = w.exp scope
@@ -428,7 +428,7 @@ scan_core2 = (root, result) ->
                 if alight.debug.scan > 1
                     console.log 'changed:', w.src
 
-        node = node.nextSibling
+        cd = cd.nextSibling
 
     result.total = total
     result.changes = changes
@@ -515,11 +515,11 @@ ChangeDetector::scan = (option) ->
     @.root.scan option
 
 ChangeDetector::setValue = (name, value) ->
-    node = @
-    fn = node.compile name + ' = $value',
+    cd = @
+    fn = cd.compile name + ' = $value',
         input: ['$value']
         no_return: true
-    fn node.scope, value
+    fn cd.scope, value
 
 ChangeDetector::eval = (exp) ->
     fn = @.compile exp
