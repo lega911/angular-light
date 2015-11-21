@@ -126,7 +126,7 @@ gulp.task('build_test_core', function() {
     .pipe(gulp.dest('test/core'))
 });
 
-gulp.task('test', ['build_test', 'build_test_core'], function(){
+gulp.task('test', ['build_test', 'build_test_core', 'build_test_other'], function(){
   var path = require('path');
   var childProcess = require('child_process');
   var phantomjs = require('phantomjs');
@@ -136,4 +136,10 @@ gulp.task('test', ['build_test', 'build_test_core'], function(){
   childProcess.execFile(binPath, childArgs, function(err, stdout, stderr) {
     console.log(stdout);
   });
+});
+
+gulp.task('build_test_other', function() {
+  gulp.src('./test/benchmark/*.coffee')
+    .pipe(coffee({}).on('error', console.log))
+    .pipe(gulp.dest('test/benchmark'))
 });
