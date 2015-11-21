@@ -9,7 +9,6 @@ alight.ChangeDetector = (scope) ->
 
 Root = () ->
     @.cdLine = []
-    @.private = {}
     @.watchers =
         any: []
         finishBinding: []
@@ -190,7 +189,6 @@ watchAny = (cd, key, callback) ->
         init
         onStop
 
-        private
         watchText
 
 
@@ -218,12 +216,6 @@ ChangeDetector::watch = (name, callback, option) ->
         if name[0..1] is '::'
             name = name[2..]
             option.oneTime = true
-        if option.private
-            throw 'private mode is depricated'
-            if option.oneTime or option.isArray or option.deep
-                throw 'Conflict $watch option private'
-            privateName = name
-            name = 'root.private.' + name
         key = name
         if key is '$any'
             return watchAny cd, 'any', callback

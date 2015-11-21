@@ -164,11 +164,11 @@ do ->
                 init: config.init
 
         w = null
-        key = getId()
+        resultValue = ''
         data.scope = cd.scope
         fn = alight.utils.compile.buildText expression, data
         doUpdate = ->
-            cd.root.private[key] = fn()
+            resultValue = fn()
         doFinally = ->
             i = true
             for d in data
@@ -182,7 +182,7 @@ do ->
             if config.onStatic
                 config.onStatic()
         privateValue = ->
-            cd.root.private[key]
+            resultValue
         doUpdate()
         w = cd.watch privateValue, callback,
             init: config.init
