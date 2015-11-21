@@ -45,7 +45,7 @@ gulp.task('assemble', ['compile'], function() {
   var files = [
     './src/js/prefix.js',
     './src/js/fquery.js',
-    './tmp/node.js',
+    './tmp/changeDetector.js',
     './tmp/watchText.js',
     './tmp/textDirective.js',
     './tmp/binding.js',
