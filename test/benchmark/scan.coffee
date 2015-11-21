@@ -28,16 +28,19 @@ fillCD = (count) ->
     root
 
 
+print = (text) ->
+    p = document.createElement 'p'
+    alight.f$.text p, text
+    document.body.appendChild p
+
+
 timeit = (name, count, fn) ->
     start = performance.now()
     while count
         count--
         fn()
     duration = performance.now() - start
-    #console.log name, duration
-    p = document.createElement 'p'
-    p.innerHTML = "#{name} #{duration.toFixed(1)}"
-    document.body.appendChild p
+    print "#{name} #{duration.toFixed(1)}"
 
 
 runCreating = ->
@@ -49,7 +52,7 @@ runScanning = ->
     # 100x100 watches x 1000 loops = 10M checks
     root = fillCD 100
     timeit 'scan', 1000, ->
-        root.scan()
+        root.root.scan()
 
 
 runDestroy = ->
@@ -77,6 +80,7 @@ runDestroyPartial = ->
 
 
 run = ->
+    print alight.version
     line = [
         runCreating,
         runScanning,
@@ -94,4 +98,4 @@ run = ->
 
     setTimeout step, 1000
 
-run()
+alight.f$.ready run

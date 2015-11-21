@@ -8,8 +8,7 @@ alight.ChangeDetector = (scope) ->
 
 
 Root = () ->
-    @.nodeHead = null
-    @.nodeTail = null
+    @.cdLine = []
     @.private = {}
     @.watchers =
         any: []
@@ -44,12 +43,10 @@ ChangeDetector = (root, scope) ->
     @.watchList = []
     @.destroy_callbacks = []
 
-    @.lineActive = false
-    @.prevSibling = null
-    @.nextSibling = null
-
     @.parent = null
     @.children = []
+
+    root.cdLine.push @
 
     #
     @.rwatchers =
@@ -70,6 +67,8 @@ ChangeDetector::new = (scope) ->
 ChangeDetector::destroy = ->
     cd = @
     root = cd.root
+
+    removeItem root.cdLine, cd
 
     if cd.parent
         removeItem cd.parent.children, cd
@@ -96,21 +95,6 @@ ChangeDetector::destroy = ->
     for wa in cd.rwatchers.finishScan
         removeItem root.watchers.finishScan, wa
     cd.rwatchers.finishScan.length = 0
-
-    if cd.lineActive
-        cd.lineActive = false
-        p = cd.prevSibling
-        n = cd.nextSibling
-        if p
-            p.nextSibling = n
-        else
-            # first scope
-            root.nodeHead = n
-        if n
-            n.prevSibling = p
-        else
-            # last scope
-            root.nodeTail = p
 
     if root.topCD is cd
         root.topCD = null
@@ -305,15 +289,6 @@ ChangeDetector::watch = (name, callback, option) ->
         if not isStatic
             cd.watchers[key] = d
             cd.watchList.push d
-            # insert scope into root-chain
-            if not cd.lineActive
-                cd.lineActive = true
-                t = root.nodeTail
-                if t
-                    root.nodeTail = t.nextSibling = cd
-                    cd.prevSibling = t
-                else
-                    root.nodeHead = root.nodeTail = cd
 
     r =
         $: d
@@ -377,13 +352,12 @@ notEqual = (a, b) ->
     false
 
 
-scan_core2 = (root, result) ->
+scanCore = (root, result) ->
     extraLoop = false
     changes = 0
     total = 0
 
-    cd = root.nodeHead
-    while cd
+    for cd in root.cdLine.slice()
         scope = cd.scope
 
         # default watchers
@@ -427,8 +401,6 @@ scan_core2 = (root, result) ->
                         extraLoop = true
                 if alight.debug.scan > 1
                     console.log 'changed:', w.src
-
-        cd = cd.nextSibling
 
     result.total = total
     result.changes = changes
@@ -477,7 +449,7 @@ Root::scan = (cfg) ->
 
             root.extraLoop = false
 
-            scan_core2 root, result
+            scanCore root, result
 
             # call $any
             if result.changes
