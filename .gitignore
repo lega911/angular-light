@@ -10,3 +10,5 @@ src/*.map
 bin/
 tmp/
 node_modules
+/test2/
+/test/benchmark/*.js

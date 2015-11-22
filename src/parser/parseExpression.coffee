@@ -158,7 +158,10 @@ alight.utils.parsExpression = (line, cfg) ->
                 else if d[0] is 'this'
                     newName = '$$scope.' + d[1..].join '.'
                 else
-                    newName = '$$scope.' + variable
+                    if assignment and d.length is 1
+                        newName = '($$scope.$root || $$scope).' + variable
+                    else
+                        newName = '$$scope.' + variable
             exp = exp.slice(0, n) + newName + exp.slice(n + variable.length)
         result[0] = exp
     if alight.debug.parser

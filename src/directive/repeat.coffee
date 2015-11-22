@@ -26,6 +26,7 @@ alight.directives.al.repeat =
                 self.prepareDom()
                 self.buildUpdateDom()
                 self.watchModel()
+                self.makeChildConstructor()
                 self.initUpdateDom()
 
             parsExpression: ->
@@ -106,9 +107,16 @@ alight.directives.al.repeat =
                     f$.before element, self.top_element
                     f$.remove element
 
+            makeChildConstructor: ->
+                ChildScope = ->
+                    @.$root = CD.scope.$root or CD.scope
+                    @
+                ChildScope:: = CD.scope
+                self.ChildScope = ChildScope
+
             makeChild: (item, index, list) ->
-                childCD = CD.new
-                    $parent: CD.scope
+                scope = new self.ChildScope()
+                childCD = CD.new scope
                 self.updateChild childCD, item, index, list
                 childCD
 

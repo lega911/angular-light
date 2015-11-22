@@ -84,7 +84,7 @@ do ->
                                         $test.check result() is results[7], result()
                                         $test.close()
 
-    run 'default', '<div al-repeat="it in list">{{it.text}}:{{=$parent.numerator()}}</div>',
+    run 'default', '<div al-repeat="it in list">{{it.text}}:{{=numerator()}}</div>',
         0: 'a:1, b:2, c:3, d:4'
         1: 'a:1, b:2, c:3, d:4, e:5'
         2: 'f:6, a:1, b:2, c:3, d:4, e:5'
@@ -94,7 +94,7 @@ do ->
         6: 'a:1, g:7, c:3, d:4'
         7: 'a:1, i:9, c:3, d:4'
 
-    run 'by $id(it)', '<div al-repeat="it in list track by $id(it)">{{it.text}}:{{=$parent.numerator()}}</div>',
+    run 'by $id(it)', '<div al-repeat="it in list track by $id(it)">{{it.text}}:{{=numerator()}}</div>',
         0: 'a:1, b:2, c:3, d:4'
         1: 'a:1, b:2, c:3, d:4, e:5'
         2: 'f:6, a:1, b:2, c:3, d:4, e:5'
@@ -104,7 +104,7 @@ do ->
         6: 'a:1, g:7, c:3, d:4'
         7: 'a:1, i:9, c:3, d:4'
 
-    run 'by it.text', '<div al-repeat="it in list track by it.text">{{it.text}}:{{=$parent.numerator()}}</div>',
+    run 'by it.text', '<div al-repeat="it in list track by it.text">{{it.text}}:{{=numerator()}}</div>',
         0: 'a:1, b:2, c:3, d:4'
         1: 'a:1, b:2, c:3, d:4, e:5'
         2: 'f:6, a:1, b:2, c:3, d:4, e:5'
@@ -114,7 +114,7 @@ do ->
         6: 'a:1, g:7, c:3, d:4'
         7: 'a:1, i:9, c:3, d:4'
 
-    run 'by $index, objects', '<div al-repeat="it in list track by $index">{{it.text}}:{{=$parent.numerator()}}</div>',
+    run 'by $index, objects', '<div al-repeat="it in list track by $index">{{it.text}}:{{=numerator()}}</div>',
         0: 'a:1, b:2, c:3, d:4'
         1: 'a:1, b:2, c:3, d:4, e:5'
         2: 'f:1, a:2, b:3, c:4, d:5, e:6'
@@ -124,7 +124,7 @@ do ->
         6: 'a:1, g:2, c:3, d:4'
         7: 'a:1, i:2, c:3, d:4'
 
-    run 'filter-controller', '<div al-repeat="it in list | slice:0,3" al-test-repeat>{{r}}:{{=$parent.numerator()}}</div>',
+    run 'filter-controller', '<div al-repeat="it in list | slice:0,3" al-test-repeat>{{r}}:{{=numerator()}}</div>',
         0: 'aa:1, bb:2, cc:3'
         1: 'aa:1, bb:2, cc:3'
         2: 'ff:4, aa:1, bb:2'
@@ -134,7 +134,7 @@ do ->
         6: 'aa:1, gg:5, cc:7'
         7: 'aa:1, ii:8, cc:7'
 
-    run 'bo-repeat', '<div bo-repeat="it in list" al-test-repeat>{{r}}:{{=$parent.numerator()}}</div>',
+    run 'bo-repeat', '<div bo-repeat="it in list" al-test-repeat>{{r}}:{{=numerator()}}</div>',
         0: 'aa:1, bb:2, cc:3, dd:4'
         1: 'aa:1, bb:2, cc:3, dd:4'
         2: 'aa:1, bb:2, cc:3, dd:4'
@@ -144,7 +144,7 @@ do ->
         6: 'aa:1, bb:2, cc:3, dd:4'
         7: 'aa:1, bb:2, cc:3, dd:4'
 
-    run 'restrict-m', '<div> <!-- directive: al-repeat item in list--><span>{{item.text}}</span>:{{=$parent.numerator()}}:<span>{{item.text}}</span> <!--  /directive:  al-repeat --> </div>',
+    run 'restrict-m', '<div> <!-- directive: al-repeat item in list--><span>{{item.text}}</span>:{{=numerator()}}:<span>{{item.text}}</span> <!--  /directive:  al-repeat --> </div>',
         0: 'a:1:a b:2:b c:3:c d:4:d'
         1: 'a:1:a b:2:b c:3:c d:4:d e:5:e'
         2: 'f:6:f a:1:a b:2:b c:3:c d:4:d e:5:e'
@@ -169,7 +169,7 @@ do ->
         cd = alight.ChangeDetector scope
 
         dom = document.createElement 'div'
-        dom.innerHTML = '<div class="item" al-repeat="it in list track by $index">{{it}}:{{=$parent.numerator()}}</div>'
+        dom.innerHTML = '<div class="item" al-repeat="it in list track by $index">{{it}}:{{=numerator()}}</div>'
 
         alight.applyBindings cd, dom
 

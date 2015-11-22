@@ -23,7 +23,7 @@ Test('parsExpression', 'parsing').run ($test, alight) ->
     pars 'a + b.c + d.e.f', ["$$scope.a + (($$=$$scope.b,$$==null)?undefined:$$.c) + (($$=$$scope.d,$$==null)?undefined:($$=$$.e,$$==null)?undefined:$$.f)"]
     pars 'foo.baz=one.two.three', ["$$scope.foo.baz=(($$=$$scope.one,$$==null)?undefined:($$=$$.two,$$==null)?undefined:$$.three)"]
     pars 'foo.baz==one.two.three', ["(($$=$$scope.foo,$$==null)?undefined:$$.baz)==(($$=$$scope.one,$$==null)?undefined:($$=$$.two,$$==null)?undefined:$$.three)"]
-    pars 'a=5; b=6;', ["$$scope.a=5; $$scope.b=6;"]
+    pars 'a=5; b=6;', ["($$scope.$root || $$scope).a=5; ($$scope.$root || $$scope).b=6;"]
     pars 'do(item)', ["$$scope.do($$scope.item)"]
     pars "a+'/'+b", ["$$scope.a+'/'+$$scope.b"]
     pars 'page==5', ["$$scope.page==5"]
@@ -37,21 +37,21 @@ Test('parsExpression', 'parsing').run ($test, alight) ->
     pars "[1,2,3,4,5,6,7,8,9]", ["[1,2,3,4,5,6,7,8,9]"]
     pars "$index===0", ["$$scope.$index===0"]
     pars "list[key].value", ['$$scope.list[$$scope.key].value']
-    pars "list[key].value = test", ['$$scope.list[$$scope.key].value = test'], { input:['test'] }
+    pars "list[key].value = test", ['$$scope.list[($$scope.$root || $$scope).key].value = test'], { input:['test'] }
     pars '((obj || {}).ext || {}).visible', ['(($$scope.obj || {}).ext || {}).visible']
     pars 'a || b | filter', ['$$scope.a || $$scope.b ', ' filter']
-    pars "value = $event.keyCode", ['$$scope.value = $event.keyCode'], { input:['$event'] }
+    pars "value = $event.keyCode", ['($$scope.$root || $$scope).value = $event.keyCode'], { input:['$event'] }
     pars "'('+a+')'", ["'('+$$scope.a+')'"]
     pars "{ key:value, key2:value2 }", ["{ key:$$scope.value, key2:$$scope.value2 }"]
     pars 'a.b.c.d.e.f.g', ["(($$=$$scope.a,$$==null)?undefined:($$=$$.b,$$==null)?undefined:($$=$$.c,$$==null)?undefined:($$=$$.d,$$==null)?undefined:($$=$$.e,$$==null)?undefined:($$=$$.f,$$==null)?undefined:$$.g)"]
-    pars "scope=this", ["$$scope.scope=$$scope"]
+    pars "scope=this", ["($$scope.$root || $$scope).scope=$$scope"]
     pars "info.user.acl('write', 're_type:546a1d07bb05aa73a632807d')", ["(($$=$$scope.info,$$==null)?undefined:$$.user).acl('write', 're_type:546a1d07bb05aa73a632807d')"]
     cyWord = "\u041f\u0440\u043e\u0432\u0435\u0440\u043a\u0430\u041a\u0438\u0440\u0438\u043b\u0438\u0446\u044b\u0401\u0451\u0419\u0439"
     pars "Form.#{cyWord}", ["(($$=$$scope.Form,$$==null)?undefined:$$.#{cyWord})"]
-    pars 'a++', ["$$scope.a++"]
+    pars 'a++', ["($$scope.$root || $$scope).a++"]
     pars 'a.b--', ["$$scope.a.b--"]
     pars 'a.b.c+=5', ["$$scope.a.b.c+=5"]
-    pars 'a=1', ["$$scope.a=1"]
+    pars 'a=1', ["($$scope.$root || $$scope).a=1"]
     pars 'a.b=1', ["$$scope.a.b=1"]
     pars 'a.b.c=1', ["$$scope.a.b.c=1"]
     #pars '=obj.items.short_name || obj.name', []
