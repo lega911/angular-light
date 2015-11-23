@@ -126,7 +126,25 @@ gulp.task('build_test_core', function() {
     .pipe(gulp.dest('test/core'))
 });
 
-gulp.task('test', ['build_test', 'build_test_core', 'build_test_other'], function(){
+gulp.task('build_test_directive', function() {
+  return gulp.src('./test/directive/*.coffee')
+    .pipe(coffee({}).on('error', console.log))
+    .pipe(gulp.dest('test/directive'))
+});
+
+gulp.task('build_test_filter', function() {
+  return gulp.src('./test/filter/*.coffee')
+    .pipe(coffee({}).on('error', console.log))
+    .pipe(gulp.dest('test/filter'))
+});
+
+gulp.task('build_test_utils', function() {
+  return gulp.src('./test/utils/*.coffee')
+    .pipe(coffee({}).on('error', console.log))
+    .pipe(gulp.dest('test/utils'))
+});
+
+gulp.task('test', ['build_test', 'build_test_core', 'build_test_other', 'build_test_utils', 'build_test_directive', 'build_test_filter'], function(){
   var path = require('path');
   var childProcess = require('child_process');
   var phantomjs = require('phantomjs');

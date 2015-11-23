@@ -142,31 +142,4 @@ window.Test = do ->
                         err = e.description
                     scope.error()
                     console.error '!!', err
-
-                # test with observer
-                return # observer is off
-                if not Object.observe
-                    return
-                alight = buildAlight()
-                alight.debug.useObserver = true
-                stat.bStarted++;
-                timeout = Timeout()
-                scope = makeScope "ob+#{title}"
-                try
-                    fn scope, alight, timeout
-                    i = 9999
-                    while true
-                        if not timeout.next()
-                            break
-                        i--
-                        if i < 0
-                            throw 'Infinity timeout'
-                catch e
-                    err = e
-                    if e.stack
-                        err = e.stack
-                    else if e.description
-                        err = e.description
-                    scope.error()
-                    console.error '!!', err
         r

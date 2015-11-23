@@ -39,3 +39,20 @@ Test('$watchText#0', 'watch-text-0').run ($test, alight) ->
     $test.equal r1.value, 'OS linux ubuntu'
     $test.equal r1.$.exp(scope), 'OS linux ubuntu'
     $test.close()
+
+
+Test('$compile').run ($test, alight) ->
+    $test.start 2
+
+    s0 = alight.ChangeDetector()
+    s1 = alight.ChangeDetector()
+
+    s0.scope.name = 'debian'
+    s1.scope.name = 'ubuntu'
+
+    f0 = s0.compile 'name'
+    f1 = s1.compile 'name'
+
+    $test.equal f0(s0.scope), 'debian'
+    $test.equal f1(s1.scope), 'ubuntu'
+    $test.close()

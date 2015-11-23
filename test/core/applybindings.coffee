@@ -39,3 +39,26 @@ Test('apply_bindings', 'apply-binding-0').run ($test, alight) ->
             $test.equal f$.attr el, 'some-text', 'start:other.png:finish'
 
             $test.close()
+
+
+Test('bootstrap $el', 'bootstrap-el').run ($test, alight) ->
+    $test.start 4
+
+    el = $("<div>{{data.name}}</div>")[0]
+
+    cd = alight.bootstrap
+        $el: el
+        data:
+            name: 'Some text'
+        click: ->
+            @.data.name = 'Hello'
+
+    scope = cd.scope
+    $test.equal scope.data.name, 'Some text'
+    $test.equal el.innerText, 'Some text'
+
+    scope.click()
+    cd.scan ->
+        $test.equal scope.data.name, 'Hello'
+        $test.equal el.innerText, 'Hello'        
+        $test.close()

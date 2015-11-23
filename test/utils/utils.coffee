@@ -38,20 +38,3 @@ Test('utils.equal').run ($test, alight) ->
 	b.obj.date = new Date(2015, 1, 1)
 	$test.check not u.equal a, b
 	$test.close()
-
-
-Test('$compile').run ($test, alight) ->
-	$test.start 2
-
-	s0 = alight.ChangeDetector()
-	s1 = alight.ChangeDetector()
-
-	s0.scope.name = 'debian'
-	s1.scope.name = 'ubuntu'
-
-	f0 = s0.compile 'name'
-	f1 = s1.compile 'name'
-
-	$test.equal f0(s0.scope), 'debian'
-	$test.equal f1(s1.scope), 'ubuntu'
-	$test.close()
