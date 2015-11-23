@@ -134,23 +134,34 @@ do ->
                     el = el.firstChild
                     f$.after @.element, el
                     @.element = el
-                    if not @.directive.scope
-                        @.directive.scope = true
+                    @.doBinding = true
 
     ext.push
         code: 'scope'
         fn: ->
-            if @.directive.scope  # true, isolate, root
-                parentCD = @.cd
+            # scope: false, true
+            # ChangeDetector: false, true, 'root'
+            if not (@.directive.scope or @.directive.ChangeDetector)
+                return
 
-                if @.directive.scope is 'isolate'
-                    @.cd = parentCD.new
-                        $parent: parentCD.scope
-                else
-                    @.cd = parentCD.new()
+            parentCD = @.cd
 
-                @.result.owner = true
-                @.doBinding = true
+            if @.directive.scope
+                scope =
+                    $parent: parentCD.scope
+            else
+                scope = parentCD.scope
+
+            if @.directive.ChangeDetector is 'root'
+                alight.ChangeDetector scope
+                @.cd = childCD = parentCD.new scope
+                parentCD.watch '$destroy', ->
+                    childCD.destroy()
+            else
+                @.cd = parentCD.new scope
+
+            @.result.owner = true
+            @.doBinding = true
 
     ext.push
         code: 'link'

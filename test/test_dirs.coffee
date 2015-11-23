@@ -63,13 +63,14 @@ Test('directive.scope isolate #0', 'directive-scope-isolate-0').run ($test, alig
 
 	alight.directives.ut =
 		siTest1:
-			scope: true
-			template: '{{name}}:{{name2}}:{{$parent.name}}'
+			template: '{{name}}:{{name2}}:{{$parent.name}}:{{$parent.name2}}'
 			link: (cd, el, name) ->
-				cd.scope.name2 = 'child1'
+				scope = cd.scope
+				scope.$parent = scope.$parent or scope
+				scope.name2 = 'child1'
 		siTest2:
-			scope: 'isolate'
-			template: '{{name}}:{{name2}}:{{$parent.name}}'
+			scope: true
+			template: '{{name}}:{{name2}}:{{$parent.name}}:{{$parent.name2}}'
 			link: (cd, el, name) ->
 				cd.scope.name2 = 'child2'
 
@@ -84,8 +85,8 @@ Test('directive.scope isolate #0', 'directive-scope-isolate-0').run ($test, alig
 
 
 	f$ = alight.f$
-	$test.equal f$.text(f$.find(el, '#i1')[0]), 'parent:child1:'
-	$test.equal f$.text(f$.find(el, '#i2')[0]), ':child2:parent'
+	$test.equal f$.text(f$.find(el, '#i1')[0]), 'parent:child1:parent:child1'
+	$test.equal f$.text(f$.find(el, '#i2')[0]), ':child2:parent:child1'
 	$test.close()
 
 
@@ -104,9 +105,7 @@ Test('restrict M #1').run ($test, alight) ->
 					el.innerHTML = "{{name}} #{value}"
 
 					alight.f$.after element, el
-
-					child = cd.new()
-					alight.applyBindings child, el
+					alight.applyBindings cd, el
 
 					owner: true
 
@@ -124,7 +123,7 @@ Test('restrict M #1').run ($test, alight) ->
 		$test.close()
 
 
-Test('restrict M #2').run ($test, alight) ->
+Test('restrict M #2', 'restrict-m-2').run ($test, alight) ->
 	$test.start 1
 
 	# init
