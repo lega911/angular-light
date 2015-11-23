@@ -153,8 +153,7 @@ do ->
                 scope = parentCD.scope
 
             if @.directive.ChangeDetector is 'root'
-                alight.ChangeDetector scope
-                @.cd = childCD = parentCD.new scope
+                @.cd = childCD = alight.ChangeDetector scope
                 parentCD.watch '$destroy', ->
                     childCD.destroy()
             else
