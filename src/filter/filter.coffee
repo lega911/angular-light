@@ -58,7 +58,6 @@ alight.filters.filter = (exp, cd, env) ->
         filterObject = input
         doFiltering()
     ,
-        init: true
         deep: true
 
     onChange: (input) ->

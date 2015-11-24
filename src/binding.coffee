@@ -221,8 +221,7 @@ attrBinding = (cd, element, value, attrName) ->
     setter = (result) ->
         f$.attr element, attrName, result
         '$scanNoChanges'
-    cd.watchText text, setter,
-        init: true
+    cd.watchText text, setter
     true
 
 
@@ -233,8 +232,7 @@ bindText = (cd, element) ->
     setter = (result) ->
         element.nodeValue = result
         '$scanNoChanges'
-    cd.watchText text, setter,
-        init: true
+    cd.watchText text, setter
     true
 
 

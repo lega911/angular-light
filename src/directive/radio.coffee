@@ -2,7 +2,6 @@
 alight.d.al.radio =
     priority: 10
     init: (cd, element, name, env) ->
-        watch = null
         self =
             changing: false
             start: ->
@@ -28,11 +27,9 @@ alight.d.al.radio =
                 cd.scan ->
                     self.changing = false
             watchModel: ->
-                watch = cd.watch name, self.updateDom,
-                    readOnly: true
+                cd.watch name, self.updateDom
             updateDom: (value) ->
                 if self.changing
-                    return
+                    return '$scanNoChanges'
                 f$.prop element, 'checked', value is self.value
-            initDom: ->
-                watch.fire()
+                '$scanNoChanges'

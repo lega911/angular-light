@@ -12,10 +12,10 @@ alight.d.al.html =
                 return
             f$.html element, html
             child = cd.new()
-            alight.applyBindings child, element, { skip_attr:env.skippedAttr() }
+            alight.applyBindings child, element,
+                skip_attr: env.skippedAttr()
 
         cd.watch name, setter,
             readOnly: true
-            init: true
 
         owner: true

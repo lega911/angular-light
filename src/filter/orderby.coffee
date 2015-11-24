@@ -26,16 +26,12 @@ alight.filters.orderBy = (exp, cd, env) ->
         cd.watch d[0].trim(), (v) ->
             key = v
             doSort()
-        ,
-            init: true
 
     # reverse
     if d[1]
         cd.watch d[1].trim(), (v) ->
             direction = if v then 1 else -1
             doSort()
-        ,
-            init: true
 
     onChange: (input) ->
         if input instanceof Array

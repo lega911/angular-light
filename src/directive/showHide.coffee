@@ -1,6 +1,5 @@
 
 alight.d.al.show = (cd, element, exp) ->
-    watch = null
     self =
         showDom: ->
             f$.show element
@@ -11,14 +10,11 @@ alight.d.al.show = (cd, element, exp) ->
                 self.showDom()
             else
                 self.hideDom()
+            '$scanNoChanges'
         watchModel: ->
-            watch = cd.watch exp, self.updateDom,
-                readOnly: true
-        initDom: ->
-            watch.fire()
+            cd.watch exp, self.updateDom
         start: ->
             self.watchModel()
-            self.initDom()
 
 
 alight.d.al.hide = (cd, element, exp, env) ->
@@ -28,4 +24,5 @@ alight.d.al.hide = (cd, element, exp, env) ->
             self.hideDom()
         else
             self.showDom()
+        '$scanNoChanges'
     self

@@ -122,7 +122,6 @@ fastBinding::fw = (text, fnIndex, callback) ->
 
 
 fastBinding::wt = (expression, callback) ->
-    @.currentCD.watchText expression, callback,
-        init: true
+    @.currentCD.watchText expression, callback
     @.currentCD.scan()  # require extra-loop
     null

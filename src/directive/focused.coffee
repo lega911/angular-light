@@ -1,6 +1,5 @@
 
 alight.d.al.focused = (cd, element, name) ->
-    watch = false
     safe =
         changing: false
         updateModel: (value) ->
@@ -24,22 +23,18 @@ alight.d.al.focused = (cd, element, name) ->
 
         updateDom: (value) ->
             if safe.changing
-                return
+                return '$scanNoChanges'
             safe.changing = true
             if value
                 f$.focus(element)
             else
                 f$.blur(element)
             safe.changing = false
+            '$scanNoChanges'
 
         watchModel: ->
-            watch = cd.watch name, safe.updateDom,
-                readOnly: true
-
-        initDom: ->
-            watch.fire()
+            cd.watch name, safe.updateDom
 
         start: ->
             safe.onDom()
             safe.watchModel()
-            safe.initDom()

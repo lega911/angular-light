@@ -6,9 +6,7 @@ alight.d.al.enable = (cd, element, exp) ->
         else
             f$.attr element, 'disabled', 'disabled'
 
-    cd.watch exp, setter,
-        readOnly: true
-        init: true
+    cd.watch exp, setter
 
 
 alight.d.al.disable = (cd, element, exp) ->
@@ -18,6 +16,4 @@ alight.d.al.disable = (cd, element, exp) ->
         else
             f$.removeAttr element, 'disabled'
 
-    cd.watch exp, setter,
-        readOnly: true
-        init: true
+    cd.watch exp, setter

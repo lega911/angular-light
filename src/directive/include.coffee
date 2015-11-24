@@ -6,13 +6,11 @@ alight.d.al.include =
         baseElement = null
         topElement = null
         activeElement = null
-        watch = null
         self =
             owner: true
             start: ->
                 self.prepare()
                 self.watchModel()
-                self.initUpdate()
             prepare: ->
                 baseElement = element
                 topElement = f$.createComment " #{env.attrName}: #{name} "
@@ -36,7 +34,8 @@ alight.d.al.include =
                     skip_attr:env.skippedAttr()
             updateDom: (url) ->
                 if not url
-                    return self.removeBlock()
+                    self.removeBlock()
+                    return '$scanNoChanges'
                 self.loadHtml
                     cache: true
                     url: url
@@ -44,14 +43,12 @@ alight.d.al.include =
                         self.removeBlock()
                         self.insertBlock html
                     error: self.removeBlock
+                '$scanNoChanges'
             removeDom: (element) ->
                 f$.remove element
             insertDom: (base, element) ->
                 f$.after base, element
             watchModel: ->
-                watch = cd.watch name, self.updateDom,
-                    readOnly: true
-            initUpdate: ->
-                watch.fire()
+                cd.watch name, self.updateDom
 
         self

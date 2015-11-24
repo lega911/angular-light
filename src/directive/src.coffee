@@ -6,5 +6,4 @@ alight.d.al.src = (cd, element, name) ->
         f$.attr element, 'src', value
         '$scanNoChanges'
 
-    cd.watchText name, setter,
-        init: true
+    cd.watchText name, setter

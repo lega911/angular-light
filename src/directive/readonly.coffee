@@ -5,4 +5,3 @@ alight.d.al.readonly = (cd, element, exp) ->
 
     cd.watch exp, setter,
         readOnly: true
-        init: true

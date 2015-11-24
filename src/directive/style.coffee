@@ -14,4 +14,3 @@ alight.d.al.style = (cd, element, name) ->
 
     cd.watch name, setter,
         deep: true
-        init: true

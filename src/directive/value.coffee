@@ -20,7 +20,7 @@ alight.d.al.value = (cd, element, variable) ->
             cd.watch variable, self.updateDom
         updateDom: (value) ->
             if self.changing
-                return
+                return '$scanNoChanges'
             value ?= ''
             f$.val element, value
             '$scanNoChanges'

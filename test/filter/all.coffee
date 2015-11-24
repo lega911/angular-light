@@ -13,12 +13,10 @@ Test('filter slice', 'filter-slice').run ($test, alight) ->
         result = value
     ,
         isArray: true
-        init: true
     cd.watch 'lst | slice:a,b', (value) ->
         result2 = value
     ,
         isArray: true
-        init: true
 
     equal = (a, b) ->
         if a.length isnt b.length

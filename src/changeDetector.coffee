@@ -139,7 +139,6 @@ makeFilterChain = do ->
                     onStop.push filter.onStop
 
         watchOptions =
-            init: option.init
             oneTime: option.oneTime
             onStop: ->
                 for fn in onStop
@@ -195,6 +194,9 @@ ChangeDetector::watch = (name, callback, option) ->
     if option is true
         option =
             isArray: true
+
+    if option.init
+        console.warn 'watch.init is depticated'
 
     cd = @
     root = cd.root

@@ -8,11 +8,9 @@ alight.d.al.if =
             child: null
             base_element: null
             top_element: null
-            watch: null
             start: ->
                 self.prepare()
                 self.watchModel()
-                self.initUpdate()
             prepare: ->
                 self.base_element = element
                 self.top_element = f$.createComment " #{env.attrName}: #{name} "
@@ -39,9 +37,7 @@ alight.d.al.if =
                 self.child = cd.new()
                 alight.applyBindings self.child, self.item, { skip_attr:env.skippedAttr() }
             watchModel: ->
-                self.watch = cd.watch name, self.updateDom
-            initUpdate: ->
-                self.watch.fire()
+                cd.watch name, self.updateDom
             removeDom: (element) ->
                 f$.remove element
             insertDom: (base, element) ->
@@ -57,4 +53,5 @@ alight.d.al.ifnot =
                 self.removeBlock()
             else
                 self.insertBlock()
+            '$scanNoChanges'
         self
