@@ -35,10 +35,8 @@ Root::destroy = ->
 
 
 ChangeDetector = (root, scope) ->
-    # local
     @.scope = scope
     @.root = root
-    #@.watchers = {}
     @.watchList = []
     @.destroy_callbacks = []
 
@@ -79,14 +77,7 @@ ChangeDetector::destroy = ->
         fn()
 
     cd.destroy_callbacks.length = 0
-    #watchers = cd.watchers
-    #cd.watchers = {}
-    # call watch.onStop
-    #for k, d of watchers
-    #    if d.onStop.length
-    #        for fn in d.onStop
-    #            fn()
-    for d of cd.watchList
+    for d in cd.watchList
         if d.onStop
             d.onStop()
     cd.watchList.length = 0
@@ -189,7 +180,6 @@ watchAny = (cd, key, callback) ->
         readOnly
         oneTime
         deep
-        init
         onStop
 
         watchText
@@ -254,7 +244,7 @@ ChangeDetector::watch = (name, callback, option) ->
             ce = alight.utils.compile.expression(name)
             isStatic = ce.isSimple and ce.simpleVariables.length is 0 and not option.isArray
             exp = ce.fn
-    #returnValue = value = exp scope
+
     if option.deep
         option.isArray = false
     d =
@@ -275,7 +265,6 @@ ChangeDetector::watch = (name, callback, option) ->
         cd.watchList.push d
 
     r =
-        #$: d
         stop: ->
             if d.isStatic
                 return

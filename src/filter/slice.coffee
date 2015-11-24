@@ -1,30 +1,33 @@
 
-alight.filters.slice = (exp, cd, env) ->
-    a = 0
+alight.filters.slice = (exp, cd, env) ->    
+    a = null
     b = null
     value = null
+    kind = null
 
     setter = ->
         if not value
             return
-        if b
+        if not kind
+            return
+        if kind is 2
             env.setValue value.slice a, b
         else
             env.setValue value.slice a
 
     d = exp.split ','
-    cd.watch d[0], (v) ->
-        a = v
-        setter()
-    ,
-        init: true
-
-    if d[1]
-        cd.watch d[1], (v) ->
-            b = v
+    if d.length is 1
+        cd.watch exp, (pos) ->
+            kind = 1
+            a = pos
             setter()
-        ,
-            init: true
+    else
+        cd.watch "#{d[0]} + '_' + #{d[1]}", (filter) ->
+            kind = 2
+            f = filter.split '_'
+            a = Number f[0]
+            b = Number f[1]
+            setter()
 
     onChange: (input) ->
         value = input

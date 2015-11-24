@@ -31,8 +31,7 @@ alight.d.al.class = alight.d.al.css =
                             self.draw item, value
                             '$scanNoChanges'
 
-                    cd.watch item.exp, color,
-                        init: true
+                    cd.watch item.exp, color
                 null
             draw: (item, value) ->
                 if value
@@ -41,3 +40,4 @@ alight.d.al.class = alight.d.al.css =
                 else
                     for c in item.css
                         f$.removeClass element, c
+                null

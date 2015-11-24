@@ -28,7 +28,7 @@ Test('bindonce').run ($test, alight) ->
         $test.close()
 
 
-Test('text-directive', 'text-directive-0').run ($test, alight, timeout) ->
+Test('text-directive-0', 'text-directive-0').run ($test, alight, timeout) ->
     $test.start 4
 
     alight.filters.minus = (exp, cd) ->
@@ -49,17 +49,17 @@ Test('text-directive', 'text-directive-0').run ($test, alight, timeout) ->
 
     alight.applyBindings cd, dom[0]
 
-    $test.check dom.attr('attr') is 'Attr $'
+    $test.equal dom.attr('attr'), 'Attr $'
 
     timeout.add 150, ->
-        $test.check dom.attr('attr') is 'Attr $'
+        $test.equal dom.attr('attr'), 'Attr 16'
 
         cd.scope.num = 50
         cd.scan ->
-            $test.check dom.attr('attr') is 'Attr $'
+            $test.equal dom.attr('attr'), 'Attr 16'
 
             timeout.add 150, ->
-                $test.check dom.attr('attr') is 'Attr 86'
+                $test.equal dom.attr('attr'), 'Attr 86'
                 $test.close()
 
 
@@ -186,7 +186,7 @@ Test('one-time-binding-1', 'one-time-binding-1').run ($test, alight) ->
     next()
 
 
-Test('oneTime binding #2', 'onetime-binding-2').run ($test, alight) ->
+Test('onetime-binding-2', 'onetime-binding-2').run ($test, alight, timeout) ->
     $test.start 6
 
     exp = 'a{{::a}}-b{{::b}}-c{{::c}}!'
@@ -202,7 +202,7 @@ Test('oneTime binding #2', 'onetime-binding-2').run ($test, alight) ->
 
     steps = [
         ->
-            $test.equal cd.scan().total, 5
+            $test.equal cd.scan().total, 8
             $test.equal result(), 'a-b-c!::a-b-c!'
             scope.a = 3
             ->
@@ -223,7 +223,9 @@ Test('oneTime binding #2', 'onetime-binding-2').run ($test, alight) ->
                 next()
         ->
             ->
-                $test.equal cd.scan().total, 0
+                timeout.add 1, ->
+                    $test.equal cd.scan().total, 0
+                    $test.close()
     ]
 
     step = 0
@@ -236,7 +238,6 @@ Test('oneTime binding #2', 'onetime-binding-2').run ($test, alight) ->
         cd.scan n
 
     next()
-    $test.close()
 
 
 Test('one-time-binding-3', 'one-time-binding-3').run ($test, alight) ->

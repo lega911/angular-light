@@ -1,22 +1,5 @@
-Test('binding: al-css + attr').run ($test, alight) ->
-	$test.start 1
 
-	scope =
-		css: 'two'
-		three: true
-	cd = alight.ChangeDetector scope
-
-	el = document.createElement 'div'
-	el.innerHTML = '<span class="one {{css}}" al-css="three: three"></span>'
-	tag = el.children[0]
-
-	alight.applyBindings cd, tag
-
-	$test.equal tag.className, 'one two three'
-	$test.close()
-
-
-Test('al-css #1').run ($test, alight) ->
+Test('al-css-1', 'al-css-1').run ($test, alight) ->
 	$test.start 5
 
 	el = document.createElement 'div'
@@ -172,7 +155,7 @@ Test('al-controller').run ($test, alight) ->
 	$test.close()
 
 
-Test('al-value on/off', 'al-value-on-off').run ($test, alight, timeout) ->
+Test('al-value-on-off', 'al-value-on-off').run ($test, alight, timeout) ->
 	if typeof(CustomEvent) isnt 'function'
 		$test.close()
 		console.warn 'skip al-value on/off'

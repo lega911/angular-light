@@ -1,6 +1,5 @@
 
 alight.d.al.value = (cd, element, variable) ->
-    watch = null
     self =
         changing: false
         onDom: ->
@@ -18,16 +17,13 @@ alight.d.al.value = (cd, element, variable) ->
                 cd.scan ->
                     self.changing = false
         watchModel: ->
-            watch = cd.watch variable, self.updateDom
+            cd.watch variable, self.updateDom
         updateDom: (value) ->
             if self.changing
                 return
             value ?= ''
             f$.val element, value
             '$scanNoChanges'
-        initDom: ->
-            watch.fire()
         start: ->
             self.onDom()
             self.watchModel()
-            self.initDom()

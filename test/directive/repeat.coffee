@@ -24,7 +24,7 @@ do ->
     ###
 
     run = (name, html, results, makeResult) ->
-        Test('al-repeat-' + name, 'al-repeat-'+name).run ($test, alight) ->
+        Test('al-repeat-' + name, 'al-repeat-'+name).run ($test, alight, timeout) ->
             $test.start 8
             setupAlight alight
 
@@ -56,31 +56,38 @@ do ->
             $test.check result() is results[0], result()
 
             scope.list.push { text: 'e' }
-            cd.scan ->
+            cd.scan()
+            timeout.add 1, ->
                 $test.check result() is results[1], result()
 
                 scope.list.splice 0, 0, { text: 'f' }
-                cd.scan ->
+                cd.scan()
+                timeout.add 1, ->
                     $test.equal result(), results[2], result()
 
                     scope.list.splice 2, 0, { text: 'g' }, { text: 'h' }
-                    cd.scan ->
+                    cd.scan()
+                    timeout.add 1, ->
                         $test.check result() is results[3], result()
 
                         scope.list.splice 0, 1
-                        cd.scan ->
+                        cd.scan()
+                        timeout.add 1, ->
                             $test.check result() is results[4], result()
 
                             scope.list.splice 6, 1
-                            cd.scan ->
+                            cd.scan()
+                            timeout.add 1, ->
                                 $test.check result() is results[5], result()
 
                                 scope.list.splice 2, 2
-                                cd.scan ->
+                                cd.scan()
+                                timeout.add 1, ->
                                     $test.check result() is results[6], result()
 
                                     scope.list[1] = { text:'i' }
-                                    cd.scan ->
+                                    cd.scan()
+                                    timeout.add 1, ->
                                         $test.check result() is results[7], result()
                                         $test.close()
 
@@ -323,7 +330,7 @@ Test('al-repeat one-time-bindings', 'al-repeat-one-time-bindings').run ($test, a
             $test.close()
 
 
-Test('al-repeat store to', 'repeat-store-to-0').run ($test, alight) ->
+Test('repeat-store-to-0', 'repeat-store-to-0').run ($test, alight) ->
     $test.start 6
 
     setter = null
@@ -349,24 +356,23 @@ Test('al-repeat store to', 'repeat-store-to-0').run ($test, alight) ->
 
     flen = 0
     fcount = 0
-    w = cd.watch 'filteredList.length', (value) ->
+    cd.watch 'filteredList.length', (value) ->
         flen = value
         fcount++
-    flen = w.value
 
     alight.applyBindings cd, dom
 
-    $test.equal fcount, 0
-    $test.equal flen, 0
+    $test.equal fcount, 2
+    $test.equal flen, 6
 
     cd.scan ->
-        $test.equal fcount, 1
+        $test.equal fcount, 2
         $test.equal flen, 6
 
         makeResult = [list[1], list[2], list[3]]
         setter makeResult
         cd.scan ->
-            $test.equal fcount, 2
+            $test.equal fcount, 3
             $test.equal flen, 3
 
             $test.close()

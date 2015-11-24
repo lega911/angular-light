@@ -1,5 +1,5 @@
 
-Test('$ns').run ($test, alight) ->
+Test('ns-0', 'ns-0').run ($test, alight) ->
     $test.start 4
     f$ = alight.f$
 
@@ -49,17 +49,16 @@ Test('$ns').run ($test, alight) ->
                         ->
                             'linux'
 
-        tag = document.createElement 'div'
-        tag.innerHTML = '<p>{{0 | double}}</p>'
+        tag = ttDOM '<p>{{x | double}}</p>'
 
         cd = alight.ChangeDetector scope
         alight.applyBindings cd, tag
-        $test.equal f$.text(f$.find(tag, 'p')[0]), 'linux'
+        $test.equal ttGetText(tag), 'linux'
 
         $test.close()
 
 
-Test('$ns-0', 'ns-0').run ($test, alight) ->
+Test('ns-1', 'ns-1').run ($test, alight) ->
     $test.start 2
     f$ = alight.f$
 
