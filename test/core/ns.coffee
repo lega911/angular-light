@@ -62,11 +62,7 @@ Test('ns-1', 'ns-1').run ($test, alight) ->
     $test.start 2
     f$ = alight.f$
 
-
-    tag = document.createElement 'div'
-    tag.innerHTML = '<p al-private="title"></p>:<p al-text="title"></p>'
-
-
+    tag = ttDOM '<p al-private="title"></p>:<p al-text="title"></p>'
     scope =
         title: 'title'
         $ns:
@@ -80,6 +76,10 @@ Test('ns-1', 'ns-1').run ($test, alight) ->
         alight.applyBindings cd, tag
     catch e
         $test.equal e, 'Directive not found: al-text'
+
+
+    tag = ttDOM '<p al-private="title"></p>:<p al-text="title"></p>'
+    cd = alight.ChangeDetector scope
 
     scope.$ns.inheritGlobal = true
     alight.applyBindings cd, tag

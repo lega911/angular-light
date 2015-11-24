@@ -10,6 +10,3 @@ alight.d.al.init = (cd, element, exp) ->
             cd: cd
             scope: cd.scope
             element: element
-
-    cd.scan
-        late: true

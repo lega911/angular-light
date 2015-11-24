@@ -480,14 +480,15 @@ alight.applyBindings = (cd, element, option) ->
     root.bindingResult.attr += result.attr
     root.bindingResult.hook += result.hook
     
-    cd.scan()
     if finishBinding
         root.finishBinding_lock = false
+        cd.scan()
         lst = root.watchers.finishBinding.slice()
         root.watchers.finishBinding.length = 0
         for cb in lst
             cb()
         result.total = root.bindingResult
+
     result
 
 

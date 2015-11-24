@@ -375,6 +375,8 @@ Root::scan = (cfg) ->
             if root.lateScan
                 root.scan()
         return
+    if root.finishBinding_lock  # binding process
+        return
     if root.status is 'scaning'
         root.extraLoop = true
         return
