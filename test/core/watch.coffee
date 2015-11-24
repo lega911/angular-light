@@ -1,6 +1,6 @@
 
-Test('$watch').run ($test, alight) ->
-    $test.start 1
+Test('watch-0', 'watch-0').run ($test, alight) ->
+    $test.start 2
     scope =
         one: 'one'
     cd = alight.ChangeDetector scope
@@ -11,29 +11,13 @@ Test('$watch').run ($test, alight) ->
 
     scope.two = 'two'
     cd.scan ->
-        if result is 'one two'
-            w.stop()
-            scope.two = '2'
-            cd.scan ->
-                $test.check result is 'one two'
-                $test.close()
-        else
-            $test.error()
+        $test.equal result, 'one two'
+        w.stop()
+
+        scope.two = '2'
+        cd.scan ->
+            $test.equal result, 'one two'
             $test.close()
-
-
-Test('$watch #2').run ($test, alight) ->
-    $test.start 2
-    scope =
-        name: 'linux'
-    cd = alight.ChangeDetector scope
-
-    w0 = cd.watch 'name', ->
-    w1 = cd.watch 'name', ->
-
-    $test.equal w0.value, 'linux'
-    $test.equal w1.value, 'linux'
-    $test.close()
 
 
 Test('$watch #3', 'watch-3').run ($test, alight) ->
@@ -56,47 +40,69 @@ Test('$watch #3', 'watch-3').run ($test, alight) ->
         countB++
 
     cd.scan ->
-        $test.equal countA, 0
-        $test.equal valueA, null
-        $test.equal countB, 0
-        $test.equal valueB, null
+        $test.equal countA, 1
+        $test.equal valueA, 'A'
+        $test.equal countB, 1
+        $test.equal valueB, 'B'
 
         scope.data.a = '3'
         cd.scan ->
-            $test.equal countA, 1
+            $test.equal countA, 2
             $test.equal valueA, '3'
-            $test.equal countB, 0
-            $test.equal valueB, null
+            $test.equal countB, 1
+            $test.equal valueB, 'B'
 
             scope.data.a = '3'
             scope.data.b = 'X'
             cd.scan ->
-                $test.equal countA, 1
+                $test.equal countA, 2, 'step 3'
                 $test.equal valueA, '3'
-                $test.equal countB, 1
+                $test.equal countB, 2
                 $test.equal valueB, 'X'
 
                 watchA.stop()
                 scope.data.a = 'Y'
                 scope.data.b = 'Z'
                 cd.scan ->
-                    $test.equal countA, 1
+                    $test.equal countA, 2, 'step 4'
                     $test.equal valueA, '3'
-                    $test.equal countB, 2
+                    $test.equal countB, 3
                     $test.equal valueB, 'Z'
 
                     watchB.stop()
                     scope.data.a = 'C'
                     scope.data.b = 'D'
                     cd.scan ->
-                        $test.equal countA, 1
+                        $test.equal countA, 2
                         $test.equal valueA, '3'
-                        $test.equal countB, 2
+                        $test.equal countB, 3
                         $test.equal valueB, 'Z'
                         $test.close()
 
 
-Test('$watchArray').run ($test, alight) ->
+Test('watch-4', 'watch-4').run ($test, alight) ->
+    $test.start 2
+
+    result0 = result1 = null
+    
+    cd = alight.ChangeDetector
+        name: 'linux'
+
+    cd.watch 'name', (value) ->
+        result0 = value
+
+    cd.scope.name = 'unix'
+    cd.watch 'name', (value) ->
+        result1 = value
+
+    cd.scan()
+
+    $test.equal result0, 'unix'
+    $test.equal result1, 'unix'
+    $test.close()
+
+
+Test('watch-array', 'watch-array').run ($test, alight) ->
     $test.start 12
     cd = alight.ChangeDetector()
     scope = cd.scope
@@ -112,37 +118,37 @@ Test('$watchArray').run ($test, alight) ->
     , true
 
     cd.scan ->
-        $test.equal watch, 0
+        $test.equal watch, 1
         $test.equal watchArray, 0
 
         scope.list = [1, 2, 3]
         cd.scan ->
-            $test.equal watch, 1
+            $test.equal watch, 2
             $test.equal watchArray, 1
 
             scope.list = [1, 2]
             cd.scan ->
-                $test.equal watch, 2  # watch should fire on objects, but filter generates new object every time, that create infinity loop
+                $test.equal watch, 3  # watch should fire on objects, but filter generates new object every time, that create infinity loop
                 $test.equal watchArray, 2
 
                 scope.list.push(3)
                 cd.scan ->
-                    $test.equal watch, 2
+                    $test.equal watch, 3
                     $test.equal watchArray, 3, 'list.push 3'
 
                     cd.scan ->
-                        $test.equal watch, 2
+                        $test.equal watch, 3
                         $test.equal watchArray, 3, 'none'
 
                         scope.list = 7
                         cd.scan ->
-                            $test.equal watch, 3
+                            $test.equal watch, 4
                             $test.equal watchArray, 4, 'list = 7'
                             $test.close()
 
 
-Test('$watchArray#2').run ($test, alight) ->
-    $test.start 4
+Test('watch-array-2', 'watch-array-2').run ($test, alight) ->
+    $test.start 8
     scope = {}
     cd = alight.ChangeDetector scope
     #scope.list = null
@@ -157,22 +163,26 @@ Test('$watchArray#2').run ($test, alight) ->
     , true
 
     cd.scan ->
-        $test.check watch is 0 and watchArray is 0
+        $test.equal watch, 1
+        $test.equal watchArray, 0
         scope.list = []
         cd.scan ->
-            $test.check watch is 1 and watchArray is 1
+            $test.equal watch, 2
+            $test.equal watchArray, 1
 
             scope.list = [1, 2, 3]
             cd.scan ->
-                $test.check watch is 2 and watchArray is 2
+                $test.equal watch, 3
+                $test.equal watchArray, 2
 
                 scope.list.push(4)
                 cd.scan ->
-                    $test.check watch is 2 and watchArray is 3
+                    $test.equal watch, 3
+                    $test.equal watchArray, 3
                     $test.close()
 
 
-Test('$watch $any').run ($test, alight) ->
+Test('watch-any', 'watch-any').run ($test, alight) ->
     $test.start 15
     scope =
         a: 1
@@ -198,29 +208,29 @@ Test('$watch $any').run ($test, alight) ->
 
     scope.b++
     cd.scan ->
-        $test.equal countA, 0
-        $test.equal countAny, 0
-        $test.equal countAny2, 0
+        $test.equal countA, 1
+        $test.equal countAny, 1
+        $test.equal countAny2, 1
 
         scope.a++
         cd.scan ->
-            $test.equal countA, 1
-            $test.equal countAny, 1
-            $test.equal countAny2, 1
+            $test.equal countA, 2
+            $test.equal countAny, 2
+            $test.equal countAny2, 2
 
             wa.stop()
             scope.a++
             cd.scan ->
-                $test.equal countA, 2
-                $test.equal countAny, 1
-                $test.equal countAny2, 2
+                $test.equal countA, 3
+                $test.equal countAny, 2
+                $test.equal countAny2, 3
 
                 cd.destroy()
                 scope.a++
                 cd.scan ->
-                    $test.equal countA, 2
-                    $test.equal countAny, 1
-                    $test.equal countAny2, 2
+                    $test.equal countA, 3
+                    $test.equal countAny, 2
+                    $test.equal countAny2, 3
 
                     $test.close()
 
@@ -283,7 +293,7 @@ Test('$watch $finishScan', 'watch-finish-scan').run ($test, alight) ->
                     $test.close()
 
 
-Test('test dynamic read-only watch').run ($test, alight) ->
+Test('dynamic-read-only-watch', 'dynamic-read-only-watch').run ($test, alight) ->
     $test.start 6
     scope =
         one: 'one'
@@ -302,7 +312,7 @@ Test('test dynamic read-only watch').run ($test, alight) ->
     cd.watch 'one', ->
         result
 
-    $test.equal count, 1 # init
+    $test.equal count, 0 # init
     cd.scan ->
         $test.equal count, 2
 

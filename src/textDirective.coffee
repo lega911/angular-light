@@ -10,5 +10,4 @@ alight.text.oneTimeBinding = (callback, expression, cd, env) ->
     cd.watch expression, (value) ->
         env.finally value
     ,
-        init: true
         oneTime: true

@@ -63,7 +63,7 @@ Test('text-directive', 'text-directive-0').run ($test, alight, timeout) ->
                 $test.close()
 
 
-Test('text-directive #2').run ($test, alight) ->
+Test('text-directive-2', 'text-directive-2').run ($test, alight) ->
     $test.start 2
 
     alight.text.test0 = (callback, exp, cd) ->
@@ -81,10 +81,16 @@ Test('text-directive #2').run ($test, alight) ->
 
     scope.a = 'Hello'
     scope.b = 'world'
-    w = cd.watchText '{{a}} {{#test0 b}} {{#test0 0}}!', ->
-    w2 = cd2.watchText '{{a}} {{#test0 b}} {{#test0 0}}!', ->
-    $test.equal w.value, 'Hello world 0!'
-    $test.equal w2.value, 'Hello inner:world inner:0!'
+
+    result = result2 = null
+    w = cd.watchText '{{a}} {{#test0 b}} {{#test0 0}}!', (value) ->
+        result = value
+    w2 = cd2.watchText '{{a}} {{#test0 b}} {{#test0 0}}!', (value) ->
+        result2 = value
+
+    cd.scan()
+    $test.equal result, 'Hello world 0!'
+    $test.equal result2, 'Hello inner:world inner:0!'
     $test.close()
 
 
@@ -134,7 +140,7 @@ Test('oneTime binding #0').run ($test, alight) ->
     next()
 
 
-Test('oneTime binding #1', 'one-time-binding-1').run ($test, alight) ->
+Test('one-time-binding-1', 'one-time-binding-1').run ($test, alight) ->
     $test.start 6
 
     scope = {}
@@ -143,26 +149,25 @@ Test('oneTime binding #1', 'one-time-binding-1').run ($test, alight) ->
     w = cd.watchText 'Hello {{::a}}!', (v) ->
         count++
         value = v
-    value = w.value
     count = 0
 
     steps = [
         ->
             ->
                 $test.equal value, 'Hello !'
-                $test.equal count, 0
+                $test.equal count, 1
                 next()
         ->
             scope.a = 0
             ->
                 $test.equal value, 'Hello 0!'
-                $test.equal count, 1
+                $test.equal count, 2
                 next()
         ->
             scope.a = 5
             ->
                 $test.equal value, 'Hello 0!'
-                $test.equal count, 1
+                $test.equal count, 2
                 next()
         ->
             ->
@@ -234,7 +239,7 @@ Test('oneTime binding #2', 'onetime-binding-2').run ($test, alight) ->
     $test.close()
 
 
-Test('oneTime binding #3', 'one-time-binding-3').run ($test, alight) ->
+Test('one-time-binding-3', 'one-time-binding-3').run ($test, alight) ->
     $test.start 10
 
     exp = 'Hello {{::name}}!'
@@ -244,18 +249,16 @@ Test('oneTime binding #3', 'one-time-binding-3').run ($test, alight) ->
     v0 = null
     w = cd.watchText exp, (v) ->
         v0 = v
-    v0 = w.value
 
     cd1 = cd.new()
     v1 = null
     w = cd1.watchText exp, (v) ->
         v1 = v
-    v1 = w.value
 
     steps = [
         ->
-            $test.equal !!cd.scan().total, true
-            $test.equal !!cd1.scan().total, true
+            $test.equal cd.scan().total > 0, true
+            $test.equal cd1.scan().total > 0, true
             $test.equal v0, 'Hello !'
             $test.equal v1, 'Hello !'
             scope.name = 'linux'
@@ -286,7 +289,7 @@ Test('oneTime binding #3', 'one-time-binding-3').run ($test, alight) ->
     $test.close()
 
 
-Test('text-directive env.finally', 'text-directive-finally').run ($test, alight) ->
+Test('text-directive-finally', 'text-directive-finally').run ($test, alight) ->
     env = null
     alight.text.test1 = (callback, text, cd, ienv) ->
         callback 'init'
@@ -314,22 +317,22 @@ Test('text-directive env.finally', 'text-directive-finally').run ($test, alight)
     cd.scan
         late: true
         callback: ->
-            $test.equal scanCount, 2
-            $test.equal anyCount, 1
+            $test.equal scanCount, 3
+            $test.equal anyCount, 2
             $test.equal dom.text(), 'Text two'
 
             env.setter 'three'
             cd.scan
                 late: true
                 callback: ->
-                    $test.equal scanCount, 3
-                    $test.equal anyCount, 2
+                    $test.equal scanCount, 4
+                    $test.equal anyCount, 3
                     $test.equal dom.text(), 'Text three'
 
                     env.finally 'four'
                     setTimeout ->
-                        $test.equal scanCount, 3
-                        $test.equal anyCount, 2
+                        $test.equal scanCount, 4
+                        $test.equal anyCount, 3
                         $test.equal dom.text(), 'Text three'
 
                         cd.scan
@@ -351,9 +354,9 @@ Test('oneTime binding #4', 'one-time-binding-4').run ($test, alight) ->
     value = null
     cd.watchText exp, (v) ->
         value = v
-    ,
-        init: true
 
+    cd.scan()
+    
     $test.equal value, 'Hello world!'
     $test.equal cd.scan().total, 0
     $test.close()

@@ -27,7 +27,6 @@ alight.directives.al.repeat =
                 self.buildUpdateDom()
                 self.watchModel()
                 self.makeChildConstructor()
-                self.initUpdateDom()
 
             parsExpression: ->
                 s = exp.trim()
@@ -79,9 +78,6 @@ alight.directives.al.repeat =
                     flags =
                         isArray: true
                 self.watch = CD.watch self.expression, self.updateDom, flags
-
-            initUpdateDom: ->
-                self.watch.fire()
 
             prepareDom: ->
                 if element.nodeType is 8
@@ -489,5 +485,6 @@ alight.directives.bo.repeat =
         originalStart = self.start
         self.start = ->
             originalStart()
-            self.watch.stop()  # stop watching
+            CD.watch '$finishScanOnce', ->
+                self.watch.stop()  # stop watching
         self

@@ -114,10 +114,10 @@ fastBinding::fw = (text, fnIndex, callback) ->
         extraLoop: false
         deep: false
         value: value
-        callbacks: [callback]
+        callback: callback
         exp: fn
         src: text
-        onStop: []
+        onStop: null
     null
 
 

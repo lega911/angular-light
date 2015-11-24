@@ -24,7 +24,7 @@ do ->
     ###
 
     run = (name, html, results, makeResult) ->
-        Test('al-repeat ' + name, 'al-repeat-'+name).run ($test, alight) ->
+        Test('al-repeat-' + name, 'al-repeat-'+name).run ($test, alight) ->
             $test.start 8
             setupAlight alight
 

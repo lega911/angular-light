@@ -20,8 +20,8 @@ Test('$compile#0').run ($test, alight) ->
     $test.close()
 
 
-Test('$watchText#0', 'watch-text-0').run ($test, alight) ->
-    $test.start 4
+Test('watch-text-0', 'watch-text-0').run ($test, alight) ->
+    $test.start 2
     scope =
         os:
             type: 'linux'
@@ -29,15 +29,19 @@ Test('$watchText#0', 'watch-text-0').run ($test, alight) ->
 
     cd = alight.ChangeDetector scope
 
-    r0 = cd.watchText 'OS {{os.type}} {{os.name}}', ->
+    result0 = null
+    r0 = cd.watchText 'OS {{os.type}} {{os.name}}', (value) ->
+        result0 = value
 
-    $test.equal r0.value, 'OS linux ubuntu'
-    $test.equal r0.$.exp(scope), 'OS linux ubuntu'
+    cd.scan()
+    $test.equal result0, 'OS linux ubuntu'
 
-    r1 = cd.watchText 'OS {{os.type}} {{os.name}}', ->
+    result1 = null
+    r1 = cd.watchText 'OS {{os.type}} {{os.name}}', (value) ->
+        result1 = value
 
-    $test.equal r1.value, 'OS linux ubuntu'
-    $test.equal r1.$.exp(scope), 'OS linux ubuntu'
+    cd.scan()
+    $test.equal result1, 'OS linux ubuntu'
     $test.close()
 
 

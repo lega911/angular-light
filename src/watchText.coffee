@@ -75,9 +75,9 @@ do ->
         # test simple text
         st = alight.utils.compile.buildSimpleText expression, null
         if st
-            return cd.watch expression, callback,
+            cd.watch expression, callback,
                 watchText: st
-                init: config.init
+            return
 
         data = alight.utils.parsText expression
 
@@ -136,32 +136,25 @@ do ->
                                 `if(value == null) value = ''`
                                 d.value = value
                                 doUpdate()
-                            ,
-                                init: true
 
         if not watchCount
             # static text
             value = ''
             for d in data
                 value += d.value
-            if config.init
+            cd.watch '$finishScanOnce', ->
                 callback value
-            return {
-                isStatic: true
-                value: value
-                fire: ->
-                    callback value
-            }
+            return
 
         if canUseSimpleBuilder
             if noCache
                 st = alight.utils.compile.buildSimpleText null, data
             else
                 st = alight.utils.compile.buildSimpleText expression, data
-            return cd.watch expression, callback,
+            cd.watch expression, callback,
                 watchText:
                     fn: st.fn
-                init: config.init
+            return
 
         w = null
         resultValue = ''
@@ -184,5 +177,5 @@ do ->
         privateValue = ->
             resultValue
         doUpdate()
-        w = cd.watch privateValue, callback,
-            init: config.init
+        w = cd.watch privateValue, callback
+        null

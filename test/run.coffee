@@ -1,4 +1,15 @@
 
+window.ttDOM = (html) ->
+    dom = document.createElement 'div'
+    dom.innerHTML = html
+    dom
+
+
+window.ttGetText = (el) ->
+    result = el.innerText.replace /\s+/g, ' '
+    result.trim()
+
+
 stat =
     started: 0
     ok: 0

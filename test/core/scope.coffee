@@ -1,5 +1,5 @@
 
-Test('scope root #0', 'scope-root-0').run ($test, alight) ->
+Test('scope-root-0', 'scope-root-0').run ($test, alight) ->
     $test.start 24
 
     c0 = 0
@@ -31,44 +31,44 @@ Test('scope root #0', 'scope-root-0').run ($test, alight) ->
     root.scan()
     child.scan()
 
-    $test.equal c0, 0
-    $test.equal c1, 0
-    $test.equal c2, 0
+    $test.equal c0, 1
+    $test.equal c1, 1
+    $test.equal c2, 1
     $test.equal c3, 0
 
     scope.name = 'ubuntu'
     root.scan()
-    $test.equal c0, 1
-    $test.equal c1, 0
-    $test.equal c2, 0
+    $test.equal c0, 2
+    $test.equal c1, 1
+    $test.equal c2, 1
     $test.equal c3, 0
 
     child.scan()
-    $test.equal c0, 1
-    $test.equal c1, 1
-    $test.equal c2, 0
+    $test.equal c0, 2
+    $test.equal c1, 2
+    $test.equal c2, 1
     $test.equal c3, 0
 
     child.scope.ex = 5
     root.scan()
     child.scan()
-    $test.equal c0, 1
-    $test.equal c1, 1
-    $test.equal c2, 1, '15'
+    $test.equal c0, 2
+    $test.equal c1, 2
+    $test.equal c2, 2, '15'
     $test.equal c3, 0
 
     root.destroy()
-    $test.equal c0, 1
-    $test.equal c1, 1
-    $test.equal c2, 1
+    $test.equal c0, 2
+    $test.equal c1, 2
+    $test.equal c2, 2
     $test.equal c3, 1
 
     scope.name = 'macos'
     root.scan()
     child.scan()
-    $test.equal c0, 1
-    $test.equal c1, 1
-    $test.equal c2, 1
+    $test.equal c0, 2
+    $test.equal c1, 2
+    $test.equal c2, 2
     $test.equal c3, 1
 
     $test.close()

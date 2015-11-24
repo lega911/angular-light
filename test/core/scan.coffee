@@ -1,5 +1,5 @@
 
-Test('$watch function/$any').run ($test, alight) ->
+Test('watch-function-any', 'watch-function-any').run ($test, alight) ->
 	$test.start 26
 
 	col0 = 0
@@ -32,48 +32,48 @@ Test('$watch function/$any').run ($test, alight) ->
 	,
 		readOnly: true
 
-	$test.equal col3, 1
+	$test.equal col3, 0
 
 	root.scan ->
-		$test.equal col0, 0, '/1'
-		$test.equal col1, 0
-		$test.equal col2, 0
+		$test.equal col0, 1, '/1'
+		$test.equal col1, 1
+		$test.equal col2, 1
 		$test.equal col3, 2
-		$test.equal col4, 0
+		$test.equal col4, 1
 
 		scope.x = 7
 
 		root.scan ->
-			$test.equal col0, 1, '/2'
-			$test.equal col1, 1
-			$test.equal col2, 0
+			$test.equal col0, 2, '/2'
+			$test.equal col1, 2
+			$test.equal col2, 1
 			$test.equal col3, 4  # +1 loop
-			$test.equal col4, 0
+			$test.equal col4, 1
 
 			A = 7
 
 			root.scan ->
-				$test.equal col0, 1, '/3'
-				$test.equal col1, 2
-				$test.equal col2, 1
+				$test.equal col0, 2, '/3'
+				$test.equal col1, 3
+				$test.equal col2, 2
 				$test.equal col3, 6  # +1 loop
-				$test.equal col4, 0
+				$test.equal col4, 1
 
 				root.scan ->
-					$test.equal col0, 1, '/4'
-					$test.equal col1, 2
-					$test.equal col2, 1
+					$test.equal col0, 2, '/4'
+					$test.equal col1, 3
+					$test.equal col2, 2
 					$test.equal col3, 7
-					$test.equal col4, 0
+					$test.equal col4, 1
 
 					scope.y = 3
 
 					root.scan ->
-						$test.equal col0, 1, '/5'
-						$test.equal col1, 3
-						$test.equal col2, 1
+						$test.equal col0, 2, '/5'
+						$test.equal col1, 4
+						$test.equal col2, 2
 						$test.equal col3, 8
-						$test.equal col4, 1
+						$test.equal col4, 2
 						$test.close()
 
 Test('$scan root #0', 'scan-root-0').run ($test, alight) ->
@@ -131,7 +131,7 @@ Test('$scan root #0', 'scan-root-0').run ($test, alight) ->
 							$test.close()
 						late: true
 
-Test('$scan late', 'scan-late').run ($test, alight) ->
+Test('scan-late', 'scan-late').run ($test, alight) ->
 	$test.start 18
 
 	c0 = 0
@@ -148,18 +148,18 @@ Test('$scan late', 'scan-late').run ($test, alight) ->
 	root.watch 'n', ->
 		c2++
 
-	$test.equal c0, 1
+	$test.equal c0, 0, 'start'
 	$test.equal c1, 0
 	$test.equal c2, 0
 	root.scan ->
-		$test.equal c0, 2
+		$test.equal c0, 2, '1st scan'
 		$test.equal c1, 0
-		$test.equal c2, 0
+		$test.equal c2, 1
 
 		alight.nextTick ->
-			$test.equal c0, 2
+			$test.equal c0, 2, 'next tick'
 			$test.equal c1, 0
-			$test.equal c2, 0
+			$test.equal c2, 1
 
 		scope.n++
 		root.scan
@@ -168,9 +168,9 @@ Test('$scan late', 'scan-late').run ($test, alight) ->
 				c1++
 
 		setTimeout ->
-			$test.equal c0, 4
+			$test.equal c0, 4, 'timeout 100'
 			$test.equal c1, 1
-			$test.equal c2, 1
+			$test.equal c2, 2
 
 			next()
 		, 100
@@ -180,19 +180,19 @@ Test('$scan late', 'scan-late').run ($test, alight) ->
 		root.scan
 			callback: ->
 				c1++
-				$test.equal c0, 6
+				$test.equal c0, 6, 'scan late'
 				$test.equal c1, 2
-				$test.equal c2, 2
+				$test.equal c2, 3
 				$test.close()
 			late: true
 
-		$test.equal c0, 4
+		$test.equal c0, 4, 'next'
 		$test.equal c1, 1
-		$test.equal c2, 1
+		$test.equal c2, 2
 
 
-Test('$scan order').run ($test, alight) ->
-	$test.start 7
+Test('scan-order', 'scan-order').run ($test, alight) ->
+	$test.start 6
 	scope =
 		v0: 0
 		v1: 0
@@ -204,10 +204,10 @@ Test('$scan order').run ($test, alight) ->
 	v2 = 0
 	cd.watch 'v0', ->
 		v0++
-		$test.equal v1, 1
+		#$test.equal v1, 0, '1st test'  # callback of v1 isn't called yet
 	cd.watch 'v1', ->
 		v1++
-		scope.v0++
+		scope.v0++  # make call v0 second time
 		cd.scan()
 	,
 		readOnly: true
@@ -215,19 +215,19 @@ Test('$scan order').run ($test, alight) ->
 		v2++
 
 	cd.scan ->
-		$test.equal v0, 0
-		$test.equal v1, 0
-		$test.equal v2, 0
+		$test.equal v0, 2
+		$test.equal v1, 1
+		$test.equal v2, 1
 
 		scope.v1++
 		cd.scan ->
-			$test.equal v0, 1
-			$test.equal v1, 1
-			$test.equal v2, 0
+			$test.equal v0, 3
+			$test.equal v1, 2
+			$test.equal v2, 1
 			$test.close()
 
 
-Test('$scan.deep').run ($test, alight) ->
+Test('scan-deep', 'scan-deep').run ($test, alight) ->
 	$test.start 4
 	s =
 		a:
@@ -244,19 +244,19 @@ Test('$scan.deep').run ($test, alight) ->
 	, deep: true
 
 	cd.scan ->
-		$test.equal n, 0
+		$test.equal n, 1
 
 		s.a.num++
 		cd.scan ->
-			$test.equal n, 1
+			$test.equal n, 2
 
 			s.a.two = null
 
 			cd.scan ->
-				$test.equal n, 2
+				$test.equal n, 3
 
 				s.a.obj.list.push null
 
 				cd.scan ->
-					$test.equal n, 3
+					$test.equal n, 4
 					$test.close()

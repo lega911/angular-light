@@ -38,7 +38,7 @@ ChangeDetector = (root, scope) ->
     # local
     @.scope = scope
     @.root = root
-    @.watchers = {}
+    #@.watchers = {}
     @.watchList = []
     @.destroy_callbacks = []
 
@@ -79,14 +79,17 @@ ChangeDetector::destroy = ->
         fn()
 
     cd.destroy_callbacks.length = 0
-    cd.watchList.length = 0
-    watchers = cd.watchers
-    cd.watchers = {}
+    #watchers = cd.watchers
+    #cd.watchers = {}
     # call watch.onStop
-    for k, d of watchers
-        if d.onStop.length
-            for fn in d.onStop
-                fn()
+    #for k, d of watchers
+    #    if d.onStop.length
+    #        for fn in d.onStop
+    #            fn()
+    for d of cd.watchList
+        if d.onStop
+            d.onStop()
+    cd.watchList.length = 0
 
     for wa in cd.rwatchers.any
         removeItem root.watchers.any, wa
@@ -195,6 +198,8 @@ watchAny = (cd, key, callback) ->
 
 ###
 
+watchInitValue = ->
+
 ChangeDetector::watch = (name, callback, option) ->
     option = option or {}
     if option is true
@@ -237,86 +242,53 @@ ChangeDetector::watch = (name, callback, option) ->
     if alight.debug.watch
         console.log '$watch', name
 
-    d = cd.watchers[key]
-    if d
-        if not option.readOnly
-            d.extraLoop = true
-        returnValue = d.value
-        exp = d.exp
+    # create watch object
+    isStatic = false
+    if not isFunction
+        if option.watchText
+            exp = option.watchText.fn
+        else
+            pe = alight.utils.parsExpression name
+            if pe.result.length > 1  # has filters
+                return makeFilterChain cd, pe, callback, option
+            ce = alight.utils.compile.expression(name)
+            isStatic = ce.isSimple and ce.simpleVariables.length is 0 and not option.isArray
+            exp = ce.fn
+    #returnValue = value = exp scope
+    if option.deep
+        option.isArray = false
+    d =
+        isStatic: isStatic
+        isArray: Boolean option.isArray
+        extraLoop: not option.readOnly
+        deep: option.deep
+        value: watchInitValue
+        callback: callback
+        exp: exp
+        src: '' + name
+        onStop: option.onStop or null
+
+    if isStatic
+        cd.watch '$finishScanOnce', ->
+            callback d.exp scope
     else
-        # create watch object
-        isStatic = false
-        if not isFunction
-            if option.watchText
-                exp = option.watchText.fn
-            else
-                pe = alight.utils.parsExpression name
-                if pe.result.length > 1  # has filters
-                    return makeFilterChain cd, pe, callback, option
-                ce = alight.utils.compile.expression(name)
-                isStatic = ce.isSimple and ce.simpleVariables.length is 0 and not option.isArray
-                exp = ce.fn
-        returnValue = value = exp scope
-        if option.deep
-            value = alight.utils.clone value
-            option.isArray = false
-        d =
-            isStatic: isStatic
-            isArray: Boolean option.isArray
-            extraLoop: not option.readOnly
-            deep: option.deep
-            value: value
-            callbacks: []
-            exp: exp
-            src: '' + name
-            onStop: []
-
-        if option.isArray
-            if f$.isArray value
-                d.value = value.slice()
-            else
-                d.value = undefined
-            returnValue = d.value
-
-        if not isStatic
-            cd.watchers[key] = d
-            cd.watchList.push d
+        cd.watchList.push d
 
     r =
-        $: d
-        value: returnValue
-        fire: ->
-            if d.isArray
-                callback exp scope
-            else
-                callback d.value
+        #$: d
+        stop: ->
+            if d.isStatic
+                return
+            removeItem cd.watchList, d
+            if option.onStop
+                option.onStop()
 
     if option.oneTime
-        realCallback = callback
-        callback = (value) ->
+        d.callback = (value) ->
             if value is undefined
                 return
             r.stop()
-            realCallback value
-
-    if option.onStop
-        d.onStop.push option.onStop
-
-    d.callbacks.push callback
-    r.stop = ->
-        removeItem d.callbacks, callback
-        if d.callbacks.length isnt 0
-            return
-        # remove watch
-        if not d.isStatic
-            delete cd.watchers[key]
-            removeItem cd.watchList, d
-        if option.onStop
-            option.onStop()
-
-    if option.init
-        callback r.value
-
+            callback value
     r
 
 
@@ -385,12 +357,9 @@ scanCore = (root, result) ->
                 if mutated
                     mutated = false
                     changes++
-                    extraLoopFlag = false
-                    for callback in w.callbacks.slice()
-                        if callback.call(scope, value) isnt '$scanNoChanges'
-                            extraLoopFlag = true
-                    if extraLoopFlag and w.extraLoop
-                        extraLoop = true
+                    if w.callback.call(scope, value) isnt '$scanNoChanges'
+                        if w.extraLoop
+                            extraLoop = true
                 if alight.debug.scan > 1
                     console.log 'changed:', w.src
 
@@ -420,10 +389,6 @@ Root::scan = (cfg) ->
         return
     root.lateScan = false
     root.status = 'scaning'
-    # take finishScanOnce
-    finishScanOnce = root.watchers.finishScanOnce.slice()
-    root.watchers.finishScanOnce.length = 0
-
 
     if alight.debug.scan
         start = get_time()
@@ -460,6 +425,10 @@ Root::scan = (cfg) ->
         root.status = null
         for callback in root.watchers.finishScan
             callback()
+
+        # take finishScanOnce
+        finishScanOnce = root.watchers.finishScanOnce.slice()
+        root.watchers.finishScanOnce.length = 0
         for callback in finishScanOnce
             callback.call root
 

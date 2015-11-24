@@ -77,8 +77,8 @@ Test('filter date', 'filter-date').run ($test, alight) ->
                 $test.close()
 
 
-Test('$filter async #0', 'filter-async-0').run ($test, alight) ->
-    $test.start 57
+Test('filter-async-0', 'filter-async-0').run ($test, alight) ->
+    $test.start 56
 
     fdouble = 0
     fadd = 0
@@ -108,47 +108,46 @@ Test('$filter async #0', 'filter-async-0').run ($test, alight) ->
     cd.watch 'value | double | get | add:EX', (value) ->
         result0.push value
 
-    $test.equal fdouble, 0
+    cd.scan()
+
+    $test.equal fdouble, 1
     $test.equal fadd, 0
     $test.equal result0.length, 0
     $test.equal setters.length, 1
-    $test.equal async.length, 0
+    $test.equal async.length, 1
 
     w1 = cd.watch 'value | add:PRE | get | double', (value) ->
         result1.push value
 
     cd.watch 'value | add:BEGIN | double | add:END', (value) ->
         result2.push value
-    ,
-        init: true
 
-    $test.equal fdouble, 1
-    $test.equal fadd, 2
+    cd.scan()
+    $test.equal fdouble, 2, 'scan init'
+    $test.equal fadd, 3
     $test.equal result0.length, 0
     $test.equal result1.length, 0
     $test.equal result2.length, 1
     $test.equal result2[0], 'oneBEGINoneBEGINEND'
     $test.equal setters.length, 2
-    $test.equal async.length, 0
 
-    w1.fire()
-    $test.equal fadd, 3
-    $test.equal async.length, 1
-    $test.equal async[0], 'onePRE'
+    $test.equal async.length, 2
+    $test.equal async[0], 'oneone'
+    $test.equal async[1], 'onePRE'
 
     cd.scan ->
-        $test.equal fdouble, 1, 'scan0'
+        $test.equal fdouble, 2, 'scan0'
         $test.equal fadd, 3
         $test.equal result0.length, 0
         $test.equal result1.length, 0
         $test.equal result2.length, 1
         $test.equal setters.length, 2
-        $test.equal async.length, 1
+        $test.equal async.length, 2
         async.length = 0
 
         scope.value = 'two'
         cd.scan ->
-            $test.equal fdouble, 3, '# step 2'
+            $test.equal fdouble, 4, '# step 2'
             $test.equal fadd, 6
             $test.equal result0.length, 0
             $test.equal result1.length, 0
@@ -164,7 +163,7 @@ Test('$filter async #0', 'filter-async-0').run ($test, alight) ->
                 setters[0] 'async-two'
                 cd.scan ->
 
-                    $test.equal fdouble, 3, '# step 3'
+                    $test.equal fdouble, 4, '# step 3'
                     $test.equal fadd, 7
                     $test.equal result0.length, 1
                     $test.equal result0[0], 'async-twoEX'
@@ -176,7 +175,7 @@ Test('$filter async #0', 'filter-async-0').run ($test, alight) ->
                     setters[1] 'async-three'
                     cd.scan ->
 
-                        $test.equal fdouble, 4, '# step 4'
+                        $test.equal fdouble, 5, '# step 4'
                         $test.equal fadd, 7
                         $test.equal result0.length, 1
                         $test.equal result1.length, 1
@@ -188,7 +187,7 @@ Test('$filter async #0', 'filter-async-0').run ($test, alight) ->
                         setters[1] 'async-four'
                         cd.scan ->
 
-                            $test.equal fdouble, 5, '# step 5'
+                            $test.equal fdouble, 6, '# step 5'
                             $test.equal fadd, 7
                             $test.equal result0.length, 1
                             $test.equal result1.length, 2

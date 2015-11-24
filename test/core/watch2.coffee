@@ -17,16 +17,16 @@ Test('$watchText #1', 'watch-text-1').run ($test, alight) ->
         null
     , ->
 
-    $test.equal count, 1
+    $test.equal count, 0
     scope.two = 'two'
     cd.scan ->
         $test.equal result, 'one two'
-        $test.equal count, 3
+        $test.equal count, 2
 
         scope.two = 'three'
         cd.scan ->
             $test.equal result, 'one three'
-            $test.equal count, 5
+            $test.equal count, 4
             $test.close()
 
 
@@ -51,12 +51,22 @@ Test('$watchText #1b').run ($test, alight) ->
             $test.close()
 
 # test $watchText
-Test('$watchText #2').run ($test, alight) ->
-    $test.start 2
+Test('watch-text-static', 'watch-text-static').run ($test, alight) ->
+    $test.start 3
     cd = alight.ChangeDetector()
-    w = cd.watchText 'Test static text', ->
-    $test.equal w.value, 'Test static text'
-    $test.equal w.isStatic, true
+
+    result = null
+    count = 0
+
+    cd.watchText 'Test static text', (value) ->
+        result = value
+        count++
+
+    cd.scan()
+    cd.scan()
+    $test.equal result, 'Test static text'
+    $test.equal count, 1
+    $test.equal cd.scan().total, 0
 
     $test.close()
 
@@ -149,10 +159,10 @@ Test('$watch $destroy', 'watch-destroy').run ($test, alight) ->
     $test.close()
 
 
-Test('$watchText #5', 'watch-text-5').run ($test, alight) ->
+Test('watch-text-5', 'watch-text-5').run ($test, alight) ->
     $test.start 10
 
-    el = $('<div>{{one}} {{two}}</div>')[0]
+    el = ttDOM '<div>{{one}}-{{two}}</div>'
     scope =
         one: 'A'
 
@@ -165,25 +175,25 @@ Test('$watchText #5', 'watch-text-5').run ($test, alight) ->
         null
     , ->
 
-    $test.equal count, 1
-    $test.equal el.innerHTML, 'A '
+    $test.equal count, 0
+    $test.equal ttGetText(el), 'A-'
     cd.scan ->
         $test.equal count, 2
-        $test.equal el.innerHTML, 'A '
+        $test.equal ttGetText(el), 'A-'
 
         scope.one = 'X'
         cd.scan ->
             $test.equal count, 3
-            $test.equal el.innerHTML, 'X '
+            $test.equal ttGetText(el), 'X-'
 
             scope.two = 'Y'
             cd.scan ->
                 $test.equal count, 4
-                $test.equal el.innerHTML, 'X Y'
+                $test.equal ttGetText(el), 'X-Y'
 
                 cd.scan ->
                     $test.equal count, 5
-                    $test.equal el.innerHTML, 'X Y'
+                    $test.equal ttGetText(el), 'X-Y'
                     $test.close()
 
 
@@ -199,51 +209,50 @@ Test('$watchText #6', 'watch-text-6').run ($test, alight) ->
     cd = alight.ChangeDetector scope
     cd.watchText 'static text', (value) ->
         result = value
-    ,
-        init: true
+
+    cd.scan()
     $test.equal result, 'static text'
 
     result = null
     watch = cd.watchText 'linux ubuntu', (value) ->
         result = value
     $test.equal result, null
-    watch.fire()
+    cd.scan()
     $test.equal result, 'linux ubuntu'
 
     # static expression
     result = null
     cd.watchText '1{{"static"}}2', (value) ->
         result = value
-    ,
-        init: true
+    cd.scan()
     $test.equal result, '1static2'
 
     result = null
     watch = cd.watchText '1{{"linux"}}2', (value) ->
         result = value
     $test.equal result, null
-    watch.fire()
+    cd.scan()
     $test.equal result, '1linux2'
 
     # expression
     result = null
     cd.watchText '1{{data.name}}2', (value) ->
         result = value
-    ,
-        init: true
+
+    cd.scan()
     $test.equal result, '1linux2'
 
     result = null
     watch = cd.watchText '1{{data.name}}2', (value) ->
         result = value
     $test.equal result, null
-    watch.fire()
+    cd.scan()
     $test.equal result, '1linux2'
 
     $test.close()
 
 
-Test('$watch #1', 'watch-1').run ($test, alight) ->
+Test('watch-1', 'watch-1').run ($test, alight) ->
     $test.start 5
 
     cd = alight.ChangeDetector
@@ -257,13 +266,13 @@ Test('$watch #1', 'watch-1').run ($test, alight) ->
         isArray: true
 
     $test.equal count, 0
-    w0.fire()
+    cd.scan()
     $test.equal count, 1
 
     w1 = cd.watch 'list', counter,
         isArray: true
     $test.equal count, 1
-    w1.fire()
+    cd.scan()
     $test.equal count, 2
 
     cd.scope.list.push 4
@@ -273,7 +282,7 @@ Test('$watch #1', 'watch-1').run ($test, alight) ->
         $test.close()
 
 
-Test('$watch static #0', 'watch-static-0').run ($test, alight) ->
+Test('watch-static-0', 'watch-static-0').run ($test, alight) ->
     $test.start 4
 
     cd = alight.ChangeDetector
@@ -292,11 +301,7 @@ Test('$watch static #0', 'watch-static-0').run ($test, alight) ->
         counter += 1
 
     $test.equal counter, 0
-    w0.fire()
-    w1.fire()
-    w2.fire()
-    w3.fire()
-    w4.fire()
+    cd.scan()
     $test.equal counter, 5
 
     r = cd.scan()

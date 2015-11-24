@@ -482,6 +482,7 @@ alight.applyBindings = (cd, element, option) ->
     root.bindingResult.attr += result.attr
     root.bindingResult.hook += result.hook
     
+    cd.scan()
     if finishBinding
         root.finishBinding_lock = false
         lst = root.watchers.finishBinding.slice()
