@@ -7,6 +7,29 @@ alight.ChangeDetector = (scope) ->
     cd
 
 
+makeSkipWatchObject = ->
+    if f$.isFunction window.Map
+        map = new Map
+        set: (w) ->
+            map.set w, true
+        get: (w) ->
+            if not map.size
+                return false
+            map.get w
+        clear: ->
+            map.clear()
+    else
+        list = []
+        set: (w) ->
+            list.push w
+        get: (w) ->
+            if not list.length
+                return false
+            list.indexOf(w) >= 0
+        clear: ->
+            list.length = 0
+
+
 Root = () ->
     @.cdLine = []
     @.watchers =
@@ -21,6 +44,7 @@ Root = () ->
     @.finishBinding_lock = false
     @.lateScan = false
     @.topCD = null
+    @.skippedWatches = makeSkipWatchObject()
 
     @
 
@@ -267,6 +291,7 @@ ChangeDetector::watch = (name, callback, option) ->
         cd.watchList.push d
 
     r =
+        $: d
         stop: ->
             if d.isStatic
                 return
@@ -348,9 +373,10 @@ scanCore = (root, result) ->
                 if mutated
                     mutated = false
                     changes++
-                    if w.callback.call(scope, value) isnt '$scanNoChanges'
-                        if w.extraLoop
-                            extraLoop = true
+                    if not root.skippedWatches.get w
+                        if w.callback.call(scope, value) isnt '$scanNoChanges'
+                            if w.extraLoop
+                                extraLoop = true
                 if alight.debug.scan > 1
                     console.log 'changed:', w.src
 
@@ -367,6 +393,8 @@ Root::scan = (cfg) ->
             callback: cfg
     if cfg.callback
         root.watchers.finishScanOnce.push cfg.callback
+    if cfg.skipWatch
+        root.skippedWatches.set cfg.skipWatch.$
     if cfg.late
         if root.lateScan
             return
@@ -416,6 +444,7 @@ Root::scan = (cfg) ->
             result: result
     finally
         root.status = null
+        root.skippedWatches.clear()
         for callback in root.watchers.finishScan
             callback()
 

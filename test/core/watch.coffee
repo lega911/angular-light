@@ -333,3 +333,33 @@ Test('dynamic-read-only-watch', 'dynamic-read-only-watch').run ($test, alight) -
                         $test.close()
 
 
+Test('scan-skip-watch', 'scan-skip-watch').run ($test, alight) ->
+    $test.start 5
+
+    cd = alight.ChangeDetector
+        name: 'linux'
+
+    count = 0
+    w = cd.watch 'name', ->
+        count++
+
+    cd.scan()
+    $test.equal count, 1
+
+    cd.scope.name = 'ubuntu'
+    cd.scan()
+    $test.equal count, 2
+
+    cd.scope.name = 'debian'
+    cd.scan
+        skipWatch: w
+    $test.equal count, 2
+
+    cd.scan()
+    $test.equal count, 2
+
+    cd.scope.name = 'redhat'
+    cd.scan()
+    $test.equal count, 3
+
+    $test.close()

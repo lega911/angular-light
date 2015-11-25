@@ -14,6 +14,22 @@
 
 ###
 
+###
+    0.11.5b
+    FF:
+        fill 117.8
+        scan 256.7
+        destroy 5.1
+        destroy partial 10.4
+
+    Chrome:
+        fill 154.3
+        scan 377.0
+        destroy 3.6
+        destroy partial 3.9
+
+###
+
 fillCD = (count) ->
 
     empty = ->
