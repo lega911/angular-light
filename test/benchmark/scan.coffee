@@ -95,13 +95,44 @@ runDestroyPartial = ->
         null
 
 
+runWatchArray = ->
+    list = for i in [0..10000]
+        {}
+    cd = alight.ChangeDetector
+        list: list
+    cd.watch 'list', ->
+        null
+    ,
+        isArray: true
+    timeit 'watch array', 10000, ->
+        cd.scan()
+        null
+
+
+runWatchFrozenArray = ->
+    list = for i in [0..10000]
+        {}
+    cd = alight.ChangeDetector
+        list: list
+    Object.freeze list
+    cd.watch 'list', ->
+        null
+    ,
+        isArray: true
+    timeit 'watch array', 10000, ->
+        cd.scan()
+        null
+
+
 run = ->
     print alight.version
     line = [
         runCreating,
         runScanning,
         runDestroy,
-        runDestroyPartial
+        runDestroyPartial,
+        runWatchArray,
+        runWatchFrozenArray
     ]
 
     n = 0

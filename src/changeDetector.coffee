@@ -316,6 +316,10 @@ get_time = do ->
         (new Date()).getTime()
 
 
+isFrozen = Object.isFrozen or ->
+    false
+
+
 notEqual = (a, b) ->
     if a is null or b is null
         return true
@@ -353,15 +357,25 @@ scanCore = (root, result) ->
                     a1 = f$.isArray value
                     if a0 is a1
                         if a0
-                            if notEqual last, value
-                                w.value = value.slice()
+                            if isFrozen last
                                 mutated = true
+                            else
+                                if notEqual last, value
+                                    mutated = true
+                            if mutated
+                                if isFrozen value
+                                    w.value = value
+                                else
+                                    w.value = value.slice()
                     else
                         mutated = true
-                        if a1
-                            w.value = value.slice()
-                        else
+                        if not a1
                             w.value = null
+                    if mutated and a1
+                        if isFrozen value
+                            w.value = value
+                        else
+                            w.value = value.slice()
                 else if w.deep
                     if not alight.utils.equal last, value
                         mutated = true
