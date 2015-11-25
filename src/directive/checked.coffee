@@ -3,7 +3,6 @@ alight.d.al.checked =
     priority: 100
     init: (cd, element, name) ->
         self =
-            changing: false
             start: ->
                 self.onDom()
                 self.watchModel()
@@ -14,14 +13,11 @@ alight.d.al.checked =
                 f$.off element, 'change', self.updateModel
             updateModel: ->
                 value = f$.prop element, 'checked'
-                self.changing = true
                 cd.setValue name, value
-                cd.scan ->
-                    self.changing = false
+                cd.scan
+                    skipWatch: self.watch
             watchModel: ->
-                cd.watch name, self.updateDom
+                self.watch = cd.watch name, self.updateDom
             updateDom: (value) ->
-                if self.changing
-                    return '$scanNoChanges'
                 f$.prop element, 'checked', !!value
                 '$scanNoChanges'

@@ -481,4 +481,4 @@ ChangeDetector::eval = (exp) ->
     fn @.scope
 
 ChangeDetector::getValue = (name) ->
-    @.$eval name
+    @.eval name

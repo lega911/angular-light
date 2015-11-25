@@ -1,7 +1,6 @@
 
 alight.d.al.value = (cd, element, variable) ->
     self =
-        changing: false
         onDom: ->
             f$.on element, 'input', self.updateModel
             f$.on element, 'change', self.updateModel
@@ -12,15 +11,12 @@ alight.d.al.value = (cd, element, variable) ->
         updateModel: ->
             alight.nextTick ->
                 value = f$.val element
-                self.changing = true
                 cd.setValue variable, value
-                cd.scan ->
-                    self.changing = false
+                cd.scan
+                    skipWatch: self.watch
         watchModel: ->
-            cd.watch variable, self.updateDom
+            self.watch = cd.watch variable, self.updateDom
         updateDom: (value) ->
-            if self.changing
-                return '$scanNoChanges'
             value ?= ''
             f$.val element, value
             '$scanNoChanges'
