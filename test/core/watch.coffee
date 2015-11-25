@@ -182,6 +182,57 @@ Test('watch-array-2', 'watch-array-2').run ($test, alight) ->
                     $test.close()
 
 
+Test('watch-frozen-array-0', 'watch-frozen-array-0').run ($test, alight) ->
+    $test.start 12
+    scope = {}
+    cd = alight.ChangeDetector scope
+    #scope.list = null
+
+    watch = 0
+    watchArray = 0
+
+    cd.watch 'list', ->
+        watch++
+    cd.watch 'list', ->
+        watchArray++
+    , true
+
+    freeze = Object.freeze or ->
+
+    cd.scan ->
+        $test.equal watch, 1
+        $test.equal watchArray, 0
+        scope.list = []
+        freeze scope.list
+        cd.scan ->
+            $test.equal watch, 2
+            $test.equal watchArray, 1
+
+            scope.list = [1, 2, 3]
+            freeze scope.list
+            cd.scan ->
+                $test.equal watch, 3
+                $test.equal watchArray, 2
+
+                scope.list = scope.list.slice()
+                scope.list.push(4)
+                freeze scope.list
+                cd.scan ->
+                    $test.equal watch, 4
+                    $test.equal watchArray, 3
+
+                    scope.list = [1, 2, 3]
+                    cd.scan ->
+                        $test.equal watch, 5
+                        $test.equal watchArray, 4
+
+                        scope.list.push(4)
+                        cd.scan ->
+                            $test.equal watch, 5
+                            $test.equal watchArray, 5
+                            $test.close()
+
+
 Test('watch-any', 'watch-any').run ($test, alight) ->
     $test.start 15
     scope =
