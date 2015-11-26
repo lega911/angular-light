@@ -118,6 +118,20 @@ ChangeDetector::destroy = ->
         root.destroy()
 
 
+getFilter = (name, cd, param) ->
+    error = false
+    scope = cd.scope
+    if scope.$ns and scope.$ns.filters
+        filter = scope.$ns.filters[name]
+        if not filter and not scope.$ns.inheritGlobal
+            error = true
+    if not filter and not error
+        filter = alight.filters[name]
+    if not filter
+        throw 'Filter not found: ' + name
+    filter
+
+
 makeFilterChain = do ->
     index = 1
     getId = ->
@@ -146,7 +160,7 @@ makeFilterChain = do ->
                 filterName = filterExp
                 filterArg = null
 
-            filterBuilder = alight.getFilter filterName, cd, filterArg
+            filterBuilder = getFilter filterName, cd, filterArg
 
             filter = filterBuilder filterArg, cd,
                 setValue: prevCallback

@@ -440,21 +440,7 @@ alight.nextTick = do ->
         timer = setTimeout exec, 0
 
 
-alight.getFilter = (name, cd, param) ->
-    error = false
-    scope = cd.scope
-    if scope.$ns and scope.$ns.filters
-        filter = scope.$ns.filters[name]
-        if not filter and not scope.$ns.inheritGlobal
-            error = true
-    if not filter and not error
-        filter = alight.filters[name]
-    if not filter
-        throw 'Filter not found: ' + name
-    filter
-
-
-alight.applyBindings = (cd, element, option) ->
+alight.bind = alight.applyBindings = (cd, element, option) ->
     if not element
         throw 'No element'
 

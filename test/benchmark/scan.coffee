@@ -119,7 +119,7 @@ runWatchFrozenArray = ->
         null
     ,
         isArray: true
-    timeit 'watch array', 10000, ->
+    timeit 'watch frozen array', 10000, ->
         cd.scan()
         null
 
@@ -135,14 +135,20 @@ run = ->
         runWatchFrozenArray
     ]
 
-    n = 0
-    step = ->
-        fn = line[n++]
-        if not fn
-            return
-        fn()
-        setTimeout step, 1000
+    n = Number location.hash.substring 1
+    if typeof n is 'number'
+        setTimeout ->
+            line[n]()
+        , 2000
+    else
+        n = 0
+        step = ->
+            fn = line[n++]
+            if not fn
+                return
+            fn()
+            setTimeout step, 1000
 
-    setTimeout step, 1000
+        setTimeout step, 1000
 
 alight.f$.ready run
