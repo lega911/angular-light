@@ -429,28 +429,52 @@ Test('al-repeat track by 5', 'al-repeat-track-by-5').run ($test, alight) ->
         $test.equal getText(), '1x2y3z'
         $test.close()
 
-###
-Test('al-repeat restrict M #0', 'al-repeat-restrict-m-0').run ($test, alight) ->
-    $test.start 1
 
-    el = document.createElement 'div'
-    el.innerHTML = "<div>
-                        <!-- directive: al-repeat item in list-->
-                            <b>{{$index}}</b>
-                            <i>{{item.kind}}</i>
-                            {{item.name}}
-                        <!-- /directive: al-repeat -->
-                    </div>"
+Test('al-repeat-transparent-assigment-0', 'al-repeat-transparent-assigment-0').run ($test, alight) ->
+    $test.start 8
 
-    scope = alight.Scope()
-    scope.list = [
-        {kind: 'linux', name: 'Ubuntu 14'}
-        {kind: 'macos', name: 'X'}
-        {kind: 'windows', name: '10'}
-        {kind: 'freebsd', name: '7'}
-    ]
-    alight.applyBindings scope, el
+    childS = null
+    alight.d.al.fire = (cd) ->
+        if cd.scope.child isnt '14'
+            return
+        if cd.scope.box.name isnt 'ubuntu'
+            return
+        childS = cd
+        null
 
-    #$test.equal alight.f$.text(alight.f$.find(el, 'p')[0]).trimLeft(), 'Hello World!'
+    el = ttDOM """
+        <p al-repeat="box in list" al-init="firstLine=box.name">
+            box={{box.name}}
+            <i al-repeat="child in box.children" al-init="fromChild=child">{{child}} <b al-fire></b></i>
+        </p>
+    """
+
+    scope =
+        list: []
+    scope.list.push
+        name: 'linux'
+        children: ['x86', 'x64']
+
+    cd = alight.ChangeDetector scope
+    alight.bind cd, el
+
+    $test.equal ttGetText(el), 'box=linux x86 x64'
+    $test.equal scope.firstLine, 'linux'
+    $test.equal scope.fromChild, 'x64'
+
+    scope.list.push
+        name: 'ubuntu'
+        children: ['14', '15']
+    cd.scan()
+
+    $test.equal ttGetText(el), 'box=linux x86 x64 box=ubuntu 14 15'
+    $test.equal scope.firstLine, 'ubuntu'
+    $test.equal scope.fromChild, '15'
+
+    childS.scope.child = 'X'
+    childS.scope.box.name = 'debian'
+    childS.scan()
+    $test.equal ttGetText(el), 'box=linux x86 x64 box=debian X 15'
+    $test.equal childS.scope.$root, cd.scope
+
     $test.close()
-###
