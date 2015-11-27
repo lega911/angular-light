@@ -1,7 +1,7 @@
 
 alight.d.al.html =
     priority: 100
-    init: (scope, cd, element, name, env) ->
+    link: (scope, cd, element, name, env) ->
         child = null
         setter = (html) ->
             if child

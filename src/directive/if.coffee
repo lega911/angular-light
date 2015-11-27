@@ -1,7 +1,7 @@
 
 alight.d.al.if =
     priority: 700
-    init: (scope, cd, element, name, env) ->
+    link: (scope, cd, element, name, env) ->
         self =
             owner: true
             item: null
@@ -25,7 +25,7 @@ alight.d.al.if =
             removeBlock: ->
                 if not self.child
                     return
-                self.child.$destroy()
+                self.child.destroy()
                 self.removeDom self.item
                 self.child = null
                 self.item = null
@@ -46,8 +46,8 @@ alight.d.al.if =
 
 alight.d.al.ifnot =
     priority: 700
-    init: (scope, cd, element, name, env) ->
-        self = alight.d.al.if.init scope, cd, element, name, env
+    link: (scope, cd, element, name, env) ->
+        self = alight.d.al.if.link scope, cd, element, name, env
         self.updateDom = (value) ->
             if value
                 self.removeBlock()

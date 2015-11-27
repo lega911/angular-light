@@ -1,7 +1,7 @@
 
 alight.d.al.checked =
     priority: 100
-    init: (scope, cd, element, name) ->
+    link: (scope, cd, element, name) ->
         self =
             start: ->
                 self.onDom()

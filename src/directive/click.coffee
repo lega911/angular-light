@@ -2,7 +2,7 @@
 clickMaker = (event) ->
     priority: 10
     stopPropagation: true
-    init: (scope, cd, element, name, env) ->
+    link: (scope, cd, element, name, env) ->
         self =
             stopPropagation: @.stopPropagation
             callback: cd.compile name,
