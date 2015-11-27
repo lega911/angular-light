@@ -193,8 +193,6 @@ makeFilterChain = do ->
         else if watchMode is 'deep'
             watchOptions.deep = true
         w = cd.watch pe.expression, prevCallback, watchOptions
-
-        w.value = undefined
         w
 
 

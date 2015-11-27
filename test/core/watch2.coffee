@@ -310,3 +310,19 @@ Test('watch-static-0', 'watch-static-0').run ($test, alight) ->
     $test.equal r.changes, 0
 
     $test.close()
+
+
+Test('watch-static-1', 'watch-static-1').run ($test, alight) ->
+    $test.start 1
+
+    alight.filters.double = ->
+        (x) ->
+            x+x
+
+    el = ttDOM '<div>{{"one" | double}}</div>'
+    cd = alight.bootstrap el
+
+    cd.scan()
+    $test.equal ttGetText(el), 'oneone'
+
+    $test.close()
