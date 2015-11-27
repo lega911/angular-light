@@ -35,7 +35,7 @@ alight.d.al.if =
                 self.item = f$.clone self.base_element
                 self.insertDom self.top_element, self.item
                 self.child = cd.new()
-                alight.applyBindings self.child, self.item, { skip_attr:env.skippedAttr() }
+                alight.bind self.child, self.item, { skip_attr:env.skippedAttr() }
             watchModel: ->
                 cd.watch name, self.updateDom
             removeDom: (element) ->

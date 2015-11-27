@@ -180,7 +180,7 @@ do ->
         code: 'scopeBinding'
         fn: ->
             if @.doBinding
-                alight.applyBindings @.cd, @.element,
+                alight.bind @.cd, @.element,
                     skip_attr: @.env.skippedAttr()
 
 
@@ -501,7 +501,7 @@ alight.bootstrap = (input) ->
             element.ma_bootstrapped = true
             attr = f$.attr element, 'al-app'
             cd = alight.ChangeDetector()
-            alight.applyBindings cd, element,
+            alight.bind cd, element,
                 skip_attr: 'al-app'
             lastCD = cd
         return cd
@@ -509,10 +509,10 @@ alight.bootstrap = (input) ->
         cd = alight.ChangeDetector input
 
         if f$.isElement input.$el
-            alight.applyBindings cd, input.$el
+            alight.bind cd, input.$el
         else if typeof(input.$el) is 'string'
             for el in f$.find document.body, input.$el
-                alight.applyBindings cd, el
+                alight.bind cd, el
         else
             alight.exceptionHandler 'Error in bootstrap', '$el is required',
                 input: input

@@ -12,7 +12,7 @@ alight.d.al.html =
                 return
             f$.html element, html
             child = cd.new()
-            alight.applyBindings child, element,
+            alight.bind child, element,
                 skip_attr: env.skippedAttr()
 
         cd.watch name, setter,

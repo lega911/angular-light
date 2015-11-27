@@ -340,7 +340,7 @@ alight.directives.al.repeat =
                             #applying
                             skippedAttrs = env.skippedAttr()
                             for it in applyList
-                                alight.applyBindings it[0], it[1],
+                                alight.bind it[0], it[1],
                                     skip_attr: skippedAttrs
 
                             if self.storeTo
@@ -425,7 +425,6 @@ alight.directives.al.repeat =
 
                                 element = f$.clone self.base_element
                                 applyList.push [childCD, element]
-                                #alight.applyBindings child_scope, element, { skip_attr:env.attrName }
 
                                 dom_inserts.push
                                     element: element
@@ -466,7 +465,7 @@ alight.directives.al.repeat =
                                 if fastBinding
                                     fastBinding.bind it[0], it[1]
                                 else
-                                    r = alight.applyBindings it[0], it[1],
+                                    r = alight.bind it[0], it[1],
                                         skip_attr: skippedAttrs
                                     if r.directive is 0 and r.hook is 0
                                         fastBinding = new alight.core.fastBinding self.base_element
