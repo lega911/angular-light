@@ -104,6 +104,9 @@ do ->
         code: 'init'
         fn: ->
             if @.directive.init
+                if alight.debug.directive
+                    if @.directive.scope or @.directive.ChangeDetector
+                        console.warn "#{@.ns}-#{@.name} uses scope and init together, probably you need use link instead of init"
                 @.result = @.directive.init @.cd, @.element, @.value, @.env
             if not f$.isObject(@.result)
                 @.result = {}
@@ -159,6 +162,7 @@ do ->
             else
                 @.cd = parentCD.new scope
 
+            @.env.parentChangeDetector = parentCD
             @.result.owner = true
             @.doBinding = true
 

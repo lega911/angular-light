@@ -166,3 +166,36 @@ Test('html prefix-data').run ($test, alight) ->
     $test.equal r.length, 2
 
     $test.close()
+
+
+Test 'root-scope-access-to-parent'
+    .run ($test, alight) ->
+        $test.start 2
+
+        alight.ctrl.test =
+            scope: true
+            ChangeDetector: 'root'
+            link: (cd, el, key, env) ->
+                env.parentChangeDetector.watch key, (value) ->
+                    cd.scope.title = value
+                    cd.scan()
+
+        el = ttDOM """
+            {{name}}
+            <div ctrl-test="name">
+                {{title}}-{{title2}}
+            </div>
+        """
+
+        cd = alight.ChangeDetector
+            name: 'linux'
+
+        alight.bind cd, el
+
+        $test.equal ttGetText(el), 'linux linux-'
+        
+        cd.scope.name = 'ubuntu'
+        cd.scan()
+        $test.equal ttGetText(el), 'ubuntu ubuntu-'
+
+        $test.close()

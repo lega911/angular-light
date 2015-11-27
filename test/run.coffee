@@ -76,6 +76,8 @@ window.Test = do ->
     codes = {}
     filterByCode = document.location.hash[1..]
     (title, uniqCode) ->
+        if not uniqCode
+            uniqCode = title
         if uniqCode
             if codes[uniqCode]
                 throw 'code is not uniq: ' + title
