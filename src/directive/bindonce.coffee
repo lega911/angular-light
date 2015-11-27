@@ -1,44 +1,41 @@
 
 alight.d.bo.switch =
     priority: 500
-    init: (scope, cd, element, name, env) ->
-        child = cd.new()
-        child.$switch =
-            value: child.eval name
+    ChangeDetector: true
+    link: (scope, cd, element, name, env) ->
+        cd.$switch =
+            value: cd.eval name
             on: false
-
-        alight.applyBindings child, element,
-            skip_attr:env.skippedAttr()
-
-        owner: true
+        null
 
 
 alight.d.bo.switchWhen =
     priority: 500
-    init: (scope, cd, element, name) ->
+    link: (scope, cd, element, name) ->
         if cd.$switch.value != name
             f$.remove element
-            return { owner:true }
-        cd.$switch.on = true
+            owner: true
+        else
+            cd.$switch.on = true
+            null
 
 
 alight.d.bo.switchDefault =
     priority: 500
-    init: (scope, cd, element, name) ->
+    link: (scope, cd, element, name) ->
         if cd.$switch.on
             f$.remove element
-            return { owner:true }
-        null
+            owner: true
 
 do ->
     makeBindOnceIf = (direct) ->
         self =
             priority: 700
-            init: (scope, cd, element, exp) ->
+            link: (scope, cd, element, exp) ->
                 value = cd.eval exp
                 if !value is direct
                     f$.remove element
-                    { owner:true }
+                    owner: true
 
     alight.d.bo.if = makeBindOnceIf true
     alight.d.bo.ifnot = makeBindOnceIf false
