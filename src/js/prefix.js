@@ -5,7 +5,7 @@
             text: {},
             core: {},
             utils: {},
-            directives: {
+            d: {
                 al: {},
                 bo: {},
                 ctrl: {}
@@ -17,7 +17,8 @@
         };
         var f$ = {};
         alight.f$ = f$;
-        alight.d = alight.directives;
+        alight.directives = alight.d;
+        alight.ctrl = alight.d.ctrl;
 
         var removeItem = function(list, item) {
             var i = list.indexOf(item);
