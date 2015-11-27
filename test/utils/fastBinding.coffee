@@ -43,3 +43,46 @@ Test('fast-binding 0', 'fast-binding-0').run ($test, alight) ->
         $test.equal el.childNodes[1].attributes.attr2.value, 'seconda'
         $test.equal el.childNodes[5].attributes.attr3.value, 'athirda'
         $test.close()
+
+
+Test('fast-binding-1').run ($test, alight) ->
+    $test.start 2
+
+    el = ttDOM """
+        <div al-repeat="it in list">
+            <i>a-{{it.name}}</i>
+            <i>b-{{foo(it.value)}}</i>
+            <i>c-{{it.value | double}}</i>
+            <i>d-{{=it.name}}</i>
+            <i>e-{{#dd it.name}}</i>
+        </div>
+    """
+
+    alight.filters.double = ->
+        (x) ->
+            x*2
+
+    alight.text.dd = (callback, expression, cd, env) ->
+        value = cd.eval expression
+        env.setter value+value
+
+    cd = alight.ChangeDetector
+        list: [
+            {name: 'l', value: 5}
+            {name: 'u', value: 7}
+            {name: 'd', value: 11}
+        ]
+        foo: (x) ->
+            x*2
+
+    alight.bind cd, el
+
+    $test.equal ttGetText(el), 'a-l b-10 c-10 d-l e-ll ' + 'a-u b-14 c-14 d-u e-uu ' + 'a-d b-22 c-22 d-d e-dd'
+    
+    cd.scope.list[1] =
+        name: 'x'
+        value: 3
+    cd.scan()
+    $test.equal ttGetText(el), 'a-l b-10 c-10 d-l e-ll ' + 'a-x b-6 c-6 d-x e-xx ' + 'a-d b-22 c-22 d-d e-dd'
+
+    $test.close()

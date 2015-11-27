@@ -176,6 +176,12 @@ makeFilterChain = do ->
                 if filter.onStop
                     onStop.push filter.onStop
 
+                if not f$.isFunction prevCallback
+                    alight.exceptionHandler '', 'wrong filter: ' + filterName,
+                        name: filterName
+                        args: filterArg
+                    return
+
         watchOptions =
             oneTime: option.oneTime
             onStop: ->
