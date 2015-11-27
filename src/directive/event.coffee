@@ -1,7 +1,7 @@
 
 for key in ['keydown', 'keypress', 'keyup', 'mousedown', 'mouseenter', 'mouseleave', 'mousemove', 'mouseover', 'mouseup', 'focus', 'blur', 'change']
     do (key) ->
-        alight.d.al[key] = (cd, element, exp) ->
+        alight.d.al[key] = (scope, cd, element, exp) ->
             self =
                 start: ->
                     self.makeCaller()
@@ -17,11 +17,11 @@ for key in ['keydown', 'keypress', 'keyup', 'mousedown', 'mouseenter', 'mouselea
                     f$.off element, key, self.callback
                 callback: (e) ->
                     try
-                        self.caller cd.scope, e
+                        self.caller scope, e
                     catch e
                         alight.exceptionHandler e, key + ', error in expression: ' + exp,
                             exp: exp
                             cd: cd
-                            scope: cd.scope
+                            scope: scope
                             element: element
                     cd.scan()

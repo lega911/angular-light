@@ -1,5 +1,5 @@
 
-alight.d.al.submit = (cd, element, name) ->
+alight.d.al.submit = (scope, cd, element, name) ->
     self =
         callback: cd.compile name,
             no_return: true
@@ -15,11 +15,11 @@ alight.d.al.submit = (cd, element, name) ->
             e.preventDefault()
             e.stopPropagation()
             try
-                self.callback cd.scope, e
+                self.callback scope, e
             catch e
                 alight.exceptionHandler e, 'al-submit, error in expression: ' + name,
                     name: name
                     cd: cd
-                    scope: cd.scope
+                    scope: scope
                     element: element
             cd.scan()

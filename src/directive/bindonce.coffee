@@ -1,7 +1,7 @@
 
 alight.d.bo.switch =
     priority: 500
-    init: (cd, element, name, env) ->
+    init: (scope, cd, element, name, env) ->
         child = cd.new()
         child.$switch =
             value: child.eval name
@@ -15,7 +15,7 @@ alight.d.bo.switch =
 
 alight.d.bo.switchWhen =
     priority: 500
-    init: (cd, element, name) ->
+    init: (scope, cd, element, name) ->
         if cd.$switch.value != name
             f$.remove element
             return { owner:true }
@@ -24,7 +24,7 @@ alight.d.bo.switchWhen =
 
 alight.d.bo.switchDefault =
     priority: 500
-    init: (cd, element, name) ->
+    init: (scope, cd, element, name) ->
         if cd.$switch.on
             f$.remove element
             return { owner:true }
@@ -34,7 +34,7 @@ do ->
     makeBindOnceIf = (direct) ->
         self =
             priority: 700
-            init: (cd, element, exp) ->
+            init: (scope, cd, element, exp) ->
                 value = cd.eval exp
                 if !value is direct
                     f$.remove element

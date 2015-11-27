@@ -1,5 +1,5 @@
 
-alight.d.al.src = (cd, element, name) ->
+alight.d.al.src = (scope, cd, element, name) ->
     setter = (value) ->
         if not value
             value = ''

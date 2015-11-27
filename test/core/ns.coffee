@@ -9,7 +9,7 @@ Test('ns-0', 'ns-0').run ($test, alight) ->
         tag.innerHTML = '<p ut-test3="linux"></p>'
 
         alight.directives.ut =
-            test3: (cd, el, name) ->
+            test3: (scope, cd, el, name) ->
                 f$.text el, name
 
         cd = alight.ChangeDetector()
@@ -22,7 +22,7 @@ Test('ns-0', 'ns-0').run ($test, alight) ->
             $ns:
                 directives:
                     ut:
-                        uniqDirective: (cd, el, name) ->
+                        uniqDirective: (scope, cd, el, name) ->
                             f$.text el, name
 
         cd = alight.ChangeDetector scope
@@ -68,7 +68,7 @@ Test('ns-1', 'ns-1').run ($test, alight) ->
         $ns:
             directives:
                 al:
-                    private: (cd, el, name) ->
+                    private: (scope, cd, el, name) ->
                         f$.text el, name
 
     cd = alight.ChangeDetector scope

@@ -28,7 +28,7 @@ Test('test-take-attr').run ($test, alight) ->
     alight.directives.ut =
         test0:
             priority: 500
-            init: (cd, el, name, env) ->
+            init: (scope, cd, el, name, env) ->
                 $test.equal env.attributes[0].attrName, 'ut-test0'
                 for attr in env.attributes
                     if attr.attrName is 'ut-text'
@@ -65,7 +65,7 @@ Test('skipped attrs').run ($test, alight) ->
     alight.directives.ut =
         testAttr0:
             priority: 50
-            init: (cd, el, name, env) ->
+            init: (scope, cd, el, name, env) ->
                 $test.equal skippedAttr(env), 'ut-test-attr0,ut-two'
                 $test.equal activeAttr(env), 'one,ut-test-attr1,ut-three'
                 env.takeAttr 'ut-three'
@@ -74,7 +74,7 @@ Test('skipped attrs').run ($test, alight) ->
 
         testAttr1:
             priority: -50
-            init: (el, name, scope, env) ->
+            init: (scope, cd, el, name, env) ->
                 $test.equal skippedAttr(env), 'one,ut-test-attr0,ut-test-attr1,ut-three,ut-two'
                 $test.equal activeAttr(env), ''
 
@@ -105,14 +105,14 @@ Test('deferred process', 'deferred-process').run ($test, alight, timeout) ->
         test5:
             templateUrl: 'testDeferredProcess'
             scope: true
-            link: (cd, el, name) ->
-                scope5 = cd.scope
-                scope5.name = 'linux'
+            link: (scope, cd, el, name) ->
+                scope.name = 'linux'
+                scope5 = scope
         test3:
             templateUrl: 'testDeferredProcess'
-            link: (cd, el, name) ->
-                scope3 = cd.scope
-                scope3.name = 'linux'
+            link: (scope, cd, el, name) ->
+                scope.name = 'linux'
+                scope3 = scope
 
     runOne = (template) ->
         root =
@@ -155,7 +155,7 @@ Test('html prefix-data').run ($test, alight) ->
     $test.start 3
 
     r = []
-    alight.directives.al.test = (node, el, value) ->
+    alight.directives.al.test = (scope, cd, el, value) ->
         r.push value
 
     dom = $ '<div> <b al-test="one"></b> <b data-al-test="two"></b> </div>'
@@ -175,9 +175,9 @@ Test 'root-scope-access-to-parent'
         alight.ctrl.test =
             scope: true
             ChangeDetector: 'root'
-            link: (cd, el, key, env) ->
+            link: (scope, cd, el, key, env) ->
                 env.parentChangeDetector.watch key, (value) ->
-                    cd.scope.title = value
+                    scope.title = value
                     cd.scan()
 
         el = ttDOM """

@@ -2,7 +2,7 @@
 clickMaker = (event) ->
     priority: 10
     stopPropagation: true
-    init: (cd, element, name, env) ->
+    init: (scope, cd, element, name, env) ->
         self =
             stopPropagation: @.stopPropagation
             callback: cd.compile name,
@@ -26,12 +26,12 @@ clickMaker = (event) ->
                     return
 
                 try
-                    self.callback cd.scope, e
+                    self.callback scope, e
                 catch e
                     alight.exceptionHandler e, 'al-click, error in expression: ' + name,
                         name: name
                         cd: cd
-                        scope: cd.scope
+                        scope: scope
                         element: element
 
                 if self.stop and cd.eval self.stop

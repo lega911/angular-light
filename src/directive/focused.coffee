@@ -1,5 +1,5 @@
 
-alight.d.al.focused = (cd, element, name) ->
+alight.d.al.focused = (scope, cd, element, name) ->
     safe =
         updateModel: (value) ->
             if cd.getValue(name) is value

@@ -1,5 +1,5 @@
 
-alight.d.al.value = (cd, element, variable) ->
+alight.d.al.value = (scope, cd, element, variable) ->
     self =
         onDom: ->
             f$.on element, 'input', self.updateModel

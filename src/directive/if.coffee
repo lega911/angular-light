@@ -1,7 +1,7 @@
 
 alight.d.al.if =
     priority: 700
-    init: (cd, element, name, env) ->
+    init: (scope, cd, element, name, env) ->
         self =
             owner: true
             item: null
@@ -46,8 +46,8 @@ alight.d.al.if =
 
 alight.d.al.ifnot =
     priority: 700
-    init: (cd, element, name, env) ->
-        self = alight.d.al.if.init cd, element, name, env
+    init: (scope, cd, element, name, env) ->
+        self = alight.d.al.if.init scope, cd, element, name, env
         self.updateDom = (value) ->
             if value
                 self.removeBlock()

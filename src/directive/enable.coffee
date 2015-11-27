@@ -1,5 +1,5 @@
 
-alight.d.al.enable = (cd, element, exp) ->
+alight.d.al.enable = (scope, cd, element, exp) ->
     setter = (value) ->
         if value
             f$.removeAttr element, 'disabled'
@@ -9,7 +9,7 @@ alight.d.al.enable = (cd, element, exp) ->
     cd.watch exp, setter
 
 
-alight.d.al.disable = (cd, element, exp) ->
+alight.d.al.disable = (scope, cd, element, exp) ->
     setter = (value) ->
         if value
             f$.attr element, 'disabled', 'disabled'

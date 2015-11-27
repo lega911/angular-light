@@ -107,9 +107,9 @@ do ->
                 if alight.debug.directive
                     if @.directive.scope or @.directive.ChangeDetector
                         console.warn "#{@.ns}-#{@.name} uses scope and init together, probably you need use link instead of init"
-                @.result = @.directive.init @.cd, @.element, @.value, @.env
-            if not f$.isObject(@.result)
-                @.result = {}
+                result = @.directive.init @.cd.scope, @.cd, @.element, @.value, @.env
+                if f$.isObject result
+                    @.result = result
 
     ext.push
         code: 'templateUrl'
@@ -170,7 +170,11 @@ do ->
         code: 'link'
         fn: ->
             if @.directive.link
-                @.directive.link @.cd, @.element, @.value, @.env
+                result = @.directive.link @.cd.scope, @.cd, @.element, @.value, @.env
+                if f$.isObject result
+                    if @.result.owner and not result.owner?
+                        result.owner = true
+                    @.result = result
 
     ext.push
         code: 'scopeBinding'

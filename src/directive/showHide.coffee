@@ -1,5 +1,5 @@
 
-alight.d.al.show = (cd, element, exp) ->
+alight.d.al.show = (scope, cd, element, exp) ->
     self =
         showDom: ->
             f$.show element
@@ -17,8 +17,8 @@ alight.d.al.show = (cd, element, exp) ->
             self.watchModel()
 
 
-alight.d.al.hide = (cd, element, exp, env) ->
-    self = alight.d.al.show cd, element, exp, env
+alight.d.al.hide = (scope, cd, element, exp, env) ->
+    self = alight.d.al.show scope, cd, element, exp, env
     self.updateDom = (value) ->
         if value
             self.hideDom()

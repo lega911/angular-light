@@ -9,10 +9,10 @@ Test('hook-scope-0', 'hook-scope-0').run ($test, alight) ->
         dir:
             scope: true
             ChangeDetector: 'root'
-            link: (cd, element, value) ->
+            link: (scope, cd, element, value) ->
                 childCD = cd
-                cd.scope.top = 'child'
-                cd.scope.child = 'child'
+                scope.top = 'child'
+                scope.child = 'child'
                 cd.watch 'top', ->
                     count2++
                 cd.watch '$parent.top', ->
@@ -93,10 +93,10 @@ Test('hook-scope-1', 'hook-scope-1').run ($test, alight) ->
         dir:
             #scope: false
             ChangeDetector: 'root'
-            link: (cd, element, value) ->
+            link: (scope, cd, element, value) ->
                 childCD = cd
-                cd.scope.top = 'child'
-                cd.scope.child = 'child'
+                scope.top = 'child'
+                scope.child = 'child'
                 cd.watch 'top', ->
                     count2++
 
@@ -176,10 +176,10 @@ Test('hook-scope-2', 'hook-scope-2').run ($test, alight) ->
         dir:
             #scope: false
             ChangeDetector: true
-            link: (cd, element, value) ->
+            link: (scope, cd, element, value) ->
                 childCD = cd
-                cd.scope.top = 'child'
-                cd.scope.child = 'child'
+                scope.top = 'child'
+                scope.child = 'child'
                 cd.watch 'top', ->
                     count2++
 
@@ -258,10 +258,10 @@ Test('hook-scope-3', 'hook-scope-3').run ($test, alight) ->
         dir:
             scope: true
             #ChangeDetector: true
-            link: (cd, element, value) ->
+            link: (scope, cd, element, value) ->
                 childCD = cd
-                cd.scope.top = 'child'
-                cd.scope.child = 'child'
+                scope.top = 'child'
+                scope.child = 'child'
                 cd.watch 'top', ->
                     count2++
                 cd.watch '$parent.top', ->
@@ -341,10 +341,10 @@ Test('hook-scope-4', 'hook-scope-4').run ($test, alight) ->
         dir:
             #scope: false
             #ChangeDetector: false
-            link: (cd, element, value) ->
+            link: (scope, cd, element, value) ->
                 childCD = cd
-                cd.scope.top = 'child'
-                cd.scope.child = 'child'
+                scope.top = 'child'
+                scope.child = 'child'
                 cd.watch 'top', ->
                     count2++
 

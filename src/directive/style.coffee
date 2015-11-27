@@ -1,5 +1,5 @@
 
-alight.d.al.style = (cd, element, name) ->
+alight.d.al.style = (scope, cd, element, name) ->
     prev = {}
     setter = (style) ->
         for key, v of prev

@@ -1,7 +1,7 @@
 
 alight.d.al.include =
     priority: 100
-    init: (cd, element, name, env) ->
+    init: (scope, cd, element, name, env) ->
         child = null
         baseElement = null
         topElement = null

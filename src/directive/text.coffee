@@ -1,5 +1,5 @@
 
-alight.d.al.text = (cd, element, name) ->
+alight.d.al.text = (scope, cd, element, name) ->
     self =
         start: ->
             self.watchModel()

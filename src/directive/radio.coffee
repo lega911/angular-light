@@ -1,7 +1,7 @@
 
 alight.d.al.radio =
     priority: 10
-    init: (cd, element, name, env) ->
+    init: (scope, cd, element, name, env) ->
         self =
             start: ->
                 self.makeValue()

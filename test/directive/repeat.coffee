@@ -1,7 +1,7 @@
 
 setupAlight = (alight) ->
-    alight.d.al.testRepeat = (cd) ->
-        cd.scope.r = cd.scope.it.text + cd.scope.it.text
+    alight.d.al.testRepeat = (scope) ->
+        scope.r = scope.it.text + scope.it.text
 
 do ->
     ###
@@ -270,13 +270,13 @@ Test('al-repeat skippedAttr').run ($test, alight) ->
     alight.directives.ut =
         testAttr2:
             priority: 5000
-            init: (cd, el, name, env) ->
+            init: (scope, cd, el, name, env) ->
                 countHi++
                 $test.equal skippedAttr(env), 'ut-test-attr2,ut-two'
                 $test.equal activeAttr(env), 'al-repeat,one,ut-test-attr3,ut-three'
         testAttr3:
             priority: 50
-            init: (cd, el, name, env) ->
+            init: (scope, cd, el, name, env) ->
                 countLo++
                 $test.equal skippedAttr(env), 'al-repeat,ut-test-attr2,ut-test-attr3,ut-two'
                 $test.equal activeAttr(env), 'one,ut-three'
@@ -407,7 +407,7 @@ Test('al-repeat track by 5', 'al-repeat-track-by-5').run ($test, alight) ->
     $test.start 2
 
     index = 1
-    alight.d.al.index = (cd, el, _) ->
+    alight.d.al.index = (scope, cd, el, _) ->
         el.innerHTML = '' + index
         index++
 
@@ -434,10 +434,10 @@ Test('al-repeat-transparent-assigment-0', 'al-repeat-transparent-assigment-0').r
     $test.start 8
 
     childS = null
-    alight.d.al.fire = (cd) ->
-        if cd.scope.child isnt '14'
+    alight.d.al.fire = (scope, cd) ->
+        if scope.child isnt '14'
             return
-        if cd.scope.box.name isnt 'ubuntu'
+        if scope.box.name isnt 'ubuntu'
             return
         childS = cd
         null

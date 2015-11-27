@@ -2,7 +2,7 @@
 # al-css="class:exp"
 alight.d.al.class = alight.d.al.css =
     priority: 30
-    init: (cd, element, exp) ->
+    init: (scope, cd, element, exp) ->
         self =
             start: ->
                 self.parsLine()
@@ -17,7 +17,7 @@ alight.d.al.class = alight.d.al.css =
                             exp: exp
                             e: e
                             cd: cd
-                            scope: cd.scope
+                            scope: scope
                             element: element
                     else
                         list.push

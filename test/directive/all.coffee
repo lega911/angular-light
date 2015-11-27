@@ -47,15 +47,14 @@ Test('directive.scope isolate #0', 'directive-scope-isolate-0').run ($test, alig
 	alight.directives.ut =
 		siTest1:
 			template: '{{name}}:{{name2}}:{{$parent.name}}:{{$parent.name2}}'
-			link: (cd, el, name) ->
-				scope = cd.scope
+			link: (scope, cd, el, name) ->
 				scope.$parent = scope.$parent or scope
 				scope.name2 = 'child1'
 		siTest2:
 			scope: true
 			template: '{{name}}:{{name2}}:{{$parent.name}}:{{$parent.name2}}'
-			link: (cd, el, name) ->
-				cd.scope.name2 = 'child2'
+			link: (scope, cd, el, name) ->
+				scope.name2 = 'child2'
 
 	scope =
 		name: 'parent'
@@ -81,8 +80,8 @@ Test('restrict M #1').run ($test, alight) ->
 		alight.directives.ut =
 			test1:
 				restrict: 'M'
-				init: (cd, element, value) ->
-					cd.scope.name = 'Hello'
+				init: (scope, cd, element, value) ->
+					scope.name = 'Hello'
 
 					el = document.createElement 'p'
 					el.innerHTML = "{{name}} #{value}"
@@ -115,9 +114,9 @@ Test('restrict M #2', 'restrict-m-2').run ($test, alight) ->
 			test2:
 				restrict: 'M'
 				template: "<p>{{name}} {{value}}!</p>"
-				link: (cd, element, value) ->
-					cd.scope.name = 'Hello'
-					cd.scope.value = value
+				link: (scope, cd, element, value) ->
+					scope.name = 'Hello'
+					scope.value = value
 
 	# test
 	do ->
@@ -140,13 +139,13 @@ Test('al-controller').run ($test, alight) ->
 	c0 = 0
 	c1 = 0
 
-	alight.d.ctrl.foo = (cd) ->
+	alight.d.ctrl.foo = (scope, cd) ->
 		c0++
-		cd.scope.value = 123
+		scope.value = 123
 
-	alight.directives.al.getter = (cd, el, name) ->
+	alight.directives.al.getter = (scope, cd, el, name) ->
 		c1++
-		$test.equal cd.scope.value, 123
+		$test.equal scope.value, 123
 
 	alight.bootstrap(dom[0])
 
