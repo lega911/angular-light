@@ -49,9 +49,13 @@ do ->
         Mapper::acquire = (item) ->
             if item is null
                 return 'i#null'
-            id = item.$alite_id
-            if not id
-                item.$alite_id = id = alight.utils.getId()
+
+            if typeof item is 'object'
+                id = item.$alite_id
+                if not id
+                    item.$alite_id = id = alight.utils.getId()
+            else
+                id = '' + item
             @.itemById[id] = item
             id
 
@@ -64,7 +68,10 @@ do ->
         Mapper::getId = (item) ->
             if item is null
                 return 'i#null'
-            item.$alite_id
+            if typeof item is 'object'
+                item.$alite_id
+            else
+                '' + item
 
         Mapper::getItem = (id) ->
             @.itemById[id] or null
