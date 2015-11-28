@@ -80,6 +80,7 @@ Test('restrict M #1').run ($test, alight) ->
 		alight.directives.ut =
 			test1:
 				restrict: 'M'
+				stopBinding: true
 				init: (scope, cd, element, value) ->
 					scope.name = 'Hello'
 
@@ -88,8 +89,6 @@ Test('restrict M #1').run ($test, alight) ->
 
 					alight.f$.after element, el
 					alight.applyBindings cd, el
-
-					owner: true
 
 	# test
 	do ->
@@ -240,5 +239,20 @@ Test('al-text').run ($test, alight) ->
 	scope.name = 'two'
 	cd.scan ->
 		$test.equal el.innerText, 'two'
+
+		$test.close()
+
+
+Test 'al-stop'
+	.run ($test, alight) ->
+		$test.start 1
+
+		el = ttDOM '<div>{{name}} <div al-stop>{{name}}</div> </div>'
+
+		cd = alight.ChangeDetector
+			name: 'linux'
+		alight.bind cd, el
+
+		$test.equal ttGetText(el), 'linux {{name}}'
 
 		$test.close()

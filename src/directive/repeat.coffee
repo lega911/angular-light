@@ -18,9 +18,9 @@
 alight.directives.al.repeat =
     priority: 1000
     restrict: 'AM'
+    stopBinding: true
     init: (parentScope, CD, element, exp, env) ->  # Change Detector
         self =
-            owner: true
             start: ->
                 self.parsExpression()
                 self.prepareDom()
@@ -479,6 +479,8 @@ alight.directives.al.repeat =
 
 alight.directives.bo.repeat =
     priority: 1000
+    restrict: 'AM'
+    stopBinding: true
     init: (scope, CD, element, exp, env) ->
         self = alight.directives.al.repeat.init scope, CD, element, exp, env
         originalStart = self.start

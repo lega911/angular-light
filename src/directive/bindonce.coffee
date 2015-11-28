@@ -11,31 +11,30 @@ alight.d.bo.switch =
 
 alight.d.bo.switchWhen =
     priority: 500
-    link: (scope, cd, element, name) ->
+    link: (scope, cd, element, name, env) ->
         if cd.$switch.value != name
             f$.remove element
-            owner: true
+            env.stopBinding = true
         else
             cd.$switch.on = true
-            null
 
 
 alight.d.bo.switchDefault =
     priority: 500
-    link: (scope, cd, element, name) ->
+    link: (scope, cd, element, name, env) ->
         if cd.$switch.on
             f$.remove element
-            owner: true
+            env.stopBinding = true
 
 do ->
     makeBindOnceIf = (direct) ->
         self =
             priority: 700
-            link: (scope, cd, element, exp) ->
+            link: (scope, cd, element, exp, env) ->
                 value = cd.eval exp
                 if !value is direct
                     f$.remove element
-                    owner: true
+                    env.stopBinding = true
 
     alight.d.bo.if = makeBindOnceIf true
     alight.d.bo.ifnot = makeBindOnceIf false

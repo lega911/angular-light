@@ -85,12 +85,15 @@ alight.directivePreprocessor = (attrName, args) ->
             procLine: alight.hooks.directive
             makeDeferred: ->
                 dscope.isDeferred = true
-                dscope.result.owner = true  # stop binding
-                dscope.doBinding = true     # continue binding
+                dscope.env.stopBinding = true   # stop binding
+                dscope.doBinding = true         # continue binding
 
                 ->
                     dscope.isDeferred = false
                     doProcess()
+
+        if dir.stopBinding
+            dscope.env.stopBinding = true
 
         doProcess()        
         dscope.result
@@ -110,6 +113,8 @@ do ->
                 result = @.directive.init @.cd.scope, @.cd, @.element, @.value, @.env
                 if f$.isObject result
                     @.result = result
+                    if result.owner
+                        @.env.stopBinding = true
 
     ext.push
         code: 'templateUrl'
@@ -163,7 +168,7 @@ do ->
                 @.cd = parentCD.new scope
 
             @.env.parentChangeDetector = parentCD
-            @.result.owner = true
+            @.env.stopBinding = true
             @.doBinding = true
 
     ext.push
@@ -172,8 +177,8 @@ do ->
             if @.directive.link
                 result = @.directive.link @.cd.scope, @.cd, @.element, @.value, @.env
                 if f$.isObject result
-                    if @.result.owner and not result.owner?
-                        result.owner = true
+                    if result.owner
+                        @.env.stopBinding = true
                     @.result = result
 
     ext.push
@@ -361,6 +366,7 @@ bindElement = do ->
                         attributes: list
                         takeAttr: takeAttr
                         skippedAttr: skippedAttr
+                        stopBinding: false
                     if alight.debug.directive
                         console.log 'bind', d.attrName, value, d
                     try
@@ -375,7 +381,7 @@ bindElement = do ->
                             scope: cd.scope
                             element: element
 
-                    if result and result.owner
+                    if env.stopBinding
                         skipChildren = true
                         break
 

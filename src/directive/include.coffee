@@ -1,13 +1,13 @@
 
 alight.d.al.include =
     priority: 100
+    stopBinding: true
     link: (scope, cd, element, name, env) ->
         child = null
         baseElement = null
         topElement = null
         activeElement = null
         self =
-            owner: true
             start: ->
                 self.prepare()
                 self.watchModel()

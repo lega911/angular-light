@@ -1,6 +1,7 @@
 
 alight.d.al.html =
     priority: 100
+    stopBinding: true
     link: (scope, cd, element, name, env) ->
         child = null
         setter = (html) ->
@@ -17,5 +18,4 @@ alight.d.al.html =
 
         cd.watch name, setter,
             readOnly: true
-
-        owner: true
+        null

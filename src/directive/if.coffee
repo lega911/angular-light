@@ -1,9 +1,9 @@
 
 alight.d.al.if =
     priority: 700
+    stopBinding: true
     link: (scope, cd, element, name, env) ->
         self =
-            owner: true
             item: null
             child: null
             base_element: null
@@ -46,6 +46,7 @@ alight.d.al.if =
 
 alight.d.al.ifnot =
     priority: 700
+    stopBinding: true
     link: (scope, cd, element, name, env) ->
         self = alight.d.al.if.link scope, cd, element, name, env
         self.updateDom = (value) ->

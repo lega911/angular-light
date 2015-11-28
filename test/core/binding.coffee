@@ -199,3 +199,47 @@ Test 'root-scope-access-to-parent'
         $test.equal ttGetText(el), 'ubuntu ubuntu-'
 
         $test.close()
+
+
+Test 'stop-binding-0'
+    .run ($test, alight) ->
+        $test.start 1
+
+        alight.ctrl.one =
+            stopBinding: true
+
+        el = ttDOM '<div>{{name}} <div ctrl-one>{{name}}</div> </div>'
+
+        alight.bootstrap
+            $el: el
+            name: 'linux'
+
+        $test.equal ttGetText(el), 'linux {{name}}'
+
+        $test.close()
+
+
+Test 'stop-binding-1'
+    .run ($test, alight) ->
+        $test.start 1
+
+        alight.ctrl.one =
+            link: (scope, cd, el, key, env) ->
+                if key is 'stop'
+                    env.stopBinding = true
+
+        el = ttDOM """
+            <div>
+                {{name}}
+                <div ctrl-one="stop">1{{name}}</div>
+                <div ctrl-one>2{{name}}</div>
+            </div>
+        """
+
+        alight.bootstrap
+            $el: el
+            name: 'linux'
+
+        $test.equal ttGetText(el), 'linux 1{{name}} 2linux'
+
+        $test.close()
