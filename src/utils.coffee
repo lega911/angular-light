@@ -49,7 +49,7 @@ alight.utils.clone = clone = (d) ->
 
 alight.utils.equal = equal = (a, b) ->
     # null, undefined
-    if not a
+    if not a or not b
         return a is b
 
     ta = typeof a
