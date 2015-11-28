@@ -142,7 +142,7 @@ do ->
             value = ''
             for d in data
                 value += d.value
-            cd.watch '$finishScanOnce', ->
+            cd.watch '$onScanOnce', ->
                 callback value
             return
 

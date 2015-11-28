@@ -66,13 +66,13 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/directive/text.js',
     './tmp/directive/app.js',
     './tmp/directive/bindonce.js',
+    './tmp/directive/stop.js',
+    './tmp/directive/include.js',
 
     './tmp/directive/cloak.js',
     './tmp/directive/enable.js',
     './tmp/directive/focused.js',
-    './tmp/directive/include.js',
     './tmp/directive/readonly.js',
-    './tmp/directive/stop.js',
     './tmp/directive/submit.js',
     './tmp/directive/controller.js',
     './tmp/directive/event.js',
@@ -80,6 +80,7 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/directive/radio.js',
     './tmp/directive/showHide.js',
     './tmp/directive/style.js',    
+    './tmp/directive/select.js',
 
     './tmp/filter/slice.js',
     './tmp/filter/date.js',

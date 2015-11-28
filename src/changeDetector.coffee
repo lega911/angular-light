@@ -37,6 +37,7 @@ Root = () ->
         finishBinding: []
         finishScan: []
         finishScanOnce: []
+        onScanOnce: []
     @.status = null
 
     # helpers
@@ -54,6 +55,7 @@ Root::destroy = ->
     @.watchers.finishBinding.length = 0
     @.watchers.finishScan.length = 0
     @.watchers.finishScanOnce.length = 0
+    @.watchers.onScanOnce.length = 0
     if @.topCD
         @.topCD.destroy()
 
@@ -262,6 +264,8 @@ ChangeDetector::watch = (name, callback, option) ->
             return watchAny cd, 'finishScan', callback
         if key is '$finishScanOnce'
             return root.watchers.finishScanOnce.push callback
+        if key is '$onScanOnce'
+            return root.watchers.onScanOnce.push callback
         if key is '$destroy'
             return cd.destroy_callbacks.push callback
         if key is '$finishBinding'
@@ -303,7 +307,7 @@ ChangeDetector::watch = (name, callback, option) ->
         onStop: option.onStop or null
 
     if isStatic
-        cd.watch '$finishScanOnce', ->
+        cd.watch '$onScanOnce', ->
             callback d.exp scope
     else
         cd.watchList.push d
@@ -435,8 +439,6 @@ Root::scan = (cfg) ->
             if root.lateScan
                 root.scan()
         return
-    if root.finishBinding_lock  # binding process
-        return
     if root.status is 'scaning'
         root.extraLoop = true
         return
@@ -456,8 +458,14 @@ Root::scan = (cfg) ->
 
         while mainLoop
             mainLoop--
-
             root.extraLoop = false
+
+            # take onScanOnce
+            if root.watchers.onScanOnce.length
+                onScanOnce = root.watchers.onScanOnce.slice()
+                root.watchers.onScanOnce.length = 0
+                for callback in onScanOnce
+                    callback.call root
 
             scanCore root, result
 

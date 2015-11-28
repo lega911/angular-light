@@ -347,7 +347,7 @@ alight.directives.al.repeat =
                                 CD.setValue self.storeTo, list
                                 return
 
-                            return '$scanNoChanges'
+                            null
                     else
                         # method update for a single element
                         (list) ->
@@ -472,9 +472,8 @@ alight.directives.al.repeat =
 
                             if self.storeTo
                                 CD.setValue self.storeTo, list
-                                return
 
-                            return '$scanNoChanges'
+                            null
 
 
 alight.directives.bo.repeat =

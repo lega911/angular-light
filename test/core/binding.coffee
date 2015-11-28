@@ -243,3 +243,37 @@ Test 'stop-binding-1'
         $test.equal ttGetText(el), 'linux 1{{name}} 2linux'
 
         $test.close()
+
+
+Test 'binding-order-0'
+    .run ($test, alight) ->
+        $test.start 1
+
+        el = ttDOM """
+            <div ctrl-parent>
+                <div al-repeat="it in list">
+                    <i ctrl-child></i>
+                </div>
+            </div>
+        """
+
+        order = []
+
+        alight.ctrl.parent = (scope, cd) ->
+            order.push 'p0'
+            cd.watch '$finishBinding', ->
+                order.push 'p1'
+
+        alight.ctrl.child = (scope, cd) ->
+            order.push 'c0-' + scope.$index
+            cd.watch '$finishBinding', ->
+                order.push 'c1-' + scope.$index
+
+        cd = alight.bootstrap
+            $el: el
+            list: [{}, {}]
+
+        order = order.join ' '
+        $test.equal order, 'p0 c0-0 c0-1 p1 c1-0 c1-1'
+
+        $test.close()

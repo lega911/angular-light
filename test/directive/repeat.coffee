@@ -53,7 +53,7 @@ do ->
                         $(e).text()
                     r.join ', '
 
-            $test.check result() is results[0], result()
+            $test.equal result(), results[0]
 
             scope.list.push { text: 'e' }
             cd.scan()
