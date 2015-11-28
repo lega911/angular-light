@@ -105,7 +105,7 @@ do ->
             mapper = step.$select
             if mapper
                 break
-            step = step.parent
+            step = step.parent or {}
         if not mapper
             alight.exceptionHandler '', 'Error in al-option - al-select is not found',
                 cd: cd
