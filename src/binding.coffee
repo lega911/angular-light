@@ -492,7 +492,7 @@ alight.bind = alight.applyBindings = (cd, element, option) ->
     result
 
 
-alight.bootstrap = (input) ->
+alight.bootstrap = (input, scope) ->
     if not input
         input = f$.find document, '[al-app]'
     if typeof(input) is 'string'
@@ -501,29 +501,23 @@ alight.bootstrap = (input) ->
         input = [input]
     if f$.isArray(input) or typeof(input.length) is 'number'
         lastCD = null
+        if scope
+            oneCD = alight.ChangeDetector scope
+        else
+            oneCD = null
         for element in input
             if element.ma_bootstrapped  # TODO change to getData/setData
                 continue
             element.ma_bootstrapped = true
             attr = f$.attr element, 'al-app'
-            cd = alight.ChangeDetector()
+            if oneCD
+                cd = oneCD
+            else
+                cd = alight.ChangeDetector()
             alight.bind cd, element,
                 skip_attr: 'al-app'
             lastCD = cd
         return cd
-    if f$.isObject input
-        cd = alight.ChangeDetector input
-
-        if f$.isElement input.$el
-            alight.bind cd, input.$el
-        else if typeof(input.$el) is 'string'
-            for el in f$.find document.body, input.$el
-                alight.bind cd, el
-        else
-            alight.exceptionHandler 'Error in bootstrap', '$el is required',
-                input: input
-        return cd
-    else
-        alight.exceptionHandler 'Error in bootstrap', 'Error input arguments',
-            input: input
+    alight.exceptionHandler 'Error in bootstrap', 'Error input arguments',
+        input: input
     null

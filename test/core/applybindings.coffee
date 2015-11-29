@@ -41,24 +41,22 @@ Test('apply_bindings', 'apply-binding-0').run ($test, alight) ->
             $test.close()
 
 
-Test('bootstrap $el', 'bootstrap-el').run ($test, alight) ->
+Test('bootstrap-el').run ($test, alight) ->
     $test.start 4
 
-    el = $("<div>{{data.name}}</div>")[0]
+    el = ttDOM "<div>{{name}}</div>"
 
-    cd = alight.bootstrap
-        $el: el
-        data:
-            name: 'Some text'
+    cd = alight.bootstrap el,
+        name: 'Some text'
         click: ->
-            @.data.name = 'Hello'
+            @.name = 'Hello'
 
     scope = cd.scope
-    $test.equal scope.data.name, 'Some text'
-    $test.equal el.innerText, 'Some text'
+    $test.equal scope.name, 'Some text'
+    $test.equal ttGetText(el), 'Some text'
 
     scope.click()
     cd.scan ->
-        $test.equal scope.data.name, 'Hello'
-        $test.equal el.innerText, 'Hello'        
+        $test.equal scope.name, 'Hello'
+        $test.equal ttGetText(el), 'Hello'
         $test.close()

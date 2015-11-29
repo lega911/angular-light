@@ -210,8 +210,7 @@ Test 'stop-binding-0'
 
         el = ttDOM '<div>{{name}} <div ctrl-one>{{name}}</div> </div>'
 
-        alight.bootstrap
-            $el: el
+        alight.bootstrap el,
             name: 'linux'
 
         $test.equal ttGetText(el), 'linux {{name}}'
@@ -236,8 +235,7 @@ Test 'stop-binding-1'
             </div>
         """
 
-        alight.bootstrap
-            $el: el
+        alight.bootstrap el,
             name: 'linux'
 
         $test.equal ttGetText(el), 'linux 1{{name}} 2linux'
@@ -269,8 +267,7 @@ Test 'binding-order-0'
             cd.watch '$finishBinding', ->
                 order.push 'c1-' + scope.$index
 
-        cd = alight.bootstrap
-            $el: el
+        cd = alight.bootstrap el,
             list: [{}, {}]
 
         order = order.join ' '
