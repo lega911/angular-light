@@ -35,7 +35,7 @@ alight.d.al.include =
             updateDom: (url) ->
                 if not url
                     self.removeBlock()
-                    return '$scanNoChanges'
+                    return
                 self.loadHtml
                     cache: true
                     url: url
@@ -43,7 +43,6 @@ alight.d.al.include =
                         self.removeBlock()
                         self.insertBlock html
                     error: self.removeBlock
-                '$scanNoChanges'
             removeDom: (element) ->
                 f$.remove element
             insertDom: (base, element) ->

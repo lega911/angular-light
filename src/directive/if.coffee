@@ -21,7 +21,6 @@ alight.d.al.if =
                     self.insertBlock value
                 else
                     self.removeBlock()
-                '$scanNoChanges'
             removeBlock: ->
                 if not self.child
                     return
@@ -35,7 +34,8 @@ alight.d.al.if =
                 self.item = f$.clone self.base_element
                 self.insertDom self.top_element, self.item
                 self.child = cd.new()
-                alight.bind self.child, self.item, { skip_attr:env.skippedAttr() }
+                alight.bind self.child, self.item,
+                    skip_attr:env.skippedAttr()
             watchModel: ->
                 cd.watch name, self.updateDom
             removeDom: (element) ->
@@ -54,5 +54,4 @@ alight.d.al.ifnot =
                 self.removeBlock()
             else
                 self.insertBlock()
-            '$scanNoChanges'
         self
