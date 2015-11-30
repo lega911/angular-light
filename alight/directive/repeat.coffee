@@ -258,6 +258,9 @@ alight.directives.al.repeat =
                                 node.scope.$destroy()
                                 for el in node.element_list
                                     dom_removes.push el
+                                node.next = null
+                                node.prev = null
+                                node.element_list = null
 
                             applyList = []
                             # change positions and make new children
@@ -343,6 +346,8 @@ alight.directives.al.repeat =
                             nodes = nodes2
 
                             self.rawUpdateDom dom_removes, dom_inserts
+                            dom_removes.length = 0
+                            dom_inserts.length = 0
 
                             #applying
                             skippedAttrs = env.skippedAttr()
@@ -372,7 +377,8 @@ alight.directives.al.repeat =
                                 if node
                                     node.active = true
 
-                            dom_removes = for node in nodes
+                            dom_removes = []
+                            for node in nodes
                                 if node.active
                                     continue
                                 if node.prev
@@ -381,8 +387,10 @@ alight.directives.al.repeat =
                                     node.next.prev = node.prev
                                 node_del node
                                 node.scope.$destroy()
-                                node.element
-
+                                dom_removes.push node.element
+                                node.next = null
+                                node.prev = null
+                                node.element = null
 
                             applyList = []
                             # change positions and make new children
@@ -465,6 +473,8 @@ alight.directives.al.repeat =
                             nodes = nodes2
 
                             self.rawUpdateDom dom_removes, dom_inserts
+                            dom_removes.length = 0
+                            dom_inserts.length = 0
 
                             #applying
                             skippedAttrs = env.skippedAttr()
