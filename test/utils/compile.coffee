@@ -60,3 +60,16 @@ Test('$compile').run ($test, alight) ->
     $test.equal f0(s0.scope), 'debian'
     $test.equal f1(s1.scope), 'ubuntu'
     $test.close()
+
+
+Test 'cd-setvalue-0'
+    .run ($test, alight) ->
+        $test.start 1
+
+        cd = alight.ChangeDetector()
+
+        cd.setValue 'one.two.three', 5
+
+        $test.equal 5, cd.getValue 'one.two.three'
+
+        $test.close()

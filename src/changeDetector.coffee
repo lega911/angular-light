@@ -514,7 +514,29 @@ ChangeDetector::setValue = (name, value) ->
     fn = cd.compile name + ' = $value',
         input: ['$value']
         no_return: true
-    fn cd.scope, value
+    try
+        fn cd.scope, value
+    catch e
+        msg = "can't set variable: #{name}"
+        if alight.debug.parser
+            console.warn msg
+        if (''+e).indexOf('TypeError') >= 0
+            rx = name.match(/^([\w\d\.]+)\.[\w\d]+$/)
+            if rx and rx[1]
+                # try to make a path
+                scope = cd.scope
+                for key in rx[1].split '.'
+                    if scope[key] is undefined
+                        scope[key] = {}
+                    scope = scope[key]
+                try
+                    fn cd.scope, value
+                    return
+                catch
+
+        alight.exceptionHandler e, msg,
+            name: name
+            value: value
 
 ChangeDetector::eval = (exp) ->
     fn = @.compile exp
