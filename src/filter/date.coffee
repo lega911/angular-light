@@ -9,6 +9,8 @@ alight.filters.date = do ->
         if not value
             return ''
 
+        value = new Date(value)
+        
         x = [
             [/yyyy/g, value.getFullYear()]
             [/mm/g, d2 value.getMonth() + 1]
