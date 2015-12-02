@@ -43,7 +43,7 @@ alight.core.fastBinding = fastBinding = (element) ->
     self = @
     source = []
     self.fastWatchFn = []
-    path = [0]
+    path = []
     walk = (element, deep) ->
         if element.nodeType is 1
             # attributes
