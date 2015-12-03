@@ -2,16 +2,19 @@
 alight.d.al.if =
     priority: 700
     stopBinding: true
-    link: (scope, cd, element, name, env) ->
+    link: (scope, element, name, env) ->
+        cd = null
         self =
             item: null
-            child: null
+            childCD: null
             base_element: null
             top_element: null
             start: ->
                 self.prepare()
                 self.watchModel()
             prepare: ->
+                cd = scope.$changeDetector
+
                 self.base_element = element
                 self.top_element = f$.createComment " #{env.attrName}: #{name} "
                 f$.before element, self.top_element
@@ -22,20 +25,22 @@ alight.d.al.if =
                 else
                     self.removeBlock()
             removeBlock: ->
-                if not self.child
+                if not self.childCD
                     return
-                self.child.destroy()
+                self.childCD.destroy()
+                self.childCD = null
                 self.removeDom self.item
-                self.child = null
                 self.item = null
             insertBlock: ->
-                if self.child
+                if self.childCD
                     return
                 self.item = f$.clone self.base_element
                 self.insertDom self.top_element, self.item
-                self.child = cd.new()
-                alight.bind self.child, self.item,
-                    skip_attr:env.skippedAttr()
+                self.childCD = cd.new()
+
+                alight.bind scope, self.item,
+                    skip_attr: env.skippedAttr()    
+                    changeDetector: self.childCD
             watchModel: ->
                 cd.watch name, self.updateDom
             removeDom: (element) ->

@@ -110,7 +110,7 @@ do ->
                 if alight.debug.directive
                     if @.directive.scope or @.directive.ChangeDetector
                         console.warn "#{@.ns}-#{@.name} uses scope and init together, probably you need use link instead of init"
-                result = @.directive.init @.cd.scope, @.cd, @.element, @.value, @.env
+                result = @.directive.init @.cd.scope, @.element, @.value, @.env
                 if f$.isObject result
                     @.result = result
                     if result.owner
@@ -175,7 +175,7 @@ do ->
         code: 'link'
         fn: ->
             if @.directive.link
-                result = @.directive.link @.cd.scope, @.cd, @.element, @.value, @.env
+                result = @.directive.link @.cd.scope, @.element, @.value, @.env
                 if f$.isObject result
                     if result.owner
                         @.env.stopBinding = true
@@ -454,13 +454,25 @@ alight.nextTick = do ->
         timer = setTimeout exec, 0
 
 
-alight.bind = alight.applyBindings = (cd, element, option) ->
+alight.bind = alight.applyBindings = (scope, element, option) ->
     if not element
         throw 'No element'
 
-    if not cd
-        throw 'No CD'
+    if not scope
+        throw 'No Scope'
 
+    option = option or {}
+
+    prevChangeDetector = undefined
+    if option.changeDetector
+        prevChangeDetector = scope.$changeDetector
+        scope.$changeDetector = option.changeDetector
+
+    if not scope.$changeDetector
+        prevChangeDetector = null
+        scope.$changeDetector = scope.$rootChangeDetector
+
+    cd = scope.$changeDetector
     root = cd.root
 
     finishBinding = not root.finishBinding_lock
@@ -472,7 +484,6 @@ alight.bind = alight.applyBindings = (cd, element, option) ->
             attr: 0
             hook: 0
 
-    option = option or {}
     result = bindNode cd, element, option
 
     root.bindingResult.directive += result.directive
@@ -480,6 +491,9 @@ alight.bind = alight.applyBindings = (cd, element, option) ->
     root.bindingResult.attr += result.attr
     root.bindingResult.hook += result.hook
     
+    if prevChangeDetector isnt undefined
+        scope.$changeDetector = prevChangeDetector
+
     if finishBinding
         cd.scan()
         root.finishBinding_lock = false
@@ -492,7 +506,7 @@ alight.bind = alight.applyBindings = (cd, element, option) ->
     result
 
 
-alight.bootstrap = (input, scope) ->
+alight.bootstrap = (input, data) ->
     if not input
         input = f$.find document, '[al-app]'
     if typeof(input) is 'string'
@@ -500,24 +514,22 @@ alight.bootstrap = (input, scope) ->
     if f$.isElement input
         input = [input]
     if f$.isArray(input) or typeof(input.length) is 'number'
-        lastCD = null
-        if scope
-            oneCD = alight.ChangeDetector scope
-        else
-            oneCD = null
+        lastScope = null
+        if data            
+            oneScope = alight.Scope data
         for element in input
             if element.ma_bootstrapped  # TODO change to getData/setData
                 continue
             element.ma_bootstrapped = true
-            attr = f$.attr element, 'al-app'
-            if oneCD
-                cd = oneCD
+            #attr = f$.attr element, 'al-app'
+            if oneScope
+                scope = oneScope
             else
-                cd = alight.ChangeDetector()
-            alight.bind cd, element,
+                scope = alight.Scope()
+            alight.bind scope, element,
                 skip_attr: 'al-app'
-            lastCD = cd
-        return cd
+            lastScope = scope
+        return lastScope
     alight.exceptionHandler 'Error in bootstrap', 'Error input arguments',
         input: input
     null

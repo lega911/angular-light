@@ -19,7 +19,8 @@ alight.directives.al.repeat =
     priority: 1000
     restrict: 'AM'
     stopBinding: true
-    init: (parentScope, CD, element, exp, env) ->  # Change Detector
+    init: (parentScope, element, exp, env) ->  # Change Detector
+        CD = parentScope.$changeDetector
         self =
             start: ->
                 self.parsExpression()
@@ -432,7 +433,9 @@ alight.directives.al.repeat =
                                 childCD = self.makeChild item_value, index, list
 
                                 element = f$.clone self.base_element
-                                applyList.push [childCD, element]
+                                applyList.push
+                                    cd: childCD
+                                    el: element
 
                                 dom_inserts.push
                                     element: element
@@ -473,10 +476,11 @@ alight.directives.al.repeat =
                             skippedAttrs = env.skippedAttr()
                             for it in applyList
                                 if fastBinding
-                                    fastBinding.bind it[0], it[1]
+                                    fastBinding.bind it.cd, it.el
                                 else
-                                    r = alight.bind it[0], it[1],
+                                    r = alight.bind it.cd.scope, it.el,
                                         skip_attr: skippedAttrs
+                                        changeDetector: it.cd
                                     if r.directive is 0 and r.hook is 0
                                         fastBinding = new alight.core.fastBinding self.base_element
 
@@ -490,11 +494,11 @@ alight.directives.bo.repeat =
     priority: 1000
     restrict: 'AM'
     stopBinding: true
-    init: (scope, CD, element, exp, env) ->
-        self = alight.directives.al.repeat.init scope, CD, element, exp, env
+    init: (scope, element, exp, env) ->
+        self = alight.directives.al.repeat.init scope, element, exp, env
         originalStart = self.start
         self.start = ->
             originalStart()
-            CD.watch '$finishScanOnce', ->
+            scope.$changeDetector.watch '$finishScanOnce', ->
                 self.watch.stop()  # stop watching
         self
