@@ -90,6 +90,7 @@ ChangeDetector::new = (scope) ->
 ChangeDetector::destroy = ->
     cd = @
     root = cd.root
+    cd.scope = null
 
     removeItem root.cdLine, cd
 

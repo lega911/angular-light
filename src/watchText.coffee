@@ -66,7 +66,7 @@ do ->
         dir env.setter, exp, cd, env
 
 
-    alight.core.ChangeDetector::watchText = (expression, callback, config) ->
+    watchText = (expression, callback, config) ->
         config = config or {}
         cd = @
         if alight.debug.watchText
@@ -179,3 +179,11 @@ do ->
         doUpdate()
         w = cd.watch privateValue, callback
         null
+
+    alight.core.ChangeDetector::watchText = watchText
+
+    alight.core.Scope::$watchText = (expression, callback, option) ->
+        cd = @.$changeDetector
+        if not cd
+            throw 'no Change Detector in scope'
+        cd.watchText expression, callback, option

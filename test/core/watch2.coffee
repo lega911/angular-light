@@ -163,35 +163,33 @@ Test('watch-text-5', 'watch-text-5').run ($test, alight) ->
     $test.start 10
 
     el = ttDOM '<div>{{one}}-{{two}}</div>'
-    scope =
+
+    scope = alight.bootstrap el,
         one: 'A'
 
-    cd = alight.ChangeDetector scope
-    alight.applyBindings cd, el
-
     count = 0
-    cd.watch ->
+    scope.$rootChangeDetector.watch ->
         count++
         null
     , ->
 
     $test.equal count, 0
     $test.equal ttGetText(el), 'A-'
-    cd.scan ->
+    scope.$scan ->
         $test.equal count, 2
         $test.equal ttGetText(el), 'A-'
 
         scope.one = 'X'
-        cd.scan ->
+        scope.$scan ->
             $test.equal count, 3
             $test.equal ttGetText(el), 'X-'
 
             scope.two = 'Y'
-            cd.scan ->
+            scope.$scan ->
                 $test.equal count, 4
                 $test.equal ttGetText(el), 'X-Y'
 
-                cd.scan ->
+                scope.$scan ->
                     $test.equal count, 5
                     $test.equal ttGetText(el), 'X-Y'
                     $test.close()
@@ -320,9 +318,8 @@ Test('watch-static-1', 'watch-static-1').run ($test, alight) ->
             x+x
 
     el = ttDOM '<div>{{"one" | double}}</div>'
-    cd = alight.bootstrap el
+    scope = alight.bootstrap el
 
-    cd.scan()
     $test.equal ttGetText(el), 'oneone'
 
     $test.close()

@@ -30,8 +30,7 @@ do ->
 
             dom = $ "<span>#{html}</span>"
 
-            cd = alight.ChangeDetector()
-            scope = cd.scope
+            scope = alight.Scope()
             scope.numerator = do ->
                 n = 1
                 ->
@@ -43,7 +42,7 @@ do ->
                 { text: 'd' }
             ]
 
-            alight.applyBindings cd, dom[0]
+            alight.bind scope, dom[0]
 
             result = ->
                 if makeResult
@@ -56,37 +55,37 @@ do ->
             $test.equal result(), results[0]
 
             scope.list.push { text: 'e' }
-            cd.scan()
+            scope.$scan()
             timeout.add 1, ->
                 $test.check result() is results[1], result()
 
                 scope.list.splice 0, 0, { text: 'f' }
-                cd.scan()
+                scope.$scan()
                 timeout.add 1, ->
                     $test.equal result(), results[2], result()
 
                     scope.list.splice 2, 0, { text: 'g' }, { text: 'h' }
-                    cd.scan()
+                    scope.$scan()
                     timeout.add 1, ->
                         $test.check result() is results[3], result()
 
                         scope.list.splice 0, 1
-                        cd.scan()
+                        scope.$scan()
                         timeout.add 1, ->
                             $test.check result() is results[4], result()
 
                             scope.list.splice 6, 1
-                            cd.scan()
+                            scope.$scan()
                             timeout.add 1, ->
                                 $test.check result() is results[5], result()
 
                                 scope.list.splice 2, 2
-                                cd.scan()
+                                scope.$scan()
                                 timeout.add 1, ->
                                     $test.check result() is results[6], result()
 
                                     scope.list[1] = { text:'i' }
-                                    cd.scan()
+                                    scope.$scan()
                                     timeout.add 1, ->
                                         $test.check result() is results[7], result()
                                         $test.close()
@@ -249,7 +248,7 @@ do ->
         null
 
 
-Test('al-repeat skippedAttr').run ($test, alight) ->
+Test('al-repeat-skipped-attr').run ($test, alight) ->
     $test.start 10
     setupAlight alight
 
@@ -270,24 +269,24 @@ Test('al-repeat skippedAttr').run ($test, alight) ->
     alight.directives.ut =
         testAttr2:
             priority: 5000
-            init: (scope, cd, el, name, env) ->
+            init: (scope, el, name, env) ->
                 countHi++
                 $test.equal skippedAttr(env), 'ut-test-attr2,ut-two'
                 $test.equal activeAttr(env), 'al-repeat,one,ut-test-attr3,ut-three'
         testAttr3:
             priority: 50
-            init: (scope, cd, el, name, env) ->
+            init: (scope, el, name, env) ->
                 countLo++
                 $test.equal skippedAttr(env), 'al-repeat,ut-test-attr2,ut-test-attr3,ut-two'
                 $test.equal activeAttr(env), 'one,ut-three'
                 env.takeAttr 'ut-three'
 
-    cd = alight.ChangeDetector()
+    scope = alight.Scope()
     dom = document.createElement 'div'
     dom.innerHTML = '<div al-repeat="it in [1,2,3] track by $index" one="1" ut-test-attr2 ut-test-attr3 ut-two ut-three></div>'
     element = dom.children[0]
 
-    alight.applyBindings cd, element,
+    alight.applyBindings scope, element,
         skip_attr: ['ut-two']
 
     $test.equal countHi, 1, 'countHi'

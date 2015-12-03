@@ -1,15 +1,24 @@
 
-Scope = ->
-    @.$rootChangeDetector = alight.ChangeDetector @
-    @.$changeDetector = null
-    @
+Scope = (option) ->
+    if @ instanceof Scope
+        return @
 
-alight.Scope = (data) ->
-    if data
-        Object.setPrototypeOf data, Scope.prototype
-        Scope.call data
-        return data
-    new Scope
+    option = option or {}
+
+    if option.data
+        scope = option.data
+        Object.setPrototypeOf scope, Scope.prototype
+    else
+        scope = new Scope
+
+    if option.changeDetector isnt undefined
+        scope.$rootChangeDetector = option.changeDetector
+    else
+        scope.$rootChangeDetector = alight.ChangeDetector scope
+    scope.$changeDetector = null
+    scope
+
+alight.Scope = Scope
 
 alight.core.Scope = Scope
 

@@ -147,27 +147,40 @@ do ->
     ext.push
         code: 'scope'
         fn: ->
+            ###
+                scope - cd
+                +false - false (false)
+                +false - true (true)
+                -false - root
+                -true - false
+                +true - true (isolate)
+                +true - root (root)
+            ###
             # scope: false, true
             # ChangeDetector: false, true, 'root'
-            if not (@.directive.scope or @.directive.ChangeDetector)
+
+            if not @.directive.scope
                 return
 
             parentCD = @.cd
 
-            if @.directive.scope
-                scope =
-                    $parent: parentCD.scope
-            else
-                scope = parentCD.scope
+            switch @.directive.scope
+                when true
+                    @.cd = parentCD.new()
+                when 'isolate'
+                    scope = alight.Scope
+                        changeDetector: null
+                    @.cd = scope.$rootChangeDetector = parentCD.new scope
+                when 'root'
+                    scope = alight.Scope
+                        changeDetector: null
+                    @.cd = scope.$rootChangeDetector = childCD = alight.ChangeDetector scope
+                    parentCD.watch '$destroy', ->
+                        childCD.destroy()
+                    @.env.parentChangeDetector = parentCD
+                else
+                    throw 'Wrong scope value: ' + @.directive.scope
 
-            if @.directive.ChangeDetector is 'root'
-                @.cd = childCD = alight.ChangeDetector scope
-                parentCD.watch '$destroy', ->
-                    childCD.destroy()
-            else
-                @.cd = parentCD.new scope
-
-            @.env.parentChangeDetector = parentCD
             @.env.stopBinding = true
             @.doBinding = true
 
@@ -185,8 +198,9 @@ do ->
         code: 'scopeBinding'
         fn: ->
             if @.doBinding
-                alight.bind @.cd, @.element,
+                alight.bind @.cd.scope, @.element,
                     skip_attr: @.env.skippedAttr()
+                    changeDetector: @.cd
 
 
 testDirective = do ->
@@ -516,7 +530,8 @@ alight.bootstrap = (input, data) ->
     if f$.isArray(input) or typeof(input.length) is 'number'
         lastScope = null
         if data            
-            oneScope = alight.Scope data
+            oneScope = alight.Scope
+                data: data
         for element in input
             if element.ma_bootstrapped  # TODO change to getData/setData
                 continue
