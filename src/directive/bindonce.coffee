@@ -2,16 +2,18 @@
 alight.d.bo.switch =
     priority: 500
     ChangeDetector: true
-    link: (scope, cd, element, name, env) ->
+    link: (scope, element, name, env) ->
+        cd = scope.$changeDetector
         cd.$switch =
-            value: cd.eval name
+            value: scope.$eval name
             on: false
         null
 
 
 alight.d.bo.switchWhen =
     priority: 500
-    link: (scope, cd, element, name, env) ->
+    link: (scope, element, name, env) ->
+        cd = scope.$changeDetector
         if cd.$switch.value != name
             f$.remove element
             env.stopBinding = true
@@ -21,7 +23,8 @@ alight.d.bo.switchWhen =
 
 alight.d.bo.switchDefault =
     priority: 500
-    link: (scope, cd, element, name, env) ->
+    link: (scope, element, name, env) ->
+        cd = scope.$changeDetector
         if cd.$switch.on
             f$.remove element
             env.stopBinding = true
@@ -30,8 +33,9 @@ do ->
     makeBindOnceIf = (direct) ->
         self =
             priority: 700
-            link: (scope, cd, element, exp, env) ->
-                value = cd.eval exp
+            link: (scope, element, exp, env) ->
+                cd = scope.$changeDetector
+                value = scope.$eval exp
                 if !value is direct
                     f$.remove element
                     env.stopBinding = true

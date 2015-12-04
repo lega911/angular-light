@@ -29,12 +29,8 @@ Test('hook-scope-0', 'hook-scope-0').run ($test, alight) ->
     rootScope.top = 'root'
     rootScope.$watch 'top', ->
         count0++
-    ,
-        root: true
     rootScope.$watch 'child', ->
         count1++
-    ,
-        root: true
 
     alight.bind rootScope, dom
     $test.equal ttGetText(dom), 'root=root child=child parent=root'
@@ -200,12 +196,8 @@ Test('hook-scope-2', 'hook-scope-2').run ($test, alight) ->
     rootScope.top = 'root'
     rootScope.$watch 'top', ->
         count0++
-    ,
-        root: true
     rootScope.$watch 'child', ->
         count1++
-    ,
-        root: true
 
     alight.bind rootScope, dom
     $test.equal ttGetText(dom), 'root=child child=child'

@@ -176,7 +176,7 @@ do ->
         dom = document.createElement 'div'
         dom.innerHTML = '<div class="item" al-repeat="it in list track by $index">{{it}}:{{=numerator()}}</div>'
 
-        alight.bin scope, dom
+        alight.bind scope, dom
 
         result = ->
             r = for e in alight.f$.find dom, '.item'
@@ -189,49 +189,49 @@ do ->
                 next()
             (next) ->
                 scope.list.push 'e'
-                cd.scan
+                scope.$scan
                     late: true
                     callback: ->
                         $test.equal result(), 'a:0, b:1, c:2, d:3, e:4'
                         next()
             (next) ->
                 scope.list.splice 0, 0, 'f'
-                cd.scan
+                scope.$scan
                     late: true
                     callback: ->
                         $test.equal result(), 'f:0, a:1, b:2, c:3, d:4, e:5'
                         next()
             (next) ->
                 scope.list.splice 2, 0, 'g'
-                cd.scan
+                scope.$scan
                     late: true
                     callback: ->
                         $test.equal result(), 'f:0, a:1, g:2, b:3, c:4, d:5, e:6'
                         next()
             (next) ->
                 scope.list = ['f', 'a', 'g', 'b', 'h', 'c', 'd', 'e']
-                cd.scan
+                scope.$scan
                     late: true
                     callback: ->
                         $test.equal result(), 'f:0, a:1, g:2, b:3, h:4, c:5, d:6, e:7'
                         next()
             (next) ->
                 scope.list = ['f', 'b', 'h', 'c', 'd']
-                cd.scan
+                scope.$scan
                     late: false
                     callback: ->
                         $test.equal result(), 'f:0, b:1, h:2, c:3, d:4'
                         next()
             (next) ->
                 scope.list = ['f', 'b', 'h', 'i', 'c', 'd', 'j']
-                cd.scan
+                scope.$scan
                     late: true
                     callback: ->
                         $test.equal result(), 'f:0, b:1, h:2, i:3, c:4, d:8, j:9'
                         next()
             (next) ->
                 scope.list = ['b', 'c', 'd', 'f', 'h', 'i', 'j']
-                cd.scan ->
+                scope.$scan ->
                     $test.equal result(), 'b:0, c:1, d:2, f:3, h:4, i:8, j:9'
                     next()
                     $test.close()
@@ -297,16 +297,14 @@ Test('al-repeat one-time-bindings', 'al-repeat-one-time-bindings').run ($test, a
     $test.start 6
     setupAlight alight
 
-    cd = alight.ChangeDetector()
-    scope = cd.scope
-    dom = document.createElement 'div'
-    dom.innerHTML = '<div class="item" al-repeat="it in ::list"></div>'
+    dom = ttDOM '<div class="item" al-repeat="it in ::list"></div>'
     element = dom.children[0]
 
-    alight.applyBindings cd, element
+    scope = alight.Scope()
+    alight.bind scope, element
 
     watchCount = ->
-        return cd.scan().total
+        return scope.$scan().total
 
     rowCount = ->
         r = for e in alight.f$.find dom, '.item'
@@ -317,12 +315,12 @@ Test('al-repeat one-time-bindings', 'al-repeat-one-time-bindings').run ($test, a
     $test.equal rowCount(), 0
 
     scope.list = [{}, {}, {}]
-    cd.scan ->
+    scope.$scan ->
         $test.equal watchCount(), 0
         $test.equal rowCount(), 3
 
         scope.list = [{}, {}, {}, {}, {}]
-        cd.scan ->
+        scope.$scan ->
             $test.equal watchCount(), 0
             $test.equal rowCount(), 3
             $test.close()
@@ -337,11 +335,9 @@ Test('repeat-store-to-0', 'repeat-store-to-0').run ($test, alight) ->
         onChange: (value) ->
             env.setValue makeResult
 
-    scope = {}
-    cd = alight.ChangeDetector scope
-    dom = document.createElement 'div'
-    dom.innerHTML = '<div class="item" al-repeat="it in list | myfilter store to filteredList"></div>'
+    dom = ttDOM '<div class="item" al-repeat="it in list | myfilter store to filteredList"></div>'
 
+    scope = alight.Scope()
     scope.filteredList = []
     scope.list = list = makeResult = [
         {t: 'a'},
@@ -354,22 +350,22 @@ Test('repeat-store-to-0', 'repeat-store-to-0').run ($test, alight) ->
 
     flen = 0
     fcount = 0
-    cd.watch 'filteredList.length', (value) ->
+    scope.$watch 'filteredList.length', (value) ->
         flen = value
         fcount++
 
-    alight.applyBindings cd, dom
+    alight.bind scope, dom
 
     $test.equal fcount, 2
     $test.equal flen, 6
 
-    cd.scan ->
+    scope.$scan ->
         $test.equal fcount, 2
         $test.equal flen, 6
 
         makeResult = [list[1], list[2], list[3]]
         setter makeResult
-        cd.scan ->
+        scope.$scan ->
             $test.equal fcount, 3
             $test.equal flen, 3
 
@@ -379,24 +375,22 @@ Test('repeat-store-to-0', 'repeat-store-to-0').run ($test, alight) ->
 Test('al-repeat track by 4', 'al-repeat-track-by-4').run ($test, alight) ->
     $test.start 3
 
-    element = document.createElement 'div'
-    element.innerHTML = '<div class="item" al-repeat="it in list track by $index">{{it}}</div>'
+    element = ttDOM '<div class="item" al-repeat="it in list track by $index">{{it}}</div>'
 
-    scope =
-        list: [0, 1, 2, 3, 4]
-    cd = alight.ChangeDetector scope
+    scope = alight.Scope()
+    scope.list = [0, 1, 2, 3, 4]
 
-    alight.applyBindings cd, element
+    alight.bind scope, element
 
     getText = ->
         element.innerText.replace(/\s/g, '')
 
     $test.equal getText(), '01234'
     scope.list = []
-    cd.scan ->
+    scope.$scan ->
         $test.equal getText(), ''
         scope.list = [0, 1, 2, 3, 4]
-        cd.scan ->
+        scope.$scan ->
             $test.equal getText(), '01234'
             $test.close()
 
@@ -405,25 +399,23 @@ Test('al-repeat track by 5', 'al-repeat-track-by-5').run ($test, alight) ->
     $test.start 2
 
     index = 1
-    alight.d.al.index = (scope, cd, el, _) ->
+    alight.d.al.index = (scope, el, _) ->
         el.innerHTML = '' + index
         index++
 
-    element = document.createElement 'div'
-    element.innerHTML = '<div class="item" al-repeat="it in list track by it.k"><i al-index></i>{{it.name}}</div>'
+    element = ttDOM '<div class="item" al-repeat="it in list track by it.k"><i al-index></i>{{it.name}}</div>'
 
-    scope =
-        list: [{k: 0, name: 'a'}, {k: 1, name: 'b'}, {k: 2, name: 'c'}]
+    scope = alight.Scope()
+    scope.list = [{k: 0, name: 'a'}, {k: 1, name: 'b'}, {k: 2, name: 'c'}]
 
-    cd = alight.ChangeDetector scope
-    alight.applyBindings cd, element
+    alight.bind scope, element
 
     getText = ->
         element.innerText.replace(/\s/g, '')
 
     $test.equal getText(), '1a2b3c'
     scope.list = [{k: 0, name: 'x'}, {k: 1, name: 'y'}, {k: 2, name: 'z'}]
-    cd.scan ->
+    scope.$scan ->
         $test.equal getText(), '1x2y3z'
         $test.close()
 
@@ -432,12 +424,12 @@ Test('al-repeat-transparent-assigment-0', 'al-repeat-transparent-assigment-0').r
     $test.start 8
 
     childS = null
-    alight.d.al.fire = (scope, cd) ->
+    alight.d.al.fire = (scope) ->
         if scope.child isnt '14'
             return
         if scope.box.name isnt 'ubuntu'
             return
-        childS = cd
+        childS = scope
         null
 
     el = ttDOM """
@@ -447,14 +439,13 @@ Test('al-repeat-transparent-assigment-0', 'al-repeat-transparent-assigment-0').r
         </p>
     """
 
-    scope =
-        list: []
+    scope = alight.Scope()
+    scope.list = []
     scope.list.push
         name: 'linux'
         children: ['x86', 'x64']
 
-    cd = alight.ChangeDetector scope
-    alight.bind cd, el
+    alight.bind scope, el
 
     $test.equal ttGetText(el), 'box=linux x86 x64'
     $test.equal scope.firstLine, 'linux'
@@ -463,16 +454,16 @@ Test('al-repeat-transparent-assigment-0', 'al-repeat-transparent-assigment-0').r
     scope.list.push
         name: 'ubuntu'
         children: ['14', '15']
-    cd.scan()
+    scope.$scan()
 
     $test.equal ttGetText(el), 'box=linux x86 x64 box=ubuntu 14 15'
     $test.equal scope.firstLine, 'ubuntu'
     $test.equal scope.fromChild, '15'
 
-    childS.scope.child = 'X'
-    childS.scope.box.name = 'debian'
-    childS.scan()
+    childS.child = 'X'
+    childS.box.name = 'debian'
+    childS.$scan()
     $test.equal ttGetText(el), 'box=linux x86 x64 box=debian X 15'
-    $test.equal childS.scope.$root, cd.scope
+    $test.equal childS.$root, scope
 
     $test.close()

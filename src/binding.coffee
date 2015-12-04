@@ -166,16 +166,23 @@ do ->
 
             switch @.directive.scope
                 when true
-                    @.cd = parentCD.new()
+                    childCD = parentCD.new()  # the same scope
+                    scope = parentCD.scope
+                    scope.$changeDetector = childCD
+                    @.cd = childCD
                 when 'isolate'
                     scope = alight.Scope
                         changeDetector: null
-                    @.cd = scope.$rootChangeDetector = parentCD.new scope
+                    childCD = parentCD.new scope
+                    scope.$parent = parentCD.scope
+                    scope.$rootChangeDetector = childCD
+                    scope.$changeDetector = childCD
+                    @.cd = childCD
                 when 'root'
                     scope = alight.Scope
                         changeDetector: null
+                    childCD = alight.ChangeDetector scope
                     scope.$parent = parentCD.scope
-                    @.cd = childCD = alight.ChangeDetector scope
                     scope.$rootChangeDetector = childCD
                     scope.$changeDetector = childCD
 
@@ -184,7 +191,9 @@ do ->
 
                     parentCD.watch '$destroy', ->
                         childCD.destroy()
+
                     @.env.parentChangeDetector = parentCD
+                    @.cd = childCD
                 else
                     throw 'Wrong scope value: ' + @.directive.scope
 
