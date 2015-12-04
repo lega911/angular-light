@@ -1,7 +1,7 @@
 
-alight.d.al.readonly = (scope, cd, element, exp) ->
+alight.d.al.readonly = (scope, element, exp) ->
     setter = (value) ->
         f$.prop element, 'readOnly', !!value
 
-    cd.watch exp, setter,
+    scope.$watch exp, setter,
         readOnly: true

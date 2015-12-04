@@ -1,11 +1,11 @@
 
-alight.d.al.focused = (scope, cd, element, name) ->
+alight.d.al.focused = (scope, element, name) ->
     safe =
         updateModel: (value) ->
-            if cd.getValue(name) is value
+            if scope.$getValue(name) is value
                 return
-            cd.setValue name, value
-            cd.scan
+            scope.$setValue name, value
+            scope.$scan
                 skipWatch: self.watch
 
         onDom: ->
@@ -15,7 +15,7 @@ alight.d.al.focused = (scope, cd, element, name) ->
                 safe.updateModel false
             f$.on element, 'focus', von
             f$.on element, 'blur', voff
-            cd.watch '$destroy', ->
+            scope.$watch '$destroy', ->
                 f$.off element, 'focus', von
                 f$.off element, 'blur', voff
 
@@ -27,7 +27,7 @@ alight.d.al.focused = (scope, cd, element, name) ->
             '$scanNoChanges'
 
         watchModel: ->
-            self.watch = cd.watch name, safe.updateDom
+            self.watch = scope.$watch name, safe.updateDom
 
         start: ->
             safe.onDom()

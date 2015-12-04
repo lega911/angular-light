@@ -79,7 +79,8 @@ do ->
 
     alight.d.al.select =
         ChangeDetector: true
-        link: (scope, cd, element, key, env) ->
+        link: (scope, element, key, env) ->
+            cd = env.changeDetector
             cd.$select = mapper = new Mapper
             watch = null
 
@@ -99,8 +100,8 @@ do ->
             cd.watch '$destroy', ->
                 f$.off element, 'input', onChangeDOM
 
-    alight.d.al.option = (scope, cd, element, key) ->
-        step = cd
+    alight.d.al.option = (scope, element, key, env) ->
+        step = env.changeDetector
         for i in [0..4]
             mapper = step.$select
             if mapper

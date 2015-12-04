@@ -129,11 +129,11 @@ Test('al-controller').run ($test, alight) ->
 	c0 = 0
 	c1 = 0
 
-	alight.d.ctrl.foo = (scope, cd) ->
+	alight.d.ctrl.foo = (scope) ->
 		c0++
 		scope.value = 123
 
-	alight.directives.al.getter = (scope, cd, el, name) ->
+	alight.directives.al.getter = (scope, el, name) ->
 		c1++
 		$test.equal scope.value, 123
 
