@@ -77,7 +77,7 @@ Test('hook-scope-0', 'hook-scope-0').run ($test, alight) ->
     ,
         root: true
 
-    rootScope.$rootChangeDetector.destroy()
+    rootScope.$destroy()
 
     $test.equal countDestroy, 1
 
@@ -245,13 +245,14 @@ Test('hook-scope-2', 'hook-scope-2').run ($test, alight) ->
     ,
         root: true
 
-    rootScope.$rootChangeDetector.destroy()
+    rootScope.$destroy()
 
     $test.equal countDestroy, 1
 
     $test.close()
 
 
+###
 Test('hook-scope-3', 'hook-scope-3').run ($test, alight) ->
     $test.start 27
 
@@ -333,23 +334,23 @@ Test('hook-scope-3', 'hook-scope-3').run ($test, alight) ->
     $test.equal countDestroy, 1
 
     $test.close()
-
+###
 
 Test('hook-scope-4', 'hook-scope-4').run ($test, alight) ->
     $test.start 27
 
     count0 = count1 = count2 = 0
-    childCD = null
+    childScope = null
 
     alight.d.ut =
         dir:
             #scope: false
             #ChangeDetector: false
-            link: (scope, cd, element, value) ->
-                childCD = cd
+            link: (scope, element, value) ->
+                childScope = scope
                 scope.top = 'child'
                 scope.child = 'child'
-                cd.watch 'top', ->
+                scope.$watch 'top', ->
                     count2++
 
     dom = ttDOM """
@@ -359,58 +360,58 @@ Test('hook-scope-4', 'hook-scope-4').run ($test, alight) ->
         </i>
     """
 
-    rootCD = alight.ChangeDetector
-        top: 'root'
-    rootCD.watch 'top', ->
+    rootScope = alight.Scope()
+    rootScope.top = 'root'
+    rootScope.$watch 'top', ->
         count0++
-    rootCD.watch 'child', ->
+    rootScope.$watch 'child', ->
         count1++
 
-    alight.applyBindings rootCD, dom
+    alight.bind rootScope, dom
     $test.equal ttGetText(dom), 'root=child child=child'
     $test.equal count0, 1
     $test.equal count1, 1
     $test.equal count2, 1
-    $test.equal rootCD.scope.child, 'child'  # the same scope
-    $test.equal childCD.$parent, undefined
+    $test.equal rootScope.child, 'child'  # the same scope
+    $test.equal childScope.$parent, undefined
 
-    rootCD.scan()
+    rootScope.$scan()
     $test.equal ttGetText(dom), 'root=child child=child', 'scan root'
     $test.equal count0, 1
     $test.equal count1, 1
     $test.equal count2, 1  # the watch was created earlier
 
-    rootCD.scope.top = 'tip'
-    rootCD.scan()
+    rootScope.top = 'tip'
+    rootScope.$scan()
     $test.equal ttGetText(dom), 'root=tip child=tip', 'update root'
     $test.equal count0, 2
     $test.equal count1, 1
     $test.equal count2, 2
 
-    childCD.scan()
+    childScope.$scan()
     $test.equal ttGetText(dom), 'root=tip child=tip', 'scan child'
     $test.equal count0, 2
     $test.equal count1, 1
     $test.equal count2, 2
 
-    childCD.scope.top = 'fromChild'
-    childCD.scan()
+    childScope.top = 'fromChild'
+    childScope.$scan()
     $test.equal ttGetText(dom), 'root=fromChild child=fromChild', 'update child'
     $test.equal count0, 3
     $test.equal count1, 1
     $test.equal count2, 3
 
-    rootCD.scan()
+    rootScope.$scan()
     $test.equal ttGetText(dom), 'root=fromChild child=fromChild', 'scan root'
     $test.equal count0, 3
     $test.equal count1, 1
     $test.equal count2, 3
 
     countDestroy = 0
-    childCD.watch '$destroy', ->
+    childScope.$watch '$destroy', ->
         countDestroy++
 
-    rootCD.destroy()
+    rootScope.$destroy()
 
     $test.equal countDestroy, 1
 

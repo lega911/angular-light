@@ -2,7 +2,8 @@
 alight.d.al.include =
     priority: 100
     stopBinding: true
-    link: (scope, cd, element, name, env) ->
+    link: (scope, element, name, env) ->
+        cd = scope.$changeDetector
         child = null
         baseElement = null
         topElement = null
@@ -30,8 +31,9 @@ alight.d.al.include =
                 f$.html activeElement, html
                 self.insertDom topElement, activeElement
                 child = cd.new()
-                alight.bind child, activeElement,
+                alight.bind scope, activeElement,
                     skip_attr: env.skippedAttr()
+                    changeDetector: child
             updateDom: (url) ->
                 if not url
                     self.removeBlock()

@@ -52,3 +52,7 @@ Scope::$eval = (exp) ->
 Scope::$compile = (exp, option) ->
     cd = @.$rootChangeDetector
     cd.compile exp, option
+
+Scope::$destroy = ->
+    cd = @.$rootChangeDetector
+    cd.destroy()

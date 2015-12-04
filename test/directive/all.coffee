@@ -6,12 +6,9 @@ Test('al-css-1', 'al-css-1').run ($test, alight) ->
 	el.innerHTML = '<i class="aaa" al-css="bbb ccc ddd: active, fff eee: active2"></i>'
 	tag = el.children[0]
 
-	scope =
+	scope = alight.bootstrap tag,
 		active: false
 		active2: false
-	cd = alight.ChangeDetector scope
-
-	alight.applyBindings cd, tag
 
 	result = ->
 		if tag.classList
@@ -24,47 +21,43 @@ Test('al-css-1', 'al-css-1').run ($test, alight) ->
 	$test.equal result(), 'aaa'
 
 	scope.active = true
-	cd.scan ->
+	scope.$scan ->
 		$test.equal result(), 'aaa bbb ccc ddd'
 
 		scope.active2 = true
-		cd.scan ->
+		scope.$scan ->
 			$test.equal result(), 'aaa bbb ccc ddd eee fff'
 
 			scope.active = false
-			cd.scan ->
+			scope.$scan ->
 				$test.equal result(), 'aaa eee fff'
 
 				scope.active2 = false
-				cd.scan ->
+				scope.$scan ->
 					$test.equal result(), 'aaa'
 					$test.close()
 
 
-Test('directive.scope isolate #0', 'directive-scope-isolate-0').run ($test, alight) ->
+Test('directive-scope-isolate-0').run ($test, alight) ->
 	$test.start 2
 
 	alight.directives.ut =
 		siTest1:
 			template: '{{name}}:{{name2}}:{{$parent.name}}:{{$parent.name2}}'
-			link: (scope, cd, el, name) ->
+			link: (scope,  el, name) ->
 				scope.$parent = scope.$parent or scope
 				scope.name2 = 'child1'
 		siTest2:
-			scope: true
+			scope: 'isolate'
 			template: '{{name}}:{{name2}}:{{$parent.name}}:{{$parent.name2}}'
-			link: (scope, cd, el, name) ->
+			link: (scope, el, name) ->
 				scope.name2 = 'child2'
-
-	scope =
-		name: 'parent'
-	cd = alight.ChangeDetector scope
 
 	el = document.createElement 'div'
 	el.innerHTML = '<div id="i1" ut-si-test1></div><div id="i2" ut-si-test2></div>'
 
-	alight.applyBindings cd, el
-
+	scope = alight.bootstrap el,
+		name: 'parent'
 
 	f$ = alight.f$
 	$test.equal f$.text(f$.find(el, '#i1')[0]), 'parent:child1:parent:child1'
@@ -72,7 +65,7 @@ Test('directive.scope isolate #0', 'directive-scope-isolate-0').run ($test, alig
 	$test.close()
 
 
-Test('restrict M #1').run ($test, alight) ->
+Test('restrict-m-1').run ($test, alight) ->
 	$test.start 1
 
 	# init
@@ -81,14 +74,14 @@ Test('restrict M #1').run ($test, alight) ->
 			test1:
 				restrict: 'M'
 				stopBinding: true
-				init: (scope, cd, element, value) ->
+				init: (scope, element, value) ->
 					scope.name = 'Hello'
 
 					el = document.createElement 'p'
 					el.innerHTML = "{{name}} #{value}"
 
 					alight.f$.after element, el
-					alight.applyBindings cd, el
+					alight.bind scope, el
 
 	# test
 	do ->
@@ -97,14 +90,13 @@ Test('restrict M #1').run ($test, alight) ->
 							<!-- directive: ut-test1 World!-->
 						</div>"
 
-		cd = alight.ChangeDetector()
-		alight.applyBindings cd, el
+		alight.bootstrap el
 
 		$test.equal alight.f$.text(alight.f$.find(el, 'p')[0]).trimLeft(), 'Hello World!'
 		$test.close()
 
 
-Test('restrict M #2', 'restrict-m-2').run ($test, alight) ->
+Test('restrict-m-2').run ($test, alight) ->
 	$test.start 1
 
 	# init
@@ -113,7 +105,7 @@ Test('restrict M #2', 'restrict-m-2').run ($test, alight) ->
 			test2:
 				restrict: 'M'
 				template: "<p>{{name}} {{value}}!</p>"
-				link: (scope, cd, element, value) ->
+				link: (scope, element, value) ->
 					scope.name = 'Hello'
 					scope.value = value
 
@@ -124,8 +116,7 @@ Test('restrict M #2', 'restrict-m-2').run ($test, alight) ->
 							<!-- directive: ut-test2 World-->
 						</div>"
 
-		cd = alight.ChangeDetector()
-		alight.applyBindings cd, el
+		alight.bootstrap el
 
 		$test.equal alight.f$.text(alight.f$.find(el, 'p')[0]).trimLeft(), 'Hello World!'
 		$test.close()
@@ -160,14 +151,12 @@ Test('al-value-on-off', 'al-value-on-off').run ($test, alight, timeout) ->
 		return
 
 	$test.start 3
-	scope =
-		name: '123'
-	cd = alight.ChangeDetector scope
 
 	dom = $ '<div><input type="text" al-value="name" /></div>'
 	input = dom.find('input')[0]
 
-	alight.applyBindings cd, dom[0]
+	scope = alight.bootstrap dom,
+		name: '123'
 
 	$test.equal input.value, '123'
 
@@ -177,7 +166,7 @@ Test('al-value-on-off', 'al-value-on-off').run ($test, alight, timeout) ->
 	setTimeout ->
 		$test.equal scope.name, 'linux'
 
-		cd.destroy()
+		scope.$destroy()
 
 		input.value = 'macos'
 		input.dispatchEvent(new CustomEvent('input'))
@@ -196,14 +185,12 @@ Test('al-value setter').run ($test, alight) ->
 		return
 
 	$test.start 3
-	scope =
-		name: ['123']
-	cd = alight.ChangeDetector scope
 
 	dom = $ '<div><input type="text" al-value="name[0]" /></div>'
 	input = dom.find('input')[0]
 
-	alight.applyBindings cd, dom[0]
+	scope = alight.bootstrap dom,
+		name: ['123']
 
 	$test.equal input.value, '123'
 
@@ -226,19 +213,16 @@ Test('al-value setter').run ($test, alight) ->
 Test('al-text').run ($test, alight) ->
 	$test.start 2
 
-	scope =
+	el = ttDOM '<div al-text="name"></div>'
+
+	scope = alight.bootstrap el,
 		name: 'one'
-	cd = alight.ChangeDetector scope
 
-	el = $('<div al-text="name"></div>')[0]
-
-	alight.applyBindings cd, el
-
-	$test.equal el.innerText, 'one'
+	$test.equal ttGetText(el), 'one'
 
 	scope.name = 'two'
-	cd.scan ->
-		$test.equal el.innerText, 'two'
+	scope.$scan ->
+		$test.equal ttGetText(el), 'two'
 
 		$test.close()
 
@@ -249,9 +233,8 @@ Test 'al-stop'
 
 		el = ttDOM '<div>{{name}} <div al-stop>{{name}}</div> </div>'
 
-		cd = alight.ChangeDetector
+		alight.bootstrap el,
 			name: 'linux'
-		alight.bind cd, el
 
 		$test.equal ttGetText(el), 'linux {{name}}'
 

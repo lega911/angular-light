@@ -3,7 +3,7 @@ alight.d.al.if =
     priority: 700
     stopBinding: true
     link: (scope, element, name, env) ->
-        cd = null
+        cd = scope.$changeDetector
         self =
             item: null
             childCD: null
@@ -13,8 +13,6 @@ alight.d.al.if =
                 self.prepare()
                 self.watchModel()
             prepare: ->
-                cd = scope.$changeDetector
-
                 self.base_element = element
                 self.top_element = f$.createComment " #{env.attrName}: #{name} "
                 f$.before element, self.top_element

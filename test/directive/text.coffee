@@ -13,16 +13,15 @@ Test('bindonce').run ($test, alight) ->
             value + value
 
     dom = $ '<div attr="{{= num + 5 }}">Text {{= num + num }}</div>'
-    cd = alight.ChangeDetector
-        num: 15
 
-    alight.applyBindings cd, dom[0]
+    scope = alight.bootstrap dom[0],
+        num: 15
 
     $test.equal dom.attr('attr'), '20'
     $test.equal dom.text(), 'Text 30'
 
-    cd.scope.num = 50
-    cd.scan ->
+    scope.num = 50
+    scope.$scan ->
         $test.equal dom.attr('attr'), '20'
         $test.equal dom.text(), 'Text 30'
         $test.close()
@@ -44,18 +43,17 @@ Test('text-directive-0', 'text-directive-0').run ($test, alight, timeout) ->
                 cd.scan()
 
     dom = $ '<div attr="Attr {{#double num | minus:7 }}"></div>'
-    cd = alight.ChangeDetector
-        num: 15
 
-    alight.applyBindings cd, dom[0]
+    scope = alight.bootstrap dom[0],
+        num: 15
 
     $test.equal dom.attr('attr'), 'Attr $'
 
     timeout.add 150, ->
         $test.equal dom.attr('attr'), 'Attr 16'
 
-        cd.scope.num = 50
-        cd.scan ->
+        scope.num = 50
+        scope.$scan ->
             $test.equal dom.attr('attr'), 'Attr 16'
 
             timeout.add 150, ->
@@ -190,19 +188,17 @@ Test('onetime-binding-2', 'onetime-binding-2').run ($test, alight, timeout) ->
     $test.start 6
 
     exp = 'a{{::a}}-b{{::b}}-c{{::c}}!'
-    scope = {}
-    cd = alight.ChangeDetector scope
     dom = document.createElement 'div'
     dom.innerHTML = "<div>#{exp}</div>::<div>#{exp}</div>"
 
-    alight.applyBindings cd, dom
+    scope = alight.bootstrap dom
 
     result = ->
         alight.f$.text dom
 
     steps = [
         ->
-            $test.equal cd.scan().total, 8
+            $test.equal scope.$scan().total, 8
             $test.equal result(), 'a-b-c!::a-b-c!'
             scope.a = 3
             ->
@@ -224,7 +220,7 @@ Test('onetime-binding-2', 'onetime-binding-2').run ($test, alight, timeout) ->
         ->
             ->
                 timeout.add 1, ->
-                    $test.equal cd.scan().total, 0
+                    $test.equal scope.$scan().total, 0
                     $test.close()
     ]
 
@@ -235,7 +231,7 @@ Test('onetime-binding-2', 'onetime-binding-2').run ($test, alight, timeout) ->
             return
         step++
         n = s()
-        cd.scan n
+        scope.$scan n
 
     next()
 
@@ -298,24 +294,25 @@ Test('text-directive-finally', 'text-directive-finally').run ($test, alight) ->
 
     $test.start 13
     dom = $ '<div>Text {{#test1}}</div>'
-    cd = alight.ChangeDetector()
+    
+    scope = alight.Scope()
 
     scanCount = 0
-    cd.watch '$finishScan', ->
+    scope.$watch '$finishScan', ->
         scanCount++
 
     anyCount = 0
-    cd.watch '$any', ->
+    scope.$watch '$any', ->
         anyCount++
 
-    alight.applyBindings cd, dom[0]
+    alight.bind scope, dom[0]
 
     $test.equal dom.text(), 'Text init'
     
-    $test.equal cd.scan().total, 1
+    $test.equal scope.$scan().total, 1
 
     env.setter 'two'
-    cd.scan
+    scope.$scan
         late: true
         callback: ->
             $test.equal scanCount, 3
@@ -323,7 +320,7 @@ Test('text-directive-finally', 'text-directive-finally').run ($test, alight) ->
             $test.equal dom.text(), 'Text two'
 
             env.setter 'three'
-            cd.scan
+            scope.$scan
                 late: true
                 callback: ->
                     $test.equal scanCount, 4
@@ -336,11 +333,11 @@ Test('text-directive-finally', 'text-directive-finally').run ($test, alight) ->
                         $test.equal anyCount, 3
                         $test.equal dom.text(), 'Text three'
 
-                        cd.scan
+                        scope.$scan
                             late: true
                             callback: ->
                                 $test.equal dom.text(), 'Text four'
-                                $test.equal cd.scan().total, 0
+                                $test.equal scope.$scan().total, 0
                                 $test.close()
                     , 100
 
