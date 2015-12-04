@@ -174,7 +174,14 @@ do ->
                 when 'root'
                     scope = alight.Scope
                         changeDetector: null
-                    @.cd = scope.$rootChangeDetector = childCD = alight.ChangeDetector scope
+                    scope.$parent = parentCD.scope
+                    @.cd = childCD = alight.ChangeDetector scope
+                    scope.$rootChangeDetector = childCD
+                    scope.$changeDetector = childCD
+
+                    childCD.watch '$finishBinding', ->
+                        scope.$changeDetector = null  # lock binding
+
                     parentCD.watch '$destroy', ->
                         childCD.destroy()
                     @.env.parentChangeDetector = parentCD
@@ -200,7 +207,6 @@ do ->
             if @.doBinding
                 alight.bind @.cd.scope, @.element,
                     skip_attr: @.env.skippedAttr()
-                    changeDetector: @.cd
 
 
 testDirective = do ->

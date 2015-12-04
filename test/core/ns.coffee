@@ -5,16 +5,14 @@ Test('ns-0', 'ns-0').run ($test, alight) ->
 
     # ut-test3
     do ->
-        tag = document.createElement 'div'
-        tag.innerHTML = '<p ut-test3="linux"></p>'
+        el = ttDOM '<p ut-test3="linux"></p>'
 
         alight.directives.ut =
-            test3: (scope, cd, el, name) ->
+            test3: (scope, el, name) ->
                 f$.text el, name
 
-        cd = alight.ChangeDetector()
-        alight.applyBindings cd, tag
-        $test.equal f$.text(f$.find(tag, 'p')[0]), 'linux'
+        alight.bootstrap el
+        $test.equal ttGetText(el), 'linux'
 
     # $ns.ut-test3
     do ->
@@ -22,23 +20,18 @@ Test('ns-0', 'ns-0').run ($test, alight) ->
             $ns:
                 directives:
                     ut:
-                        uniqDirective: (scope, cd, el, name) ->
+                        uniqDirective: (scope, el, name) ->
                             f$.text el, name
 
-        cd = alight.ChangeDetector scope
-
-        tag = document.createElement 'div'
-        tag.innerHTML = '<p ut-test3="linux"></p>'
         try
-            alight.applyBindings cd, tag
+            alight.bootstrap ttDOM('<p ut-test3="linux"></p>'), scope
             $test.error '$ns error'
         catch e
             $test.equal e, 'Directive not found: ut-test3'
 
-        tag = document.createElement 'div'
-        tag.innerHTML = '<p ut-uniq-directive="linux"></p>'
-        alight.applyBindings cd, tag
-        $test.equal f$.text(f$.find(tag, 'p')[0]), 'linux'
+        el = ttDOM '<p ut-test3="linux"></p>'
+        alight.bootstrap el
+        $test.equal ttGetText(el), 'linux'
 
     # filter
     do ->
@@ -49,11 +42,10 @@ Test('ns-0', 'ns-0').run ($test, alight) ->
                         ->
                             'linux'
 
-        tag = ttDOM '<p>{{x | double}}</p>'
+        el = ttDOM '<p>{{x | double}}</p>'
 
-        cd = alight.ChangeDetector scope
-        alight.applyBindings cd, tag
-        $test.equal ttGetText(tag), 'linux'
+        alight.bootstrap el, scope
+        $test.equal ttGetText(el), 'linux'
 
         $test.close()
 
@@ -63,26 +55,25 @@ Test('ns-1', 'ns-1').run ($test, alight) ->
     f$ = alight.f$
 
     tag = ttDOM '<p al-private="title"></p>:<p al-text="title"></p>'
-    scope =
+    makeScope = ->
         title: 'title'
         $ns:
             directives:
                 al:
-                    private: (scope, cd, el, name) ->
+                    private: (scope, el, name) ->
                         f$.text el, name
 
-    cd = alight.ChangeDetector scope
     try
-        alight.applyBindings cd, tag
+        alight.bootstrap tag, makeScope()
     catch e
         $test.equal e, 'Directive not found: al-text'
 
 
     tag = ttDOM '<p al-private="title"></p>:<p al-text="title"></p>'
-    cd = alight.ChangeDetector scope
 
+    scope = makeScope()
     scope.$ns.inheritGlobal = true
-    alight.applyBindings cd, tag
+    alight.bootstrap tag, scope
 
-    $test.equal f$.text(tag), 'title:title'
+    $test.equal ttGetText(tag), 'title:title'
     $test.close()

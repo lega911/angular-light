@@ -72,23 +72,23 @@ Test('fast-binding-1').run ($test, alight) ->
         value = cd.eval expression
         env.setter value+value
 
-    cd = alight.ChangeDetector
-        list: [
-            {name: 'l', value: 5}
-            {name: 'u', value: 7}
-            {name: 'd', value: 11}
-        ]
-        foo: (x) ->
-            x*2
+    scope = alight.Scope()
+    scope.list = [
+        {name: 'l', value: 5}
+        {name: 'u', value: 7}
+        {name: 'd', value: 11}
+    ]
+    scope.foo = (x) ->
+        x*2
 
-    alight.bind cd, el
+    alight.bind scope, el
 
     $test.equal ttGetText(el), 'a-l b-10 c-10 d-l e-ll ' + 'a-u b-14 c-14 d-u e-uu ' + 'a-d b-22 c-22 d-d e-dd'
     
-    cd.scope.list[1] =
+    scope.list[1] =
         name: 'x'
         value: 3
-    cd.scan()
+    scope.$scan()
     $test.equal ttGetText(el), 'a-l b-10 c-10 d-l e-ll ' + 'a-x b-6 c-6 d-x e-xx ' + 'a-d b-22 c-22 d-d e-dd'
 
     $test.close()

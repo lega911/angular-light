@@ -306,7 +306,9 @@ alight.directives.al.repeat =
 
                                 element_list = for bel in self.element_list
                                     el = f$.clone bel
-                                    applyList.push [childCD, el]
+                                    applyList.push
+                                        cd: childCD
+                                        el: el
 
                                     dom_inserts.push
                                         element: el
@@ -346,8 +348,9 @@ alight.directives.al.repeat =
                             #applying
                             skippedAttrs = env.skippedAttr()
                             for it in applyList
-                                alight.bind it[0], it[1],
+                                alight.bind it.cd.scope, it.el,
                                     skip_attr: skippedAttrs
+                                    changeDetector: it.cd
 
                             if self.storeTo
                                 CD.setValue self.storeTo, list

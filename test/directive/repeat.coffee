@@ -166,18 +166,17 @@ do ->
         $test.start 8
         setupAlight alight
 
-        scope =
-            list: ['a', 'b', 'c', 'd']
-            numerator: do ->
-                index = 0
-                ->
-                    index++
-        cd = alight.ChangeDetector scope
+        scope = alight.Scope()
+        scope.list = ['a', 'b', 'c', 'd']
+        scope.numerator = do ->
+            index = 0
+            ->
+                index++
 
         dom = document.createElement 'div'
         dom.innerHTML = '<div class="item" al-repeat="it in list track by $index">{{it}}:{{=numerator()}}</div>'
 
-        alight.applyBindings cd, dom
+        alight.bin scope, dom
 
         result = ->
             r = for e in alight.f$.find dom, '.item'
