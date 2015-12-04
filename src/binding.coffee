@@ -110,7 +110,10 @@ do ->
                 if alight.debug.directive
                     if @.directive.scope or @.directive.ChangeDetector
                         console.warn "#{@.ns}-#{@.name} uses scope and init together, probably you need use link instead of init"
+                @.env.changeDetector = @.cd
+                @.cd.scope.$changeDetector = @.cd
                 result = @.directive.init @.cd.scope, @.element, @.value, @.env
+                @.cd.scope.$changeDetector = null
                 if f$.isObject result
                     @.result = result
                     if result.owner
@@ -166,17 +169,13 @@ do ->
 
             switch @.directive.scope
                 when true
-                    childCD = parentCD.new()  # the same scope
-                    scope = parentCD.scope
-                    scope.$changeDetector = childCD
-                    @.cd = childCD
+                    @.cd = parentCD.new()  # the same scope
                 when 'isolate'
                     scope = alight.Scope
                         changeDetector: null
                     childCD = parentCD.new scope
                     scope.$parent = parentCD.scope
                     scope.$rootChangeDetector = childCD
-                    scope.$changeDetector = childCD
                     @.cd = childCD
                 when 'root'
                     scope = alight.Scope
@@ -184,10 +183,6 @@ do ->
                     childCD = alight.ChangeDetector scope
                     scope.$parent = parentCD.scope
                     scope.$rootChangeDetector = childCD
-                    scope.$changeDetector = childCD
-
-                    childCD.watch '$finishBinding', ->
-                        scope.$changeDetector = null  # lock binding
 
                     parentCD.watch '$destroy', ->
                         childCD.destroy()
@@ -204,7 +199,10 @@ do ->
         code: 'link'
         fn: ->
             if @.directive.link
+                @.env.changeDetector = @.cd
+                @.cd.scope.$changeDetector = @.cd
                 result = @.directive.link @.cd.scope, @.element, @.value, @.env
+                @.cd.scope.$changeDetector = null
                 if f$.isObject result
                     if result.owner
                         @.env.stopBinding = true
@@ -214,7 +212,7 @@ do ->
         code: 'scopeBinding'
         fn: ->
             if @.doBinding
-                alight.bind @.cd.scope, @.element,
+                alight.bind @.cd, @.element,
                     skip_attr: @.env.skippedAttr()
 
 
@@ -401,7 +399,9 @@ bindElement = do ->
                     try
                         result = directive.$init cd, element, value, env
                         if result and result.start
+                            cd.scope.$changeDetector = cd
                             result.start()
+                            cd.scope.$changeDetector = null
                     catch e
                         alight.exceptionHandler e, 'Error in directive: ' + d.attrName,
                             value: value
@@ -492,16 +492,10 @@ alight.bind = alight.applyBindings = (scope, element, option) ->
 
     option = option or {}
 
-    prevChangeDetector = undefined
-    if option.changeDetector
-        prevChangeDetector = scope.$changeDetector
-        scope.$changeDetector = option.changeDetector
-
-    if not scope.$changeDetector
-        prevChangeDetector = null
-        scope.$changeDetector = scope.$rootChangeDetector
-
-    cd = scope.$changeDetector
+    if scope instanceof alight.core.ChangeDetector
+        cd = scope
+    else    
+        cd = option.changeDetector or scope.$changeDetector or scope.$rootChangeDetector
     root = cd.root
 
     finishBinding = not root.finishBinding_lock
@@ -520,9 +514,6 @@ alight.bind = alight.applyBindings = (scope, element, option) ->
     root.bindingResult.attr += result.attr
     root.bindingResult.hook += result.hook
     
-    if prevChangeDetector isnt undefined
-        scope.$changeDetector = prevChangeDetector
-
     if finishBinding
         cd.scan()
         root.finishBinding_lock = false

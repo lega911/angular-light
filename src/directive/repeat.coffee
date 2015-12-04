@@ -348,9 +348,8 @@ alight.directives.al.repeat =
                             #applying
                             skippedAttrs = env.skippedAttr()
                             for it in applyList
-                                alight.bind it.cd.scope, it.el,
+                                alight.bind it.cd, it.el,
                                     skip_attr: skippedAttrs
-                                    changeDetector: it.cd
 
                             if self.storeTo
                                 CD.setValue self.storeTo, list
@@ -481,9 +480,8 @@ alight.directives.al.repeat =
                                 if fastBinding
                                     fastBinding.bind it.cd, it.el
                                 else
-                                    r = alight.bind it.cd.scope, it.el,
+                                    r = alight.bind it.cd, it.el,
                                         skip_attr: skippedAttrs
-                                        changeDetector: it.cd
                                     if r.directive is 0 and r.hook is 0
                                         fastBinding = new alight.core.fastBinding self.base_element
 
@@ -497,7 +495,7 @@ alight.directives.bo.repeat =
     priority: 1000
     restrict: 'AM'
     stopBinding: true
-    init: (scope, element, exp, env) ->
+    init: (scope, element, exp, env) ->        
         self = alight.directives.al.repeat.init scope, element, exp, env
         originalStart = self.start
         self.start = ->

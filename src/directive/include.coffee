@@ -3,7 +3,6 @@ alight.d.al.include =
     priority: 100
     stopBinding: true
     link: (scope, element, name, env) ->
-        cd = scope.$changeDetector
         child = null
         baseElement = null
         topElement = null
@@ -30,10 +29,9 @@ alight.d.al.include =
                 activeElement = f$.clone baseElement
                 f$.html activeElement, html
                 self.insertDom topElement, activeElement
-                child = cd.new()
-                alight.bind scope, activeElement,
+                child = env.changeDetector.new()
+                alight.bind child, activeElement,
                     skip_attr: env.skippedAttr()
-                    changeDetector: child
             updateDom: (url) ->
                 if not url
                     self.removeBlock()
@@ -50,6 +48,6 @@ alight.d.al.include =
             insertDom: (base, element) ->
                 f$.after base, element
             watchModel: ->
-                cd.watch name, self.updateDom
+                scope.$watch name, self.updateDom
 
         self

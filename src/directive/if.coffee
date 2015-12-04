@@ -3,7 +3,6 @@ alight.d.al.if =
     priority: 700
     stopBinding: true
     link: (scope, element, name, env) ->
-        cd = scope.$changeDetector
         self =
             item: null
             childCD: null
@@ -34,13 +33,12 @@ alight.d.al.if =
                     return
                 self.item = f$.clone self.base_element
                 self.insertDom self.top_element, self.item
-                self.childCD = cd.new()
+                self.childCD = env.changeDetector.new()
 
-                alight.bind scope, self.item,
+                alight.bind self.childCD, self.item,
                     skip_attr: env.skippedAttr()    
-                    changeDetector: self.childCD
             watchModel: ->
-                cd.watch name, self.updateDom
+                scope.$watch name, self.updateDom
             removeDom: (element) ->
                 f$.remove element
             insertDom: (base, element) ->
@@ -50,8 +48,8 @@ alight.d.al.if =
 alight.d.al.ifnot =
     priority: 700
     stopBinding: true
-    link: (scope, cd, element, name, env) ->
-        self = alight.d.al.if.link scope, cd, element, name, env
+    link: (scope, element, name, env) ->
+        self = alight.d.al.if.link scope, element, name, env
         self.updateDom = (value) ->
             if value
                 self.removeBlock()

@@ -2,11 +2,12 @@
 alight.d.al.html =
     priority: 100
     stopBinding: true
-    link: (scope, cd, element, name, env) ->
+    link: (scope, element, name, env) ->
+        cd = scope.$childDetector
         child = null
         setter = (html) ->
             if child
-                child.$destroy()
+                child.destroy()
                 child = null
             if not html
                 f$.html element, ''
