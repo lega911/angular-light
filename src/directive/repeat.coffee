@@ -113,7 +113,7 @@ alight.directives.al.repeat =
 
             makeChild: (item, index, list) ->
                 scope = new self.ChildScope()
-                childCD = CD.new scope
+                scope.$rootChangeDetector = childCD = CD.new scope
                 self.updateChild childCD, item, index, list
                 childCD
 

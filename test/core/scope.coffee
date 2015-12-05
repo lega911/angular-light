@@ -170,3 +170,65 @@ Test('root-destroy-1', 'root-destroy-1').run ($test, alight) ->
     $test.equal c1, 1
 
     $test.close()
+
+
+Test 'al-repeat-child-cd-0'
+    .run ($test, alight) ->
+        $test.start 1
+
+        el = ttDOM '''
+            r{{it.name}}#
+            <div al-repeat="it in list">
+                {{$index}}={{it.name}}
+                <span ctrl-test></span>
+            </div>
+        '''
+
+        scope = alight.Scope()
+        scope.list = [
+            {name: 'linux'},
+            {name: 'macos'},
+            {name: 'windows'}
+        ]
+
+        alight.ctrl.test = (scope) ->
+            scope.$setValue 'it.name', scope.it.name + '_rc'
+
+        alight.bind scope, el
+
+        $test.equal ttGetText(el), 'r# 0=linux_rc 1=macos_rc 2=windows_rc'
+
+        $test.close()
+
+
+Test 'isolated-scope-0'
+    .run ($test, alight, timeout) ->
+        $test.start 2
+
+        el = ttDOM """
+            root={{top}}-{{child}}-{{one}}
+            <div ctrl-test>
+                child={{top}}-{{child}}-{{one}}
+            </div>
+        """
+
+        scope = alight.Scope()
+        scope.top = 'unix'
+
+        alight.ctrl.test =
+            scope: 'isolate'
+            link: (scope) ->
+                scope.child = 'linux'
+                scope.$setValue 'one', 'two'
+
+                timeout.add 10, ->
+                    scope.$setValue 'one', 'three'
+                    scope.$scan()
+
+        alight.bind scope, el
+
+        $test.equal ttGetText(el), 'root=unix-- child=-linux-two'
+        timeout.add 20, ->
+
+            $test.equal ttGetText(el), 'root=unix-- child=-linux-three'
+            $test.close()
