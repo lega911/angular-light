@@ -1,4 +1,6 @@
 ### Angular Light
+
+[![Join the chat at https://gitter.im/lega911/angular-light](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/lega911/angular-light?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 Web framework with MVC model. Angular.js + Knockout.js way.
 
 Visit [angularlight.org](http://angularlight.org/)
