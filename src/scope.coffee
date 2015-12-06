@@ -7,7 +7,11 @@ Scope = (option) ->
 
     if option.data
         scope = option.data
-        Object.setPrototypeOf scope, Scope.prototype
+        if Object.setPrototypeOf
+            Object.setPrototypeOf scope, Scope.prototype
+        else
+            for name of Scope::
+                scope[name] = Scope::[name]
     else
         scope = new Scope
 
