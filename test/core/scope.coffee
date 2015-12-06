@@ -180,7 +180,7 @@ Test 'al-repeat-child-cd-0'
             r{{it.name}}#
             <div al-repeat="it in list">
                 {{$index}}={{it.name}}
-                <span ctrl-test></span>
+                <span al-test></span>
             </div>
         '''
 
@@ -191,7 +191,7 @@ Test 'al-repeat-child-cd-0'
             {name: 'windows'}
         ]
 
-        alight.ctrl.test = (scope) ->
+        alight.d.al.test = (scope) ->
             scope.$setValue 'it.name', scope.it.name + '_rc'
 
         alight.bind scope, el
@@ -207,7 +207,7 @@ Test 'isolated-scope-0'
 
         el = ttDOM """
             root={{top}}-{{child}}-{{one}}
-            <div ctrl-test>
+            <div al-test>
                 child={{top}}-{{child}}-{{one}}
             </div>
         """
@@ -215,7 +215,7 @@ Test 'isolated-scope-0'
         scope = alight.Scope()
         scope.top = 'unix'
 
-        alight.ctrl.test =
+        alight.d.al.test =
             scope: 'isolate'
             link: (scope) ->
                 scope.child = 'linux'

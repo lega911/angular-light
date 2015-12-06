@@ -364,8 +364,12 @@ bindElement = do ->
 
             args.attr_type = 'A'
             attrs = f$.getAttributes element
-            for attrName, attr_value of attrs
+            for attrName of attrs
                 testDirective attrName, args
+
+            if config.attachDirective
+                for attrName, attrValue of config.attachDirective
+                    testDirective attrName, args
 
             # sort by priority
             list = list.sort sortByPriority
@@ -376,7 +380,10 @@ bindElement = do ->
                 if d.noDirective
                     throw "Directive not found: #{d.name}"
                 d.skip = true
-                value = f$.attr element, d.attrName
+                if config.attachDirective and config.attachDirective[d.attrName]
+                    value = config.attachDirective[d.attrName]
+                else
+                    value = f$.attr element, d.attrName
                 if d.is_attr
                     if attrBinding cd, element, value, d.attrName
                         bindResult.attr++
@@ -538,13 +545,19 @@ alight.bootstrap = (input, data) ->
             if element.ma_bootstrapped  # TODO change to getData/setData
                 continue
             element.ma_bootstrapped = true
-            #attr = f$.attr element, 'al-app'
             if oneScope
                 scope = oneScope
             else
                 scope = alight.Scope()
-            alight.bind scope, element,
+            option =
                 skip_attr: 'al-app'
+
+            ctrlName = f$.attr element, 'al-app'
+            if ctrlName
+                option.attachDirective =
+                    'al-ctrl': ctrlName
+
+            alight.bind scope, element, option
             lastScope = scope
         return lastScope
     alight.exceptionHandler 'Error in bootstrap', 'Error input arguments',

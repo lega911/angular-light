@@ -168,7 +168,7 @@ Test 'root-scope-access-to-parent'
     .run ($test, alight) ->
         $test.start 2
 
-        alight.ctrl.test =
+        alight.d.al.test =
             scope: 'root'
             link: (scope, el, key, env) ->
                 env.parentChangeDetector.watch key, (value) ->
@@ -177,7 +177,7 @@ Test 'root-scope-access-to-parent'
 
         el = ttDOM """
             {{name}}
-            <div ctrl-test="name">
+            <div al-test="name">
                 {{title}}-{{title2}}
             </div>
         """
@@ -200,10 +200,10 @@ Test 'stop-binding-0'
     .run ($test, alight) ->
         $test.start 1
 
-        alight.ctrl.one =
+        alight.d.al.one =
             stopBinding: true
 
-        el = ttDOM '<div>{{name}} <div ctrl-one>{{name}}</div> </div>'
+        el = ttDOM '<div>{{name}} <div al-one>{{name}}</div> </div>'
 
         alight.bootstrap el,
             name: 'linux'
@@ -217,7 +217,7 @@ Test 'stop-binding-1'
     .run ($test, alight) ->
         $test.start 1
 
-        alight.ctrl.one =
+        alight.d.al.one =
             link: (scope, el, key, env) ->
                 if key is 'stop'
                     env.stopBinding = true
@@ -225,8 +225,8 @@ Test 'stop-binding-1'
         el = ttDOM """
             <div>
                 {{name}}
-                <div ctrl-one="stop">1{{name}}</div>
-                <div ctrl-one>2{{name}}</div>
+                <div al-one="stop">1{{name}}</div>
+                <div al-one>2{{name}}</div>
             </div>
         """
 
@@ -243,21 +243,21 @@ Test 'binding-order-0'
         $test.start 1
 
         el = ttDOM """
-            <div ctrl-parent>
+            <div al-parent>
                 <div al-repeat="it in list">
-                    <i ctrl-child></i>
+                    <i al-child></i>
                 </div>
             </div>
         """
 
         order = []
 
-        alight.ctrl.parent = (scope) ->
+        alight.d.al.parent = (scope) ->
             order.push 'p0'
             scope.$watch '$finishBinding', ->
                 order.push 'p1'
 
-        alight.ctrl.child = (scope) ->
+        alight.d.al.child = (scope) ->
             order.push 'c0-' + scope.$index
             scope.$watch '$finishBinding', ->
                 order.push 'c1-' + scope.$index

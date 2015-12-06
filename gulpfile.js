@@ -81,6 +81,7 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/directive/showHide.js',
     './tmp/directive/style.js',    
     './tmp/directive/select.js',
+    './tmp/directive/ctrl.js',
 
     './tmp/filter/slice.js',
     './tmp/filter/date.js',
@@ -136,6 +137,7 @@ gulp.task('assembleCore', ['compile'], function() {
 
     './tmp/directive/radio.js',
     './tmp/directive/showHide.js',
+    './tmp/directive/ctrl.js',
 
     './tmp/filter/date.js',
     './tmp/filter/json.js',

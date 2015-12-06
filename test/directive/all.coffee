@@ -122,18 +122,18 @@ Test('restrict-m-2').run ($test, alight) ->
 		$test.close()
 
 
-Test('al-controller').run ($test, alight) ->
+Test('al-ctrl-0').run ($test, alight) ->
 	$test.start 3
 
-	dom = $ '<div ctrl-foo><i al-getter></i></div>'
+	dom = $ '<div al-ctrl="foo"><i al-getter></i></div>'
 	c0 = 0
 	c1 = 0
 
-	alight.d.ctrl.foo = (scope) ->
+	alight.ctrl.foo = (scope) ->
 		c0++
 		scope.value = 123
 
-	alight.directives.al.getter = (scope, el, name) ->
+	alight.d.al.getter = (scope) ->
 		c1++
 		$test.equal scope.value, 123
 
