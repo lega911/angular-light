@@ -73,7 +73,8 @@ alight.utils.parsExpression = (line, cfg) ->
                     var_before = false
 
             if a is '='
-                if ap isnt '=' and an isnt '=' # assignment in prev variable
+                # assignment in prev variable
+                if (not (ap is '=' or an is '=')) and (ap isnt '<') and (ap isnt '>')
                     variable_assignment[variable_assignment.length-1] = true
 
             if a is '+'

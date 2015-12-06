@@ -1,5 +1,5 @@
 
-Test('parsExpression', 'parsing').run ($test, alight) ->
+Test('parsing', 'parsing').run ($test, alight) ->
     pars = (line, expected, cfg) ->
         $test.start 1
         pe = alight.utils.parsExpression line, cfg
@@ -27,6 +27,8 @@ Test('parsExpression', 'parsing').run ($test, alight) ->
     pars 'do(item)', ["$$scope.do($$scope.item)"]
     pars "a+'/'+b", ["$$scope.a+'/'+$$scope.b"]
     pars 'page==5', ["$$scope.page==5"]
+    pars 'page<=5', ["$$scope.page<=5"]
+    pars 'page>=5', ["$$scope.page>=5"]
     pars "path.var | toref | filter 'ref|str' ", ["(($$=$$scope.path,$$==null)?undefined:$$.var) ", " toref ", " filter 'ref|str' "]
     pars " (function(){ return '|' })() | toref | filter", [" (function(){ return '|' })() ", " toref ", " filter"]
     pars " (a || b) ", [" ($$scope.a || $$scope.b) "]
