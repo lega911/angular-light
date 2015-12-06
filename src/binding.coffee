@@ -171,12 +171,8 @@ do ->
                 when true
                     @.cd = parentCD.new()  # the same scope
                 when 'isolate'
-                    scope = alight.Scope
-                        changeDetector: null
-                    childCD = parentCD.new scope
-                    scope.$parent = parentCD.scope
-                    scope.$rootChangeDetector = childCD
-                    @.cd = childCD
+                    scope = parentCD.scope.$new()
+                    @.cd = scope.$rootChangeDetector
                 when 'root'
                     scope = alight.Scope
                         changeDetector: null

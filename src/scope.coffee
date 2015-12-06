@@ -60,3 +60,10 @@ Scope::$compile = (exp, option) ->
 Scope::$destroy = ->
     cd = @.$rootChangeDetector
     cd.destroy()
+
+Scope::$new = () ->
+    scope = new Scope
+        changeDetector: null
+    scope.$rootChangeDetector = @.$rootChangeDetector.new scope
+    scope.$parent = @
+    scope
