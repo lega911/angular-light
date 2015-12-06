@@ -33,9 +33,13 @@ Scope::$watch = (name, callback, option) ->
         cd = @.$changeDetector
         if not cd and not @.$rootChangeDetector.children.length  # no child scopes
             cd = @.$rootChangeDetector
-    if not cd
-        throw 'no Change Detector in scope'
-    cd.watch name, callback, option
+    if cd
+        cd.watch name, callback, option
+    else
+        alight.exceptionHandler '', 'You can do $watch during binding only: ' + name,
+            name: name
+            option: option
+            scope: @
 
 Scope::$scan = (option) ->
     cd = @.$rootChangeDetector

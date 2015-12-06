@@ -262,7 +262,7 @@ Test 'binding-order-0'
             scope.$watch '$finishBinding', ->
                 order.push 'c1-' + scope.$index
 
-        alight.bootstrap el,
+        scope = alight.bootstrap el,
             list: [{}, {}]
 
         order = order.join ' '

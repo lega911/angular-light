@@ -11,7 +11,7 @@ var version = require('./src/js/version.js');
 gulp.task('default', ['compress'], function(){});
 
 gulp.task('clean', function () {
-  return gulp.src(['bin', 'tmp'], {read: false})
+  return gulp.src(['tmp'], {read: false})
     .pipe(clean());
 });
 
@@ -75,7 +75,6 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/directive/focused.js',
     './tmp/directive/readonly.js',
     './tmp/directive/submit.js',
-    './tmp/directive/controller.js',
     './tmp/directive/event.js',
     './tmp/directive/html.js',
     './tmp/directive/radio.js',
@@ -101,8 +100,68 @@ gulp.task('assemble', ['compile'], function() {
     .pipe(gulp.dest('bin'));
 });
 
+gulp.task('assembleCore', ['compile'], function() {
+  var files = [
+    './src/js/prefix.js',
+    './src/js/fquery.js',
+    './tmp/changeDetector.js',
+    './tmp/scope.js',
+    './tmp/watchText.js',
+    './tmp/textDirective.js',
+    './tmp/binding.js',
+    './tmp/utils.js',
+    './tmp/parser/parseExpression.js',
+    './tmp/parser/parseText.js',
+    './tmp/compile.js',
+    './tmp/fastBinding.js',
+
+    './tmp/directive/click.js',
+    './tmp/directive/value.js',
+    './tmp/directive/checked.js',
+    './tmp/directive/if.js',
+    './tmp/directive/repeat.js',
+    './tmp/directive/init.js',
+    './tmp/directive/class.js',
+    './tmp/directive/src.js',
+    './tmp/directive/app.js',
+    './tmp/directive/include.js',
+    './tmp/directive/cloak.js',
+
+    './tmp/directive/enable.js',
+    './tmp/directive/focused.js',
+    './tmp/directive/readonly.js',
+    './tmp/directive/submit.js',
+    './tmp/directive/event.js',
+    './tmp/directive/html.js',
+
+    './tmp/directive/radio.js',
+    './tmp/directive/showHide.js',
+
+    './tmp/filter/date.js',
+    './tmp/filter/json.js',
+    './tmp/filter/generator.js',
+
+    './src/js/postfix.js'
+  ];
+  return gulp.src(files)
+    .pipe(concat('core.js'))
+    .pipe(replace('{{{version}}}', version.version))
+    .pipe(header("/**\n * Angular Light " + version.version + "\n * (c) 2015 Oleg Nechaev\n * Released under the MIT License.\n * " + version.date + ", http://angularlight.org/ \n */"))
+    .pipe(gulp.dest('bin'));
+});
+
 gulp.task('compress', ['assemble'], function() {
   return gulp.src('./bin/alight.js')
+    .pipe(uglify())
+    .pipe(rename({
+       extname: '.min.js'
+     }))
+    .pipe(header("/**\n * Angular Light " + version.version + "\n * (c) 2015 Oleg Nechaev\n * Released under the MIT License.\n * " + version.date + ", http://angularlight.org/ \n */"))
+    .pipe(gulp.dest('bin'))
+});
+
+gulp.task('core', ['assembleCore'], function() {
+  return gulp.src('./bin/core.js')
     .pipe(uglify())
     .pipe(rename({
        extname: '.min.js'

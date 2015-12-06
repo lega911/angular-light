@@ -184,6 +184,10 @@ do ->
 
     alight.core.Scope::$watchText = (expression, callback, option) ->
         cd = @.$changeDetector
-        if not cd
-            throw 'no Change Detector in scope'
-        cd.watchText expression, callback, option
+        if cd
+            cd.watchText expression, callback, option
+        else
+            alight.exceptionHandler '', 'You can do $watchText during binding only: ' + expression,
+                expression: expression
+                option: option
+                scope: @
