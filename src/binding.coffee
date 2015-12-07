@@ -318,7 +318,14 @@ bindComment = (cd, element, option) ->
             cd: cd
             scope: cd.scope
             element: element
-    true
+    if env.skipToElement
+        return {
+            directive: 1
+            skipToElement: env.skipToElement
+        }
+
+    directive: 1
+    skipToElement: null
 
 
 bindElement = do ->
@@ -345,6 +352,7 @@ bindElement = do ->
             text: 0
             attr: 0
             hook: 0
+            skipToElement: null
         config = config || {}
         skipChildren = false
         skip_attr = config.skip_attr or []
@@ -417,16 +425,25 @@ bindElement = do ->
                         skipChildren = true
                         break
 
+                    if env.skipToElement
+                        bindResult.skipToElement = env.skipToElement
+
         if !skipChildren
             # text bindings
+            skipToElement = null
             for childElement in f$.childNodes element
                 if not childElement
+                    continue
+                if skipToElement
+                    if skipToElement is childElement
+                        skipToElement = null
                     continue
                 r = bindNode cd, childElement
                 bindResult.directive += r.directive
                 bindResult.text += r.text
                 bindResult.attr += r.attr
                 bindResult.hook += r.hook
+                skipToElement = r.skipToElement
 
         bindResult
 
@@ -437,8 +454,7 @@ bindNode = (cd, element, option) ->
         text: 0
         attr: 0
         hook: 0
-    if alight.utils.getData element, 'skipBinding'
-        return result
+        skipToElement: null
     if alight.hooks.binding.length
         for h in alight.hooks.binding
             result.hook += 1
@@ -452,12 +468,14 @@ bindNode = (cd, element, option) ->
         result.text += r.text
         result.attr += r.attr
         result.hook += r.hook
+        result.skipToElement = r.skipToElement
     else if element.nodeType is 3
         if bindText cd, element, option
             result.text++
     else if element.nodeType is 8
-        if bindComment cd, element, option
-            result.directive++
+        r = bindComment cd, element, option
+        result.directive += r.directive
+        result.skipToElement = r.skipToElement
     result
 
 

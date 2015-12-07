@@ -99,27 +99,3 @@ alight.exceptionHandler = (e, title, locals) ->
     console.warn title + '\n', (e.message || '') + '\n', locals
     err = if typeof(e) is 'string' then e else e.stack
     console.error err
-
-
-do ->
-    if typeof WeakMap is 'function'
-        map = new WeakMap()
-        alight.utils.setData = (el, key, value) ->
-            d = map.get el
-            if not d
-                d = {}
-                map.set el, d
-            d[key] = value
-
-        alight.utils.getData = (el, key) ->
-            (map.get(el) or {})[key]
-    else
-        alight.utils.setData = (el, key, value) ->
-            d = el.al
-            if not d
-                d = {}
-                el.al = d
-            d[key] = value
-
-        alight.utils.getData = (el, key) ->
-            (el.al or {})[key]

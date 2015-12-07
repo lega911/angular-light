@@ -90,13 +90,12 @@ alight.directives.al.repeat =
                             t = el.nodeValue
                             t2 = t.trim().split(/\s+/)
                             if t2[0] is '/directive:' and t2[1] is 'al-repeat'
-                                alight.utils.setData el, 'skipBinding', true
+                                env.skipToElement = el
                                 break
                         element_list.push el
                         el = el.nextSibling
                     for el in element_list
                         f$.remove el
-                        alight.utils.setData el, 'skipBinding', true
                     null
                 else
                     self.base_element = element
