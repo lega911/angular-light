@@ -5,6 +5,10 @@ Visit [angularlight.org](http://angularlight.org/)
 
 [![Join the chat at https://gitter.im/lega911/angular-light](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/lega911/angular-light?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+### Download / Install
+* ```bower install alight```
+* [Download any version here](https://github.com/lega911/alight/releases)
+
 ### Example 0
 ``` html
 <div al-app>
@@ -39,9 +43,6 @@ alight.bootstrap({
 
 ### Browser Support
 Google Chrome, Firefox, IE9+ (IE8 with jQuery)
-
-### Install with bower
-```bower install alight```
 
 ### Building and testing
 ```
