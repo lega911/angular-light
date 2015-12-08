@@ -474,8 +474,9 @@ bindNode = (cd, element, option) ->
             result.text++
     else if element.nodeType is 8
         r = bindComment cd, element, option
-        result.directive += r.directive
-        result.skipToElement = r.skipToElement
+        if r
+            result.directive += r.directive
+            result.skipToElement = r.skipToElement
     result
 
 
