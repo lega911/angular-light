@@ -254,10 +254,9 @@ attrBinding = (cd, element, value, attrName) ->
     if text.indexOf(alight.utils.pars_start_tag) < 0
         return
 
-    setter = (result) ->
-        f$.attr element, attrName, result
-        '$scanNoChanges'
-    cd.watchText text, setter
+    cd.watchText text, null,
+        element: element
+        elementAttr: attrName
     true
 
 
@@ -265,10 +264,8 @@ bindText = (cd, element) ->
     text = element.data
     if text.indexOf(alight.utils.pars_start_tag) < 0
         return
-    setter = (result) ->
-        element.nodeValue = result
-        '$scanNoChanges'
-    cd.watchText text, setter
+    cd.watchText text, null,
+        element: element
     true
 
 

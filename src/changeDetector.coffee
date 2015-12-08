@@ -306,10 +306,12 @@ ChangeDetector::watch = (name, callback, option) ->
         exp: exp
         src: '' + name
         onStop: option.onStop or null
+        el: option.element or null
+        ea: option.elementAttr or null
 
     if isStatic
         cd.watch '$onScanOnce', ->
-            callback d.exp scope
+            execWatchObject scope, d, d.exp scope
     else
         cd.watchList.push d
 
@@ -355,6 +357,16 @@ notEqual = (a, b) ->
     false
 
 
+execWatchObject = (scope, w, value) ->
+    if w.el
+        if w.ea
+            w.el.setAttribute w.ea, value
+        else
+            w.el.nodeValue = value
+    else
+        w.callback.call scope, value
+
+
 scanCore = (root, result) ->
     extraLoop = false
     changes = 0
@@ -396,10 +408,18 @@ scanCore = (root, result) ->
                 if mutated
                     mutated = false
                     changes++
-                    if not root.skippedWatches.get w
-                        if w.callback.call(scope, value) isnt '$scanNoChanges'
-                            if w.extraLoop
-                                extraLoop = true
+
+                    # fire
+                    if w.el
+                        if w.ea
+                            w.el.setAttribute w.ea, value
+                        else
+                            w.el.nodeValue = value
+                    else
+                        if not root.skippedWatches.get w
+                            if w.callback.call(scope, value) isnt '$scanNoChanges'
+                                if w.extraLoop
+                                    extraLoop = true
                 if alight.debug.scan > 1
                     console.log 'changed:', w.src
 

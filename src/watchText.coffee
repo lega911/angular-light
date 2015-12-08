@@ -77,6 +77,8 @@ do ->
         if st
             cd.watch expression, callback,
                 watchText: st
+                element: config.element
+                elementAttr: config.elementAttr
             return
 
         data = alight.utils.parsText expression
@@ -143,7 +145,11 @@ do ->
             for d in data
                 value += d.value
             cd.watch '$onScanOnce', ->
-                callback value
+                execWatchObject cd.scope,
+                    callback: callback
+                    el: config.element
+                    ea: config.elementAttr
+                , value
             return
 
         if canUseSimpleBuilder
@@ -154,6 +160,8 @@ do ->
             cd.watch expression, callback,
                 watchText:
                     fn: st.fn
+                element: config.element
+                elementAttr: config.elementAttr
             return
 
         w = null
@@ -177,12 +185,14 @@ do ->
         privateValue = ->
             resultValue
         doUpdate()
-        w = cd.watch privateValue, callback
+        w = cd.watch privateValue, callback,
+            element: config.element
+            elementAttr: config.elementAttr
         null
 
-    alight.core.ChangeDetector::watchText = watchText
+    ChangeDetector::watchText = watchText
 
-    alight.core.Scope::$watchText = (expression, callback, option) ->
+    Scope::$watchText = (expression, callback, option) ->
         cd = @.$changeDetector
         if cd
             cd.watchText expression, callback, option
