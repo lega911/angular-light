@@ -488,17 +488,3 @@ alight.directives.al.repeat =
                                 CD.setValue self.storeTo, list
 
                             null
-
-
-alight.directives.bo.repeat =
-    priority: 1000
-    restrict: 'AM'
-    stopBinding: true
-    init: (scope, element, exp, env) ->        
-        self = alight.directives.al.repeat.init scope, element, exp, env
-        originalStart = self.start
-        self.start = ->
-            originalStart()
-            scope.$changeDetector.watch '$finishScanOnce', ->
-                self.watch.stop()  # stop watching
-        self
