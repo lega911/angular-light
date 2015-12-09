@@ -30,7 +30,7 @@ Test('apply-binding-0').run ($test, alight) ->
         scope.redClass = true
         scope.link = 'other.png'
         scope.$scan ->
-            $test.equal el.className, 'red'
+            $test.equal el.className.trim(), 'red'
             $test.equal f$_attr el, 'src', 'some-other.png'
             $test.equal count, 1
             $test.equal f$_attr el, 'some-text', 'start:other.png:finish'

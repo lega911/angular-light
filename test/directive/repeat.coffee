@@ -383,7 +383,7 @@ Test('al-repeat track by 4', 'al-repeat-track-by-4').run ($test, alight) ->
     alight.bind scope, element
 
     getText = ->
-        element.innerText.replace(/\s/g, '')
+        ttGetText element
 
     $test.equal getText(), '01234'
     scope.list = []
@@ -411,7 +411,7 @@ Test('al-repeat track by 5', 'al-repeat-track-by-5').run ($test, alight) ->
     alight.bind scope, element
 
     getText = ->
-        element.innerText.replace(/\s/g, '')
+        ttGetText element
 
     $test.equal getText(), '1a2b3c'
     scope.list = [{k: 0, name: 'x'}, {k: 1, name: 'y'}, {k: 2, name: 'z'}]

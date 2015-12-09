@@ -6,7 +6,10 @@ window.ttDOM = (html) ->
 
 
 window.ttGetText = (el) ->
-    result = (el.textContent or el.innerText).replace /\s+/g, ' '
+    result = el.textContent
+    if typeof(result) isnt 'string'
+        result = el.innerText
+    result = result.replace /\s+/g, ' '
     result.trim()
 
 window.f$_attr = (el, name, value) ->

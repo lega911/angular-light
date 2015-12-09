@@ -10,7 +10,7 @@ Test('bo-switch-0').run ($test, alight) ->
     alight.bootstrap el, 
         value: 'one'
     
-    $test.equal el.innerText.trim(), 'one 1'
+    $test.equal ttGetText(el), 'one 1'
     $test.close()
 
 Test('bo-switch-1').run ($test, alight) ->
@@ -25,7 +25,7 @@ Test('bo-switch-1').run ($test, alight) ->
     alight.bootstrap el,
         value: 'three'
 
-    $test.equal el.innerText.trim(), 'default'
+    $test.equal ttGetText(el), 'default'
     $test.close()
 
 Test('bo-if-0').run ($test, alight) ->
@@ -37,5 +37,5 @@ Test('bo-if-0').run ($test, alight) ->
     alight.bootstrap el,
         v: 'one'
 
-    $test.equal el.innerText.trim(), 'one one'
+    $test.equal ttGetText(el), 'one one'
     $test.close()
