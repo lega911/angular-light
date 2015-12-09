@@ -38,6 +38,12 @@
         }
     };
 
+    if (!Array.isArray) {
+      Array.isArray = function(arg) {
+        return Object.prototype.toString.call(arg) === '[object Array]';
+      };
+    }
+
     // browser detect
     f$.browser = (function(){
         var N= navigator.appName, ua= navigator.userAgent.toLowerCase(), tem;
@@ -65,19 +71,6 @@
         if(f$.browser.name === 'msie') msie = f$.browser.version;
     }
 
-    if(msie && msie < 8) {
-        f$.text = function(elm, text) {
-            $(elm).text(text)
-        }
-    };
-
-    if(msie && msie < 6) {
-        f$.html = function(elm, html) {
-            if(arguments.length === 2) $(elm).html(html)
-            else return $(elm).html()
-        }
-    };
-
     if(msie && msie < 9) {
         f$.on = function(element, event, callback) {
             $(element).on(event, callback)
@@ -85,56 +78,6 @@
         f$.off = function(element, event, callback) {
             $(element).off(event, callback)
         };
-    };
-
-    if(msie && msie < 8) {
-        f$.find = function(element, selector) {
-            return $(element).find(selector)
-        };
-    };
-
-    if(msie && msie < 8) {
-        f$.attr = function(element, name, value) {
-            return $(element).attr(name, value)
-        };
-
-        f$.removeAttr = function(element, name) {
-            $(element).removeAttr(name)
-        };
-    };
-
-    if(msie && msie < 8) {
-        f$.addClass = function(element, name) {
-            $(element).addClass(name)
-        };
-
-        f$.removeClass = function(element, name) {
-            $(element).removeClass(name)
-        };
-    };
-
-    if(msie && msie < 8) {
-        f$.show = function(element) {
-            $(element).show()
-        };
-
-        f$.hide = function(element) {
-            $(element).hide()
-        };
-    };
-
-    if(msie && msie < 8) {
-        f$.getAttributes = function (element) {
-            var attr = {};
-            var elem = $(element);
-            if(elem.length) $.each(elem.get(0).attributes, function(v,n) {
-                var n = n.nodeName||n.name;
-                v = elem.attr(n);
-                if(v != undefined && v !== false) attr[n] = v
-            });
-
-            return attr
-        }
     };
 
     if(msie && msie < 9) {

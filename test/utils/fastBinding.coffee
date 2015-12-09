@@ -9,7 +9,7 @@ Test('fast-binding 0', 'fast-binding-0').run ($test, alight) ->
         <span>no bind <b><b attr4="{{attr4}}x"></b></b> </span>
         <span attr3="a{{attr3}}a">{{child2}}-from-child</span>
     '''
-    alight.f$.attr el, 'attr5', 'y{{attr5}}'
+    f$_attr el, 'attr5', 'y{{attr5}}'
 
     cd = alight.ChangeDetector
         rootValue: 'unix'
@@ -106,8 +106,8 @@ Test('fast-binding-2').run ($test, alight) ->
         list: ['windows', 'mac', 'linux']
 
     $test.equal ttGetText(el), 'windows mac linux'
-    $test.equal alight.f$.find(el, 'option')[0].attributes.value.value, 'windows'
-    $test.equal alight.f$.find(el, 'option')[1].attributes.value.value, 'mac'
-    $test.equal alight.f$.find(el, 'option')[2].attributes.value.value, 'linux'
+    $test.equal f$_find(el, 'option')[0].attributes.value.value, 'windows'
+    $test.equal f$_find(el, 'option')[1].attributes.value.value, 'mac'
+    $test.equal f$_find(el, 'option')[2].attributes.value.value, 'linux'
 
     $test.close()

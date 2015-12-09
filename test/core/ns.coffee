@@ -9,7 +9,7 @@ Test('ns-0', 'ns-0').run ($test, alight) ->
 
         alight.directives.ut =
             test3: (scope, el, name) ->
-                f$.text el, name
+                el.textContent = name
 
         alight.bootstrap el
         $test.equal ttGetText(el), 'linux'
@@ -21,7 +21,7 @@ Test('ns-0', 'ns-0').run ($test, alight) ->
                 directives:
                     ut:
                         uniqDirective: (scope, el, name) ->
-                            f$.text el, name
+                            el.textContent = name
 
         try
             alight.bootstrap ttDOM('<p ut-test3="linux"></p>'), scope
@@ -61,7 +61,7 @@ Test('ns-1', 'ns-1').run ($test, alight) ->
             directives:
                 al:
                     private: (scope, el, name) ->
-                        f$.text el, name
+                        el.textContent = name
 
     try
         alight.bootstrap tag, makeScope()

@@ -22,7 +22,7 @@ clickMaker = (event) ->
                     if self.stopPropagation
                         e.stopPropagation()
 
-                if f$.attr element, 'disabled'
+                if element.getAttribute 'disabled'
                     return
 
                 try

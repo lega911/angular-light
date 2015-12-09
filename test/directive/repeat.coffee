@@ -179,8 +179,8 @@ do ->
         alight.bind scope, dom
 
         result = ->
-            r = for e in alight.f$.find dom, '.item'
-                alight.f$.text e
+            r = for e in f$_find dom, '.item'
+                ttGetText e
             r.join ', '
 
         ops = [
@@ -307,7 +307,7 @@ Test('al-repeat one-time-bindings', 'al-repeat-one-time-bindings').run ($test, a
         return scope.$scan().total
 
     rowCount = ->
-        r = for e in alight.f$.find dom, '.item'
+        r = for e in f$_find dom, '.item'
             e
         r.length
 

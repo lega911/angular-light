@@ -2,9 +2,9 @@
 alight.d.al.enable = (scope, element, exp) ->
     setter = (value) ->
         if value
-            f$.removeAttr element, 'disabled'
+            element.removeAttribute 'disabled'
         else
-            f$.attr element, 'disabled', 'disabled'
+            element.setAttribute 'disabled', 'disabled'
 
     scope.$watch exp, setter
 
@@ -12,8 +12,8 @@ alight.d.al.enable = (scope, element, exp) ->
 alight.d.al.disable = (scope, element, exp) ->
     setter = (value) ->
         if value
-            f$.attr element, 'disabled', 'disabled'
+            element.setAttribute 'disabled', 'disabled'
         else
-            f$.removeAttr element, 'disabled'
+            element.removeAttribute 'disabled'
 
     scope.$watch exp, setter

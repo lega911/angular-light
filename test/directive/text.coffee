@@ -194,7 +194,7 @@ Test('onetime-binding-2', 'onetime-binding-2').run ($test, alight, timeout) ->
     scope = alight.bootstrap dom
 
     result = ->
-        alight.f$.text dom
+        ttGetText dom
 
     steps = [
         ->

@@ -2,9 +2,9 @@
 alight.d.al.show = (scope, element, exp) ->
     self =
         showDom: ->
-            f$.show element
+            f$.removeClass element, 'al-hide'
         hideDom: ->
-            f$.hide element
+            f$.addClass element, 'al-hide'
         updateDom: (value) ->
             if value
                 self.showDom()

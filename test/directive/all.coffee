@@ -60,8 +60,8 @@ Test('directive-scope-isolate-0').run ($test, alight) ->
 		name: 'parent'
 
 	f$ = alight.f$
-	$test.equal f$.text(f$.find(el, '#i1')[0]), 'parent:child1:parent:child1'
-	$test.equal f$.text(f$.find(el, '#i2')[0]), ':child2:parent:child1'
+	$test.equal ttGetText(f$_find(el, '#i1')[0]), 'parent:child1:parent:child1'
+	$test.equal ttGetText(f$_find(el, '#i2')[0]), ':child2:parent:child1'
 	$test.close()
 
 
@@ -92,7 +92,7 @@ Test('restrict-m-1').run ($test, alight) ->
 
 		alight.bootstrap el
 
-		$test.equal alight.f$.text(alight.f$.find(el, 'p')[0]).trim(), 'Hello World!'
+		$test.equal ttGetText(f$_find(el, 'p')[0]), 'Hello World!'
 		$test.close()
 
 
@@ -118,7 +118,7 @@ Test('restrict-m-2').run ($test, alight) ->
 
 		alight.bootstrap el
 
-		$test.equal alight.f$.text(alight.f$.find(el, 'p')[0]).trim(), 'Hello World!'
+		$test.equal ttGetText(f$_find(el, 'p')[0]), 'Hello World!'
 		$test.close()
 
 

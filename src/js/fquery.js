@@ -1,14 +1,5 @@
 /* library to work with DOM */
 (function(){
-    f$.text = function(element, text) {
-        if(arguments.length === 2) {
-            if(element.textContent !== undefined) element.textContent = text;
-            else element.innerText = text
-        } else {
-            return element.textContent || element.innerText;
-        }
-    };
-
     f$.before = function(base, elm) {
         var parent = base.parentNode;
         parent.insertBefore(elm, base)
@@ -34,43 +25,16 @@
         element.removeEventListener(event, callback, false)
     };        
 
-    f$.find = function(element, selector) {
-        return element.querySelectorAll(selector)
-    };
-
-    f$.attr = function(element, name, value) {
-        if(arguments.length===2)
-            return element.getAttribute(name)
-        else
-            element.setAttribute(name, value)
-    };
-
-    f$.removeAttr = function(element, name) {
-        element.removeAttribute(name)
-    };        
-
-    //    # $.isFunction
     f$.isFunction = function(fn) {
-        var gt = {};
-        return (fn && gt.toString.call(fn) === '[object Function]')
+        return (fn && Object.prototype.toString.call(fn) === '[object Function]')
     };
 
-    f$.isObject = function(fn) {
-        var gt = {};
-        return (fn && gt.toString.call(fn) === '[object Object]')
-    };
-
-    f$.isArray = function(obj) {
-        return obj instanceof Array;
+    f$.isObject = function(o) {
+        return (o && Object.prototype.toString.call(o) === '[object Object]')
     };
 
     f$.isElement = function(el) {
         return el instanceof HTMLElement
-    };
-
-    f$.prop = function(element, name, value) {
-        if(arguments.length===2) return element[name]
-        else element[name] = value
     };
 
     f$.addClass = function(element, name) {
@@ -81,23 +45,6 @@
     f$.removeClass = function(element, name) {
         if(element.classList) element.classList.remove(name)
         else element.className = element.className.replace(new RegExp('(^| )' + name.split(' ').join('|') + '( |$)', 'gi'), ' ')
-    };
-
-    f$.show = function(element) {
-        f$.removeClass(element, 'al-hide')
-    };
-
-    f$.hide = function(element) {
-        f$.addClass(element, 'al-hide')
-    };
-
-    f$.getAttributes = function (element) {
-        var attr, r = {}, attrs = element.attributes;
-        for (var i=0, l=attrs.length; i<l; i++) {
-            attr = attrs.item(i)
-            r[attr.nodeName] = attr.value;
-        }
-        return r
     };
 
     f$.ready = (function() {
@@ -186,7 +133,7 @@
     // append classes
     (function(){
         var css = '@charset "UTF-8";[al-cloak],.al-hide{display:none !important;}';
-        var head = f$.find(document, 'head')[0];
+        var head = document.querySelectorAll('head')[0];
 
         var s = document.createElement('style');
         s.setAttribute('type', 'text/css');

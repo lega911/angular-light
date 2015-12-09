@@ -57,7 +57,6 @@ alight.core.fastBinding = fastBinding = (element) ->
                 rel = pathToEl path
                 fn = compileText text
                 rtext = text.replace(/"/g, '\\"').replace(/\n/g, '\\n')
-                rCallback = 'function(value) {f$.attr(' + rel + ', "' + key + '", value); return "$scanNoChanges"}'
                 if fn
                     source.push "s.fw('#{rtext}', #{self.fastWatchFn.length}, #{rel}, '#{key}');"
                     self.fastWatchFn.push fn

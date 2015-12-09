@@ -334,7 +334,7 @@ bindElement = do ->
                 continue
             if skip
                 attr.skip = true
-            value = f$.attr @.element, name
+            value = @.element.getAttribute name
             return value or true
 
     skippedAttr = ->
@@ -368,9 +368,8 @@ bindElement = do ->
             testDirective attrName, args
 
             args.attr_type = 'A'
-            attrs = f$.getAttributes element
-            for attrName of attrs
-                testDirective attrName, args
+            for attr in element.attributes
+                testDirective attr.name, args
 
             if config.attachDirective
                 for attrName, attrValue of config.attachDirective
@@ -388,7 +387,7 @@ bindElement = do ->
                 if config.attachDirective and config.attachDirective[d.attrName]
                     value = config.attachDirective[d.attrName]
                 else
-                    value = f$.attr element, d.attrName
+                    value = element.getAttribute d.attrName
                 if d.is_attr
                     if attrBinding cd, element, value, d.attrName
                         bindResult.attr++
@@ -549,12 +548,12 @@ alight.bind = alight.applyBindings = (scope, element, option) ->
 
 alight.bootstrap = (input, data) ->
     if not input
-        input = f$.find document, '[al-app]'
+        input = document.querySelectorAll '[al-app]'
     if typeof(input) is 'string'
-        input = f$.find document.body, input
+        input = document.querySelectorAll input
     if f$.isElement input
         input = [input]
-    if f$.isArray(input) or typeof(input.length) is 'number'
+    if Array.isArray(input) or typeof(input.length) is 'number'
         lastScope = null
         if data            
             oneScope = alight.Scope
@@ -570,7 +569,7 @@ alight.bootstrap = (input, data) ->
             option =
                 skip_attr: 'al-app'
 
-            ctrlName = f$.attr element, 'al-app'
+            ctrlName = element.getAttribute 'al-app'
             if ctrlName
                 option.attachDirective =
                     'al-ctrl': ctrlName

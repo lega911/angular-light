@@ -12,12 +12,12 @@ alight.d.al.checked =
             offDom: ->
                 f$.off element, 'change', self.updateModel
             updateModel: ->
-                value = f$.prop element, 'checked'
+                value = element.checked
                 scope.$setValue name, value
                 scope.$scan
                     skipWatch: self.watch
             watchModel: ->
                 self.watch = scope.$watch name, self.updateDom
             updateDom: (value) ->
-                f$.prop element, 'checked', !!value
+                element.checked = !!value
                 '$scanNoChanges'

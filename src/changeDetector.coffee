@@ -384,8 +384,8 @@ scanCore = (root, result) ->
             if last isnt value
                 mutated = false
                 if w.isArray
-                    a0 = f$.isArray last
-                    a1 = f$.isArray value
+                    a0 = Array.isArray last
+                    a1 = Array.isArray value
                     if a0 is a1
                         if a0
                             if notEqual last, value

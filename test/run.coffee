@@ -6,8 +6,17 @@ window.ttDOM = (html) ->
 
 
 window.ttGetText = (el) ->
-    result = el.innerText.replace /\s+/g, ' '
+    result = (el.textContent or el.innerText).replace /\s+/g, ' '
     result.trim()
+
+window.f$_attr = (el, name, value) ->
+    if arguments.length is 3
+        el.setAttribute name, value
+    else
+        el.getAttribute name
+
+window.f$_find = (el, q) ->
+    el.querySelectorAll q
 
 
 stat =

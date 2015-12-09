@@ -12,12 +12,12 @@ Test('binding-0').run ($test, alight) ->
         num: 15
 
     $test.equal ttGetText(el), 'Text 30'
-    $test.equal alight.f$.attr(el.childNodes[0], 'attr'), '20'
+    $test.equal f$_attr(el.childNodes[0], 'attr'), '20'
 
     scope.num = 50
     scope.$scan ->
         $test.equal ttGetText(el), 'Text 100'
-        $test.equal alight.f$.attr(el.childNodes[0], 'attr'), '55'
+        $test.equal f$_attr(el.childNodes[0], 'attr'), '55'
         $test.close()
 
 

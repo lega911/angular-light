@@ -26,5 +26,5 @@ alight.d.al.radio =
             watchModel: ->
                 self.watch = scope.$watch name, self.updateDom
             updateDom: (value) ->
-                f$.prop element, 'checked', value is self.value
+                element.checked = value is self.value
                 '$scanNoChanges'
