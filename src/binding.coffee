@@ -138,10 +138,10 @@ do ->
         fn: ->
             if @.directive.template
                 if @.element.nodeType is 1
-                    f$.html @.element, @.directive.template
+                    @.element.innerHTML = @.directive.template
                 else if @.element.nodeType is 8
                     el = document.createElement 'p'
-                    el.innerHTML = @.directive.template.trimLeft()
+                    el.innerHTML = @.directive.template.trim()
                     el = el.firstChild
                     f$.after @.element, el
                     @.element = el
@@ -270,10 +270,10 @@ bindText = (cd, element) ->
 
 
 bindComment = (cd, element, option) ->
-    text = element.nodeValue.trimLeft()
+    text = element.nodeValue.trim()
     if text[0..9] isnt 'directive:'
         return
-    text = text[10..].trimLeft()
+    text = text[10..].trim()
     i = text.indexOf ' '
     if i >= 0
         dirName = text[0..i-1]
@@ -428,7 +428,9 @@ bindElement = do ->
         if !skipChildren
             # text bindings
             skipToElement = null
-            for childElement in f$.childNodes element
+            childNodes = for childElement in element.childNodes
+                childElement
+            for childElement in childNodes
                 if not childElement
                     continue
                 if skipToElement

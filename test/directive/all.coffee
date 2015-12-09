@@ -92,7 +92,7 @@ Test('restrict-m-1').run ($test, alight) ->
 
 		alight.bootstrap el
 
-		$test.equal alight.f$.text(alight.f$.find(el, 'p')[0]).trimLeft(), 'Hello World!'
+		$test.equal alight.f$.text(alight.f$.find(el, 'p')[0]).trim(), 'Hello World!'
 		$test.close()
 
 
@@ -118,7 +118,7 @@ Test('restrict-m-2').run ($test, alight) ->
 
 		alight.bootstrap el
 
-		$test.equal alight.f$.text(alight.f$.find(el, 'p')[0]).trimLeft(), 'Hello World!'
+		$test.equal alight.f$.text(alight.f$.find(el, 'p')[0]).trim(), 'Hello World!'
 		$test.close()
 
 

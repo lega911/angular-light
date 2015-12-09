@@ -13,7 +13,7 @@ alight.d.al.if =
                 self.watchModel()
             prepare: ->
                 self.base_element = element
-                self.top_element = f$.createComment " #{env.attrName}: #{name} "
+                self.top_element = document.createComment " #{env.attrName}: #{name} "
                 f$.before element, self.top_element
                 f$.remove element
             updateDom: (value) ->
@@ -31,7 +31,7 @@ alight.d.al.if =
             insertBlock: ->
                 if self.childCD
                     return
-                self.item = f$.clone self.base_element
+                self.item = self.base_element.cloneNode true
                 self.insertDom self.top_element, self.item
                 self.childCD = env.changeDetector.new()
 

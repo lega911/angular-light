@@ -10,7 +10,7 @@ alight.d.al.value = (scope, element, variable) ->
             f$.off element, 'change', self.updateModel
         updateModel: ->
             alight.nextTick ->
-                value = f$.val element
+                value = element.value
                 scope.$setValue variable, value
                 scope.$scan
                     skipWatch: self.watch
@@ -18,7 +18,7 @@ alight.d.al.value = (scope, element, variable) ->
             self.watch = scope.$watch variable, self.updateDom
         updateDom: (value) ->
             value ?= ''
-            f$.val element, value
+            element.value = value
             '$scanNoChanges'
         start: ->
             self.onDom()

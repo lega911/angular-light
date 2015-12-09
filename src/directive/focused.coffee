@@ -21,9 +21,9 @@ alight.d.al.focused = (scope, element, name) ->
 
         updateDom: (value) ->
             if value
-                f$.focus(element)
+                element.focus()
             else
-                f$.blur(element)
+                element.blur()
             '$scanNoChanges'
 
         watchModel: ->

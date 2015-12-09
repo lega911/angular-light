@@ -99,7 +99,7 @@ alight.directives.al.repeat =
                     null
                 else
                     self.base_element = element
-                    self.top_element = f$.createComment " #{exp} "
+                    self.top_element = document.createComment " #{exp} "
                     f$.before element, self.top_element
                     f$.remove element
 
@@ -304,7 +304,7 @@ alight.directives.al.repeat =
                                 childCD = self.makeChild item_value, index, list
 
                                 element_list = for bel in self.element_list
-                                    el = f$.clone bel
+                                    el = bel.cloneNode true
                                     applyList.push
                                         cd: childCD
                                         el: el
@@ -433,7 +433,7 @@ alight.directives.al.repeat =
 
                                 childCD = self.makeChild item_value, index, list
 
-                                element = f$.clone self.base_element
+                                element = self.base_element.cloneNode true
                                 applyList.push
                                     cd: childCD
                                     el: element

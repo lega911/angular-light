@@ -10,9 +10,9 @@ alight.d.al.html =
                 child.destroy()
                 child = null
             if not html
-                f$.html element, ''
+                element.innerHTML = ''
                 return
-            f$.html element, html
+            element.innerHTML = html
             child = cd.new()
             alight.bind child, element,
                 skip_attr: env.skippedAttr()

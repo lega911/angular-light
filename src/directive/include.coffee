@@ -13,7 +13,7 @@ alight.d.al.include =
                 self.watchModel()
             prepare: ->
                 baseElement = element
-                topElement = f$.createComment " #{env.attrName}: #{name} "
+                topElement = document.createComment " #{env.attrName}: #{name} "
                 f$.before element, topElement
                 f$.remove element
             loadHtml: (cfg) ->
@@ -26,8 +26,8 @@ alight.d.al.include =
                     self.removeDom activeElement
                     activeElement = null
             insertBlock: (html) ->
-                activeElement = f$.clone baseElement
-                f$.html activeElement, html
+                activeElement = baseElement.cloneNode true
+                activeElement.innerHTML = html
                 self.insertDom topElement, activeElement
                 child = env.changeDetector.new()
                 alight.bind child, activeElement,
