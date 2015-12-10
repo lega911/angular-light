@@ -95,7 +95,7 @@ fastBinding::bind = (cd, element) ->
     self = @
     self.currentCD = cd
     self.resultFn self, element, f$
-    null
+    return
 
 fastBinding::fw = (text, fnIndex, element, attr) ->
     self = @
@@ -117,7 +117,7 @@ fastBinding::fw = (text, fnIndex, element, attr) ->
         ea: attr or null
     cd.watchList.push w
     execWatchObject cd.scope, w, value
-    null
+    return
 
 
 fastBinding::wt = (expression, element, attr) ->
@@ -125,4 +125,4 @@ fastBinding::wt = (expression, element, attr) ->
         element: element
         elementAttr: attr
     @.currentCD.scan()  # require extra-loop
-    null
+    return

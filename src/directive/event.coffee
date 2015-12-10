@@ -6,15 +6,19 @@ for key in ['keydown', 'keypress', 'keyup', 'mousedown', 'mouseenter', 'mouselea
                 start: ->
                     self.makeCaller()
                     self.onDom()
+                    return
                 makeCaller: ->
                     self.caller = scope.$compile exp,
                         no_return: true
                         input: ['$event']
+                    return
                 onDom: ->
                     f$.on element, key, self.callback
                     scope.$watch '$destroy', self.offDom
+                    return
                 offDom: ->
                     f$.off element, key, self.callback
+                    return
                 callback: (e) ->
                     try
                         self.caller scope, e
@@ -24,3 +28,4 @@ for key in ['keydown', 'keypress', 'keyup', 'mousedown', 'mouseenter', 'mouselea
                             scope: scope
                             element: element
                     scope.$scan()
+                    return

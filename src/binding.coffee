@@ -118,6 +118,7 @@ do ->
                     @.result = result
                     if result.owner
                         @.env.stopBinding = true
+            return
 
     ext.push
         code: 'templateUrl'
@@ -132,6 +133,7 @@ do ->
                         ds.directive.template = html
                         callback()
                     error: callback
+            return
 
     ext.push
         code: 'template'
@@ -146,6 +148,7 @@ do ->
                     f$.after @.element, el
                     @.element = el
                     @.doBinding = true
+            return
 
     ext.push
         code: 'scope'
@@ -190,6 +193,7 @@ do ->
 
             @.env.stopBinding = true
             @.doBinding = true
+            return
 
     ext.push
         code: 'link'
@@ -203,6 +207,7 @@ do ->
                     if result.owner
                         @.env.stopBinding = true
                     @.result = result
+            return
 
     ext.push
         code: 'scopeBinding'
@@ -210,6 +215,7 @@ do ->
             if @.doBinding
                 alight.bind @.cd, @.element,
                     skip_attr: @.env.skippedAttr()
+            return
 
 
 testDirective = do ->

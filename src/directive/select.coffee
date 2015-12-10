@@ -26,13 +26,14 @@ do ->
             item = @.itemById[id]
             delete @.itemById[id]
             @.idByItem.delete item
-            null
+            return
 
         Mapper::replace = (id, item) ->
             old = @.itemById[id]
             @.idByItem.delete old
             @.idByItem.set item, id
             @.itemById[id] = item
+            return
 
         Mapper::getId = (item) ->
             @.idByItem.get item
@@ -61,9 +62,11 @@ do ->
 
         Mapper::release = (id) ->
             delete @.itemById[id]
+            return
 
         Mapper::replace = (id, item) ->
             @.itemById[id] = item
+            return
 
         Mapper::getId = (item) ->
             if item is null
@@ -99,6 +102,7 @@ do ->
             f$.on element, 'input', onChangeDOM
             cd.watch '$destroy', ->
                 f$.off element, 'input', onChangeDOM
+            return
 
     alight.d.al.option = (scope, element, key, env) ->
         step = env.changeDetector
@@ -127,6 +131,8 @@ do ->
             else
                 id = mapper.acquire item
                 element.value = id
+            return
 
         cd.watch '$destroy', ->
             mapper.release id
+        return

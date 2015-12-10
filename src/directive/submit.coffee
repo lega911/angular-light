@@ -6,11 +6,14 @@ alight.d.al.submit = (scope, element, name) ->
             input: ['$event']
         start: ->
             self.onDom()
+            return
         onDom: ->
             f$.on element, 'submit', self.doCallback
             scope.$watch '$destroy', self.offDom
+            return
         offDom: ->
             f$.off element, 'submit', self.doCallback
+            return
         doCallback: (e) ->
             e.preventDefault()
             e.stopPropagation()
@@ -22,3 +25,4 @@ alight.d.al.submit = (scope, element, name) ->
                     scope: scope
                     element: element
             scope.$scan()
+            return

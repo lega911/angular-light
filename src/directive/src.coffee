@@ -7,3 +7,4 @@ alight.d.al.src = (scope, element, name) ->
         '$scanNoChanges'
 
     scope.$watchText name, setter
+    return

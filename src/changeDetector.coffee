@@ -12,22 +12,26 @@ makeSkipWatchObject = ->
         map = new Map
         set: (w) ->
             map.set w, true
+            return
         get: (w) ->
             if not map.size
                 return false
             map.get w
         clear: ->
             map.clear()
+            return
     else
         list = []
         set: (w) ->
             list.push w
+            return
         get: (w) ->
             if not list.length
                 return false
             list.indexOf(w) >= 0
         clear: ->
             list.length = 0
+            return
 
 
 Root = () ->
@@ -119,6 +123,7 @@ ChangeDetector::destroy = ->
     if root.topCD is cd
         root.topCD = null
         root.destroy()
+    return
 
 
 getFilter = (name, cd, param) ->
@@ -364,6 +369,7 @@ execWatchObject = (scope, w, value) ->
             w.el.nodeValue = value
     else
         w.callback.call scope, value
+    return
 
 
 scanCore = (root, result) ->
@@ -425,6 +431,7 @@ scanCore = (root, result) ->
     result.total = total
     result.changes = changes
     result.extraLoop = extraLoop
+    return
 
 
 Root::scan = (cfg) ->

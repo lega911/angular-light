@@ -7,6 +7,7 @@ alight.d.al.class = alight.d.al.css =
             start: ->
                 self.parsLine()
                 self.prepare()
+                return
             parsLine: ->
                 self.list = list = []
 
@@ -22,7 +23,7 @@ alight.d.al.class = alight.d.al.css =
                         list.push
                             css: e[0..i-1].trim().split ' '
                             exp: e[i+1..].trim()
-                null
+                return
             prepare: ->
                 for item in self.list
                     color = do (item) ->
@@ -31,7 +32,7 @@ alight.d.al.class = alight.d.al.css =
                             '$scanNoChanges'
 
                     scope.$watch item.exp, color
-                null
+                return
             draw: (item, value) ->
                 if value
                     for c in item.css
@@ -39,4 +40,4 @@ alight.d.al.class = alight.d.al.css =
                 else
                     for c in item.css
                         f$.removeClass element, c
-                null
+                return

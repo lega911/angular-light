@@ -7,6 +7,7 @@ alight.d.al.focused = (scope, element, name) ->
             scope.$setValue name, value
             scope.$scan
                 skipWatch: self.watch
+            return
 
         onDom: ->
             von = ->
@@ -18,6 +19,7 @@ alight.d.al.focused = (scope, element, name) ->
             scope.$watch '$destroy', ->
                 f$.off element, 'focus', von
                 f$.off element, 'blur', voff
+            return
 
         updateDom: (value) ->
             if value
@@ -28,7 +30,9 @@ alight.d.al.focused = (scope, element, name) ->
 
         watchModel: ->
             self.watch = scope.$watch name, safe.updateDom
+            return
 
         start: ->
             safe.onDom()
             safe.watchModel()
+            return

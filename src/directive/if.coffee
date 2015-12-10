@@ -11,16 +11,19 @@ alight.d.al.if =
             start: ->
                 self.prepare()
                 self.watchModel()
+                return
             prepare: ->
                 self.base_element = element
                 self.top_element = document.createComment " #{env.attrName}: #{name} "
                 f$.before element, self.top_element
                 f$.remove element
+                return
             updateDom: (value) ->
                 if value
                     self.insertBlock value
                 else
                     self.removeBlock()
+                return
             removeBlock: ->
                 if not self.childCD
                     return
@@ -28,6 +31,7 @@ alight.d.al.if =
                 self.childCD = null
                 self.removeDom self.item
                 self.item = null
+                return
             insertBlock: ->
                 if self.childCD
                     return
@@ -37,12 +41,16 @@ alight.d.al.if =
 
                 alight.bind self.childCD, self.item,
                     skip_attr: env.skippedAttr()    
+                return
             watchModel: ->
                 scope.$watch name, self.updateDom
+                return
             removeDom: (element) ->
                 f$.remove element
+                return
             insertDom: (base, element) ->
                 f$.after base, element
+                return
 
 
 alight.d.al.ifnot =
@@ -55,4 +63,5 @@ alight.d.al.ifnot =
                 self.removeBlock()
             else
                 self.insertBlock()
+            return
         self

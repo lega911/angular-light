@@ -3,15 +3,19 @@ alight.d.al.ctrl =
     scope: 'isolate'
     global: true
     link: (scope, element, name, env) ->
+        error = (e, title) ->
+            alight.exceptionHandler e, title,
+                name: name
+                env: env
+                scope: scope
+                element: element
+            return
+
         $ns = scope.$ns
         if $ns and $ns.ctrl
             fn = $ns.ctrl[name]
             if not fn and not $ns.inheritGlobal
-                alight.exceptionHandler '', 'Controller not found in $ns: ' + name,
-                    name: name
-                    env: env
-                    scope: scope
-                    element: element
+                error '', 'Controller not found in $ns: ' + name
                 return
 
         if not fn
@@ -21,11 +25,10 @@ alight.d.al.ctrl =
                 fn = window[name]
 
         if fn
-            fn scope, element, name, env
-            null
+            try
+                fn scope, element, name, env
+            catch e
+                error e, 'Error in controller: ' + name
         else
-            alight.exceptionHandler '', 'Controller not found: ' + name,
-                name: name
-                env: env
-                scope: scope
-                element: element
+            error '', 'Controller not found: ' + name
+        return

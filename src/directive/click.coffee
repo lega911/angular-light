@@ -11,11 +11,14 @@ clickMaker = (event) ->
             start: ->
                 self.onDom()
                 self.stop = env.takeAttr 'al-click-stop'
+                return
             onDom: ->
                 f$.on element, event, self.doCallback
                 scope.$watch '$destroy', self.offDom
+                return
             offDom: ->
                 f$.off element, event, self.doCallback
+                return
             doCallback: (e) ->
                 if not self.stop
                     e.preventDefault()
@@ -39,6 +42,7 @@ clickMaker = (event) ->
                         e.stopPropagation()
 
                 scope.$scan()
+                return
 
 alight.d.al.click = clickMaker 'click'
 alight.d.al.dblclick = clickMaker 'dblclick'

@@ -11,13 +11,16 @@ alight.d.al.include =
             start: ->
                 self.prepare()
                 self.watchModel()
+                return
             prepare: ->
                 baseElement = element
                 topElement = document.createComment " #{env.attrName}: #{name} "
                 f$.before element, topElement
                 f$.remove element
+                return
             loadHtml: (cfg) ->
                 f$.ajax cfg
+                return
             removeBlock: ->
                 if child
                     child.destroy()
@@ -25,6 +28,7 @@ alight.d.al.include =
                 if activeElement
                     self.removeDom activeElement
                     activeElement = null
+                return
             insertBlock: (html) ->
                 activeElement = baseElement.cloneNode true
                 activeElement.innerHTML = html
@@ -32,6 +36,7 @@ alight.d.al.include =
                 child = env.changeDetector.new()
                 alight.bind child, activeElement,
                     skip_attr: env.skippedAttr()
+                return
             updateDom: (url) ->
                 if not url
                     self.removeBlock()
@@ -43,11 +48,15 @@ alight.d.al.include =
                         self.removeBlock()
                         self.insertBlock html
                     error: self.removeBlock
+                return
             removeDom: (element) ->
                 f$.remove element
+                return
             insertDom: (base, element) ->
                 f$.after base, element
+                return
             watchModel: ->
                 scope.$watch name, self.updateDom
+                return
 
         self

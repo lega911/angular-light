@@ -185,7 +185,7 @@ do ->
         w = cd.watch privateValue, callback,
             element: config.element
             elementAttr: config.elementAttr
-        null
+        return
 
     ChangeDetector::watchText = watchText
 
@@ -198,3 +198,4 @@ do ->
                 expression: expression
                 option: option
                 scope: @
+        return

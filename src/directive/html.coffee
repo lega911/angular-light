@@ -16,6 +16,7 @@ alight.d.al.html =
             child = cd.new()
             alight.bind child, element,
                 skip_attr: env.skippedAttr()
+            return
 
         cd.watch name, setter
-        null
+        return

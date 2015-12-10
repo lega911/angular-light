@@ -9,3 +9,4 @@ alight.d.al.init = (scope, element, exp) ->
             exp: exp
             scope: scope
             element: element
+    return

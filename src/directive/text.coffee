@@ -3,6 +3,7 @@ alight.d.al.text = (scope, element, name) ->
     self =
         start: ->
             self.watchModel()
+            return
         updateDom: (value) ->
             value ?= ''
             if element.textContent isnt undefined
@@ -12,3 +13,4 @@ alight.d.al.text = (scope, element, name) ->
             '$scanNoChanges'
         watchModel: ->
             scope.$watch name, self.updateDom
+            return

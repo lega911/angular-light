@@ -11,6 +11,8 @@ alight.d.al.style = (scope, element, name) ->
                 m.substring(1).toUpperCase()
             prev[key] = v
             element.style[key] = v or ''
+        return
 
     scope.$watch name, setter,
         deep: true
+    return

@@ -6,7 +6,7 @@ alight.d.bo.switch =
         env.changeDetector.$switch =
             value: scope.$eval name
             on: false
-        null
+        return
 
 
 alight.d.bo.switchWhen =
@@ -18,6 +18,7 @@ alight.d.bo.switchWhen =
             env.stopBinding = true
         else
             cd.$switch.on = true
+        return
 
 
 alight.d.bo.switchDefault =
@@ -26,6 +27,7 @@ alight.d.bo.switchDefault =
         if env.changeDetector.$switch.on
             f$.remove element
             env.stopBinding = true
+        return
 
 do ->
     makeBindOnceIf = (direct) ->
@@ -36,6 +38,7 @@ do ->
                 if !value is direct
                     f$.remove element
                     env.stopBinding = true
+                return
 
     alight.d.bo.if = makeBindOnceIf true
     alight.d.bo.ifnot = makeBindOnceIf false
@@ -49,7 +52,7 @@ alight.d.bo.repeat =
         self = alight.directives.al.repeat.init scope, element, exp, env
         originalStart = self.start
         self.start = ->
-            originalStart()
             scope.$watch '$finishScanOnce', ->
                 self.watch.stop()  # stop watching
+            return originalStart()
         self

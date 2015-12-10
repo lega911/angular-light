@@ -28,6 +28,7 @@ alight.directives.al.repeat =
                 self.buildUpdateDom()
                 self.watchModel()
                 self.makeChildConstructor()
+                return
 
             parsExpression: ->
                 s = exp.trim()
@@ -70,6 +71,7 @@ alight.directives.al.repeat =
                         throw 'Wrong repeat: ' + exp
                     self.nameOfKey = r[1]
                     self.expression = r[2]
+                return
 
             watchModel: ->
                 if self.objectMode
@@ -79,6 +81,7 @@ alight.directives.al.repeat =
                     flags =
                         isArray: true
                 self.watch = CD.watch self.expression, self.updateDom, flags
+                return
 
             prepareDom: ->
                 if element.nodeType is 8
@@ -102,6 +105,7 @@ alight.directives.al.repeat =
                     self.top_element = document.createComment " #{exp} "
                     f$.before element, self.top_element
                     f$.remove element
+                return
 
             makeChildConstructor: ->
                 ChildScope = ->
@@ -109,6 +113,7 @@ alight.directives.al.repeat =
                     @
                 ChildScope:: = CD.scope
                 self.ChildScope = ChildScope
+                return
 
             makeChild: (item, index, list) ->
                 scope = new self.ChildScope()
@@ -126,13 +131,14 @@ alight.directives.al.repeat =
                 scope.$index = index
                 scope.$first = index is 0
                 scope.$last = index is list.length-1
+                return
 
             rawUpdateDom: (removes, inserts) ->
                 for e in removes
                     f$.remove e
                 for it in inserts
                     f$.after it.after, it.element
-                null
+                return
 
             buildUpdateDom: ->
                 self.updateDom = do ->
@@ -149,13 +155,13 @@ alight.directives.al.repeat =
                         node_del = (node) ->
                             $id = node.$id
                             `if($id != null) delete node_by_id[$id]`
-                            null
+                            return
 
                         node_set = (item, node) ->
                             $id = index
                             node.$id = $id
                             node_by_id[$id] = node
-                            null
+                            return
                     else
                         if self.trackExpression
                             node_by_id = {}
@@ -179,13 +185,13 @@ alight.directives.al.repeat =
                             node_del = (node) ->
                                 $id = node.$id
                                 `if($id != null) delete node_by_id[$id]`
-                                null
+                                return
 
                             node_set = (item, node) ->
                                 $id = _getId _id, item
                                 node.$id = $id
                                 node_by_id[$id] = node
-                                null
+                                return
 
                         else
                             if window.Map
@@ -195,11 +201,11 @@ alight.directives.al.repeat =
 
                                 node_del = (node) ->
                                     node_by_id.delete node.item
-                                    null
+                                    return
 
                                 node_set = (item, node) ->
                                     node_by_id.set item, node
-                                    null
+                                    return
 
                             else
                                 node_by_id = {}
@@ -213,14 +219,14 @@ alight.directives.al.repeat =
                                     $id = node.$id
                                     if $id
                                         delete node_by_id[$id]
-                                    null
+                                    return
 
                                 node_set = (item, node) ->
                                     $id = alight.utils.getId()
                                     item.$alite_id = $id
                                     node.$id = $id
                                     node_by_id[$id] = node
-                                    null
+                                    return
 
                     if self.element_list
                         (list) ->
@@ -354,7 +360,7 @@ alight.directives.al.repeat =
                                 CD.setValue self.storeTo, list
                                 return
 
-                            null
+                            return
                     else
                         # method update for a single element
                         (list) ->
@@ -487,4 +493,4 @@ alight.directives.al.repeat =
                             if self.storeTo
                                 CD.setValue self.storeTo, list
 
-                            null
+                            return

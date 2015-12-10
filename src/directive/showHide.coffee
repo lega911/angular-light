@@ -3,8 +3,10 @@ alight.d.al.show = (scope, element, exp) ->
     self =
         showDom: ->
             f$.removeClass element, 'al-hide'
+            return
         hideDom: ->
             f$.addClass element, 'al-hide'
+            return
         updateDom: (value) ->
             if value
                 self.showDom()
@@ -13,8 +15,10 @@ alight.d.al.show = (scope, element, exp) ->
             '$scanNoChanges'
         watchModel: ->
             scope.$watch exp, self.updateDom
+            return
         start: ->
             self.watchModel()
+            return
 
 
 alight.d.al.hide = (scope, element, exp, env) ->
