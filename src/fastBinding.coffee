@@ -28,8 +28,6 @@ compileText = (text) ->
 
         ce = alight.utils.compile.expression key,
             string: true
-            full: true
-            rawExpression: true
 
         if not ce.rawExpression
             throw 'Error'

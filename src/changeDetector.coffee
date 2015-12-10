@@ -140,7 +140,7 @@ makeFilterChain = do ->
     getId = ->
         'wf' + (index++)
 
-    (cd, pe, baseCallback, option) ->
+    (cd, ce, baseCallback, option) ->
         root = cd.root
 
         # watchMode: simple, deep, array
@@ -151,10 +151,10 @@ makeFilterChain = do ->
         else
             watchMode = 'simple'
         prevCallback = baseCallback
-        rindex = pe.result.length - 1
+        rindex = ce.filters.length
         onStop = []
         while rindex > 0
-            filterExp = pe.result[rindex--].trim()
+            filterExp = ce.filters[--rindex].trim()
             i = filterExp.indexOf ':'
             if i>0
                 filterName = filterExp[..i-1]
@@ -195,7 +195,7 @@ makeFilterChain = do ->
             watchOptions.isArray = true
         else if watchMode is 'deep'
             watchOptions.deep = true
-        w = cd.watch pe.expression, prevCallback, watchOptions
+        w = cd.watch ce.expression, prevCallback, watchOptions
         w
 
 
@@ -287,10 +287,9 @@ ChangeDetector::watch = (name, callback, option) ->
         if option.watchText
             exp = option.watchText.fn
         else
-            pe = alight.utils.parsExpression name
-            if pe.result.length > 1  # has filters
-                return makeFilterChain cd, pe, callback, option
             ce = alight.utils.compile.expression(name)
+            if ce.filters
+                return makeFilterChain cd, ce, callback, option
             isStatic = ce.isSimple and ce.simpleVariables.length is 0 and not option.isArray
             exp = ce.fn
 

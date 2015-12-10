@@ -6,14 +6,12 @@ Test('$compile#0').run ($test, alight) ->
 
     r0 = alight.utils.compile.expression 'foo',
         string: true
-        rawExpression: true
 
     $test.equal r0.rawExpression, "(__=$$scope.foo) || (__ == null?'':__)"
     $test.equal r0.fn(scope), 'one'
 
     r1 = alight.utils.compile.expression 'foo',
         string: true
-        rawExpression: true
 
     $test.equal r1.rawExpression, "(__=$$scope.foo) || (__ == null?'':__)"
     $test.equal r1.fn(scope), 'one'

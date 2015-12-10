@@ -30,7 +30,17 @@ do ->
         no_return
         input
         string
+
+    return
+        fn
         rawExpression
+
+        result
+        filters
+        isSimple
+        simpleVariables
+        expression
+
 
     ###
     self.expression = (src, cfg) ->
@@ -46,29 +56,17 @@ do ->
         if funcCache
             return funcCache
 
-        funcCache =
-            fn: null
-            # filters
-            # rawExpression
-
-        exp = src
-
-        no_return = cfg.no_return or false
-        ffResult = alight.utils.parsExpression exp,
+        funcCache = alight.utils.parsExpression src,
             input: cfg.input
-        ff = ffResult.result
-        funcCache.isSimple = ffResult.isSimple
-        funcCache.simpleVariables = ffResult.simpleVariables
 
-        exp = ff[0]
-        filters = ff.slice(1)
+        exp = funcCache.result
+        no_return = cfg.no_return or false
         if no_return
             result = "var $$;#{exp}"
         else
-            if cfg.string and not filters.length
+            if cfg.string and not funcCache.filters
                 result = "var $$, __ = (#{exp}); return '' + (__ || (__ == null?'':__))"
-                if cfg.rawExpression
-                    funcCache.rawExpression = "(__=#{exp}) || (__ == null?'':__)"
+                funcCache.rawExpression = "(__=#{exp}) || (__ == null?'':__)"
             else
                 result = "var $$;return (#{exp})"
         try
@@ -86,10 +84,6 @@ do ->
             throw 'Wrong expression: ' + exp
 
         funcCache.fn = fn
-        if filters.length
-            funcCache.filters = filters
-        else
-            funcCache.filters = null
         self.cache[hash] = funcCache
 
 

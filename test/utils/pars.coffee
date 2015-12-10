@@ -3,16 +3,25 @@ Test('parsing', 'parsing').run ($test, alight) ->
     pars = (line, expected, cfg) ->
         $test.start 1
         pe = alight.utils.parsExpression line, cfg
-        result = pe.result
-        ok = true
-        if result.length is expected.length
-            for i in [0..result.length-1] by 1
-                if result[i] isnt expected[i]
-                    ok = false
-        else
-            ok = false
 
-        $test.check ok, result
+        if pe.result isnt expected[0]
+            $test.error expected
+            return
+        else
+            if pe.filters or expected.length > 1
+                # filters
+                if not pe.filters
+                    $test.error pe.filters
+                    return
+                if pe.filters.length isnt expected.length-1
+                    $test.error pe.filters
+                    return
+                for filter, i in pe.filters
+                    if filter isnt expected[i+1]
+                        $test.error pe.filters
+                        return
+        $test.ok expected
+
     # ($$=$$scope.a,$$==null)?undefined:($$=$$.b,$$==null)?undefined:$$.c
     pars 'path.variable', ["(($$=$$scope.path,$$==null)?undefined:$$.variable)"]
     pars 'aaa.bbb.ccc.fn()', ["(($$=$$scope.aaa,$$==null)?undefined:($$=$$.bbb,$$==null)?undefined:$$.ccc).fn()"]

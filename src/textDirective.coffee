@@ -1,10 +1,9 @@
 
 alight.text.bindonce = (callback, expression, cd, env) ->
-    pe = alight.utils.parsExpression expression
-    if pe.hasFilters
+    ce = alight.utils.compile.expression expression
+    if ce.filters
         throw 'Conflict: bindonce and filters, use one-time binding'
-    else
-        env.finally cd.eval expression
+    env.finally ce.fn cd.scope
 
 alight.text.oneTimeBinding = (callback, expression, cd, env) ->
     cd.watch expression, (value) ->

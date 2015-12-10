@@ -114,13 +114,10 @@ do ->
                         watchCount++
                         canUseSimpleBuilder = false
                 else
-                    pe = alight.utils.parsExpression exp
-                    if not pe.hasFilters
-                        ce = alight.utils.compile.expression pe.expression,
-                            string: true
-                            full: true
-                            rawExpression: true
+                    ce = alight.utils.compile.expression exp,
+                        string: true
 
+                    if not ce.filters
                         d.fn = ce.fn
                         if not ce.rawExpression
                             throw 'Error'
