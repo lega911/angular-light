@@ -422,7 +422,9 @@ scanCore = (root, result) ->
                             w.el.nodeValue = value
                     else
                         if not root.skippedWatches.get w
-                            if w.callback.call(scope, value) isnt '$scanNoChanges'
+                            if last is watchInitValue
+                                last = undefined
+                            if w.callback.call(scope, value, last) isnt '$scanNoChanges'
                                 if w.extraLoop
                                     extraLoop = true
                 if alight.debug.scan > 1
