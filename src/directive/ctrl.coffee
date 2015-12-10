@@ -1,7 +1,7 @@
 
 alight.d.al.ctrl =
     scope: 'isolate'
-    global: true
+    global: false
     link: (scope, element, name, env) ->
         error = (e, title) ->
             alight.exceptionHandler e, title,
