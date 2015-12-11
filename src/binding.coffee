@@ -79,7 +79,6 @@ alight.directivePreprocessor = (attrName, args) ->
             name: name
             args: args
             directive: dir
-            result: {}
             
             isDeferred: false
             procLine: alight.hooks.directive
@@ -95,8 +94,8 @@ alight.directivePreprocessor = (attrName, args) ->
         if dir.stopBinding
             dscope.env.stopBinding = true
 
-        doProcess()        
-        dscope.result
+        doProcess()
+        return
     dir
 
 
@@ -113,11 +112,12 @@ do ->
                 @.env.changeDetector = @.cd
                 @.cd.scope.$changeDetector = @.cd
                 result = @.directive.init @.cd.scope, @.element, @.value, @.env
-                @.cd.scope.$changeDetector = null
                 if f$.isObject result
-                    @.result = result
                     if result.owner
                         @.env.stopBinding = true
+                    if result.start
+                        result.start()
+                @.cd.scope.$changeDetector = null
             return
 
     ext.push
@@ -202,11 +202,12 @@ do ->
                 @.env.changeDetector = @.cd
                 @.cd.scope.$changeDetector = @.cd
                 result = @.directive.link @.cd.scope, @.element, @.value, @.env
-                @.cd.scope.$changeDetector = null
                 if f$.isObject result
                     if result.owner
                         @.env.stopBinding = true
-                    @.result = result
+                    if result.start
+                        result.start()
+                @.cd.scope.$changeDetector = null
             return
 
     ext.push
@@ -311,9 +312,7 @@ bindComment = (cd, element, option) ->
     if alight.debug.directive
         console.log 'bind', d.attrName, value, d
     try
-        result = directive.$init cd, element, value, env
-        if result and result.start
-            result.start()
+        directive.$init cd, element, value, env
     catch e
         alight.exceptionHandler e, 'Error in directive: ' + d.name,
             value: value
@@ -410,11 +409,7 @@ bindElement = do ->
                     if alight.debug.directive
                         console.log 'bind', d.attrName, value, d
                     try
-                        result = directive.$init cd, element, value, env
-                        if result and result.start
-                            cd.scope.$changeDetector = cd
-                            result.start()
-                            cd.scope.$changeDetector = null
+                        directive.$init cd, element, value, env
                     catch e
                         alight.exceptionHandler e, 'Error in directive: ' + d.attrName,
                             value: value

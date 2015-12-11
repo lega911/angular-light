@@ -269,3 +269,41 @@ Test 'binding-order-0'
         $test.equal order, 'p0 c0-0 c0-1 p1 c1-0 c1-1'
 
         $test.close()
+
+
+Test 'binding-order-1'
+    .run ($test, alight) ->
+        $test.start 2
+
+        el = ttDOM """
+            <div al-parent>
+                <i al-child></i>
+                <!-- directive: al-test -->
+            </div>
+        """
+
+        order = []
+        testCount = 0
+
+        alight.d.al.parent =
+            scope: 'isolate'
+            link: (scope) ->
+                start: ->
+                    order.push 'parent'
+
+        alight.d.al.child = (scope) ->
+            order.push 'child'
+
+        alight.d.al.test =
+            restrict: 'M'
+            link: ->
+                start: ->
+                    testCount++
+
+        alight.bootstrap el
+
+        order = order.join ' '
+        $test.equal order, 'parent child'
+        $test.equal testCount, 1
+
+        $test.close()
