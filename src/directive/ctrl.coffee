@@ -1,7 +1,7 @@
 
 alight.d.al.ctrl =
-    scope: 'isolate'
     global: false
+    stopBinding: true
     link: (scope, element, name, env) ->
         error = (e, title) ->
             alight.exceptionHandler e, title,
@@ -13,6 +13,10 @@ alight.d.al.ctrl =
 
         self =
             getController: (name) ->
+                if name[0] is '@'
+                    name = name.substring 1
+                    self.isClass = true
+
                 $ns = scope.$ns
                 if $ns and $ns.ctrl
                     fn = $ns.ctrl[name]
@@ -32,9 +36,30 @@ alight.d.al.ctrl =
 
             start: ->
                 fn = self.getController name
-                if fn
-                    try
-                        fn scope, element, name, env
-                    catch e
-                        error e, 'Error in controller: ' + name
+                if not fn
+                    return
+
+                if self.isClass
+                    Controller = ->
+
+                    for k, v of Scope::
+                        Controller::[k] = v
+
+                    for k, v of fn::
+                        Controller::[k] = v
+
+                    childScope = new Controller
+                else
+                    childScope = alight.Scope
+                        changeDetector: null
+
+                childCD = env.changeDetector.new childScope
+                childScope.$rootChangeDetector = childCD
+                childScope.$parent = scope
+                try
+                    fn.call childScope, childScope, element, name, env
+                catch e
+                    error e, 'Error in controller: ' + name
+                alight.bind childCD, element,
+                    skip_attr: env.skippedAttr()
                 return

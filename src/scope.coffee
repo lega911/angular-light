@@ -71,6 +71,6 @@ Scope::$destroy = ->
 Scope::$new = () ->
     scope = new Scope
         changeDetector: null
-    scope.$rootChangeDetector = @.$rootChangeDetector.new scope
+    scope.$rootChangeDetector = @.$changeDetector.new scope
     scope.$parent = @
     scope
