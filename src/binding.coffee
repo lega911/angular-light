@@ -153,49 +153,30 @@ do ->
     ext.push
         code: 'scope'
         fn: ->
-            ###
-                scope - cd
-                +false - false (false)
-                +false - true (true)
-                -false - root
-                -true - false
-                +true - true (isolate)
-                +true - root (root)
-            ###
-            # scope: false, true
-            # ChangeDetector: false, true, 'root'
-
+            # scope: false, true, 'root'
             if not @.directive.scope
                 return
 
             parentCD = @.cd
+            scope = alight.Scope
+                changeDetector: null
 
             switch @.directive.scope
                 when true
-                    @.cd = parentCD.new()  # the same scope
-                when 'isolate'
-                    scope = alight.Scope
-                        changeDetector: null
                     childCD = parentCD.new scope
-
-                    scope.$parent = parentCD.scope
-                    scope.$rootChangeDetector = childCD
-
-                    @.cd = childCD
                 when 'root'
-                    scope = alight.Scope
-                        changeDetector: null
                     childCD = alight.ChangeDetector scope
-                    scope.$parent = parentCD.scope
-                    scope.$rootChangeDetector = childCD
 
                     parentCD.watch '$destroy', ->
                         childCD.destroy()
 
                     @.env.parentChangeDetector = parentCD
-                    @.cd = childCD
                 else
                     throw 'Wrong scope value: ' + @.directive.scope
+
+            scope.$parent = parentCD.scope
+            scope.$rootChangeDetector = childCD
+            @.cd = childCD
 
             @.env.stopBinding = true
             @.doBinding = true

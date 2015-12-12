@@ -48,7 +48,7 @@ Test('directive-scope-isolate-0').run ($test, alight) ->
 				scope.$parent = scope.$parent or scope
 				scope.name2 = 'child1'
 		siTest2:
-			scope: 'isolate'
+			scope: true
 			template: '{{name}}:{{name2}}:{{$parent.name}}:{{$parent.name2}}'
 			link: (scope, el, name) ->
 				scope.name2 = 'child2'

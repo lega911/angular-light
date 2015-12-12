@@ -102,7 +102,7 @@ Test('deferred-process').run ($test, alight, timeout) ->
     alight.directives.ut =
         test5:
             templateUrl: 'testDeferredProcess'
-            scope: 'isolate'
+            scope: true
             link: (scope, el, name) ->
                 scope.name = 'linux'
                 scope5 = scope
@@ -286,7 +286,7 @@ Test 'binding-order-1'
         testCount = 0
 
         alight.d.al.parent =
-            scope: 'isolate'
+            scope: true
             link: (scope) ->
                 start: ->
                     order.push 'parent'

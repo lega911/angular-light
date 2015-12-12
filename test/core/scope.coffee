@@ -216,7 +216,7 @@ Test 'isolated-scope-0'
         scope.top = 'unix'
 
         alight.d.al.test =
-            scope: 'isolate'
+            scope: true
             link: (scope) ->
                 scope.child = 'linux'
                 scope.$setValue 'one', 'two'

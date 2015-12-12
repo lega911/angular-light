@@ -168,7 +168,7 @@ Test('hook-scope-1', 'hook-scope-1').run ($test, alight) ->
     $test.close()
 ###
 
-
+###
 Test('hook-scope-2', 'hook-scope-2').run ($test, alight) ->
     $test.start 27
 
@@ -250,7 +250,7 @@ Test('hook-scope-2', 'hook-scope-2').run ($test, alight) ->
     $test.equal countDestroy, 1
 
     $test.close()
-
+###
 
 ###
 Test('hook-scope-3', 'hook-scope-3').run ($test, alight) ->
