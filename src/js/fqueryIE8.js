@@ -41,8 +41,22 @@
     if (!Array.isArray) {
       Array.isArray = function(arg) {
         return Object.prototype.toString.call(arg) === '[object Array]';
-      };
-    }
+      }
+    };
+
+    if (!Object.keys) {
+      Object.keys = function(obj) {
+        var keys = [];
+
+        for (var i in obj) {
+          if (obj.hasOwnProperty(i)) {
+            keys.push(i);
+          }
+        }
+
+        return keys
+      }
+    };
 
     // browser detect
     f$.browser = (function(){

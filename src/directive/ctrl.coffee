@@ -13,10 +13,6 @@ alight.d.al.ctrl =
 
         self =
             getController: (name) ->
-                if name[0] is '@'
-                    name = name.substring 1
-                    self.isClass = true
-
                 $ns = scope.$ns
                 if $ns and $ns.ctrl
                     fn = $ns.ctrl[name]
@@ -39,7 +35,7 @@ alight.d.al.ctrl =
                 if not fn
                     return
 
-                if self.isClass
+                if Object.keys(fn::).length  # class
                     Controller = ->
 
                     for k, v of Scope::
