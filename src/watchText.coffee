@@ -27,43 +27,37 @@ do ->
             i++
             'wt' + i
 
-    alight.text.$base = (conf) ->
-        point = conf.point
+    alight.text.$base = (option) ->
+        point = option.point
 
-        exp = conf.exp
-        i = exp.indexOf ' '
-        if i < 0
-            dirName = exp.slice 1
-            exp = ''
-        else
-            dirName = exp.slice 1, i
-            exp = exp.slice i
-
-        cd = conf.cd
+        cd = option.cd
         scope = cd.scope
         if scope.$ns and scope.$ns.text
-            dir = scope.$ns.text[dirName]
+            dir = scope.$ns.text[option.name]
         else
-            dir = alight.text[dirName]
+            dir = alight.text[option.name]
         if not dir
-            throw 'No directive alight.text.' + dirName
+            throw 'No directive alight.text.' + option.name
 
         env =
+            changeDetector: cd
             setter: (value) ->
                 if value == null
                     point.value = ''
                 else
                     point.value = '' + value
-                conf.update()
+                option.update()
             finally: (value) ->  # prebuild finally
                 if value == null
                     point.value = ''
                 else
                     point.value = '' + value
                 point.type = 'text'
-                conf.finally()
+                option.finally()
 
-        dir env.setter, exp, cd, env
+        scope.$changeDetector = cd
+        dir env.setter, option.exp, scope, env
+        scope.$changeDetector = null
 
 
     watchText = (expression, callback, config) ->
@@ -94,13 +88,22 @@ do ->
 
                 # check for a text directive
                 exp = d.list.join ' | '
-                if exp[0] is '='
-                    exp = '#bindonce ' + exp[1..]
-                else if exp[0..1] is '::'
-                    exp = '#oneTimeBinding ' + exp[2..]
+                lname = exp.match /^([^\w\d\s\$"']+)/
+                if lname
+                    name = lname[1]
+                    if name is '#'
+                        i = exp.indexOf ' '
+                        if i < 0
+                            name = exp.substring 1
+                            exp = ''
+                        else
+                            name = exp.slice 1, i
+                            exp = exp.slice i
+                    else
+                        exp = exp.substring name.length
 
-                if exp[0] is '#'
                     alight.text.$base
+                        name: name
                         exp: exp
                         cd: cd
                         point: d
@@ -191,6 +194,8 @@ do ->
 
     Scope::$watchText = (expression, callback, option) ->
         cd = @.$changeDetector
+        if not cd and not @.$rootChangeDetector.children.length  # no child scopes
+            cd = @.$rootChangeDetector
         if cd
             cd.watchText expression, callback, option
         else

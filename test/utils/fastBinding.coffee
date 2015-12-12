@@ -68,8 +68,8 @@ Test('fast-binding-1').run ($test, alight) ->
         (x) ->
             x*2
 
-    alight.text.dd = (callback, expression, cd, env) ->
-        value = cd.eval expression
+    alight.text.dd = (callback, expression, scope, env) ->
+        value = scope.$eval expression
         env.setter value+value
 
     scope = alight.Scope()

@@ -27,12 +27,9 @@ alight.Scope = Scope
 alight.core.Scope = Scope
 
 Scope::$watch = (name, callback, option) ->
-    if option and option.root
+    cd = @.$changeDetector
+    if not cd and not @.$rootChangeDetector.children.length  # no child scopes
         cd = @.$rootChangeDetector
-    else
-        cd = @.$changeDetector
-        if not cd and not @.$rootChangeDetector.children.length  # no child scopes
-            cd = @.$rootChangeDetector
     if cd
         return cd.watch name, callback, option
     else

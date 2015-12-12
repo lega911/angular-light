@@ -88,6 +88,8 @@ window.Test = do ->
     codes = {}
     filterByCode = document.location.hash[1..]
     (title, uniqCode) ->
+        if uniqCode
+            title = uniqCode
         if not uniqCode
             uniqCode = title
         if uniqCode

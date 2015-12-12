@@ -112,11 +112,8 @@ do ->
                 @.env.changeDetector = @.cd
                 @.cd.scope.$changeDetector = @.cd
                 result = @.directive.init @.cd.scope, @.element, @.value, @.env
-                if f$.isObject result
-                    if result.owner
-                        @.env.stopBinding = true
-                    if result.start
-                        result.start()
+                if result and result.start
+                    result.start()
                 @.cd.scope.$changeDetector = null
             return
 
@@ -189,11 +186,8 @@ do ->
                 @.env.changeDetector = @.cd
                 @.cd.scope.$changeDetector = @.cd
                 result = @.directive.link @.cd.scope, @.element, @.value, @.env
-                if f$.isObject result
-                    if result.owner
-                        @.env.stopBinding = true
-                    if result.start
-                        result.start()
+                if result and result.start
+                    result.start()
                 @.cd.scope.$changeDetector = null
             return
 

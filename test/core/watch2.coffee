@@ -195,7 +195,7 @@ Test('watch-text-5', 'watch-text-5').run ($test, alight) ->
                     $test.close()
 
 
-Test('$watchText #6', 'watch-text-6').run ($test, alight) ->
+Test('watch-text-6').run ($test, alight) ->
     $test.start 9
     
     scope = 

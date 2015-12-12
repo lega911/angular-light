@@ -15,7 +15,7 @@ gulp.task('clean', function () {
     .pipe(clean());
 });
 
-gulp.task('compile', ['compile_core', 'compile_parser', 'compile_filter', 'compile_directive'], function() {});
+gulp.task('compile', ['compile_core', 'compile_parser', 'compile_filter', 'compile_directive', 'compile_text'], function() {});
 
 gulp.task('compile_core', ['clean'], function() {
   return gulp.src('./src/*.coffee')
@@ -41,6 +41,12 @@ gulp.task('compile_directive', ['clean'], function() {
     .pipe(gulp.dest('tmp/directive'))
 });
 
+gulp.task('compile_text', ['clean'], function() {
+  return gulp.src('./src/text/*.coffee')
+    .pipe(coffee({bare: true}).on('error', console.log))
+    .pipe(gulp.dest('tmp/text'))
+});
+
 gulp.task('assemble', ['compile'], function() {
   var files = [
     './src/js/prefix.js',
@@ -48,7 +54,6 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/changeDetector.js',
     './tmp/scope.js',
     './tmp/watchText.js',
-    './tmp/textDirective.js',
     './tmp/binding.js',
     './tmp/utils.js',
     './tmp/parser/parseExpression.js',
@@ -92,6 +97,10 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/filter/throttle.js',
     './tmp/filter/toarray.js',
 
+    './tmp/text/bindOnce.js',
+    './tmp/text/oneTimeBinding.js',
+    './tmp/text/textWatch.js',
+
     './src/js/postfix.js'
   ];
   return gulp.src(files)
@@ -108,7 +117,6 @@ gulp.task('assembleCore', ['compile'], function() {
     './tmp/changeDetector.js',
     './tmp/scope.js',
     './tmp/watchText.js',
-    './tmp/textDirective.js',
     './tmp/binding.js',
     './tmp/utils.js',
     './tmp/parser/parseExpression.js',
@@ -142,6 +150,9 @@ gulp.task('assembleCore', ['compile'], function() {
     './tmp/filter/date.js',
     './tmp/filter/json.js',
     './tmp/filter/generator.js',
+
+    './tmp/text/bindOnce.js',
+    './tmp/text/oneTimeBinding.js',
 
     './src/js/postfix.js'
   ];
