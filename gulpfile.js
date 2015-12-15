@@ -96,6 +96,7 @@ gulp.task('assemble', ['compile'], function() {
     './tmp/filter/orderby.js',
     './tmp/filter/throttle.js',
     './tmp/filter/toarray.js',
+    './tmp/filter/storeto.js',
 
     './tmp/text/bindOnce.js',
     './tmp/text/oneTimeBinding.js',

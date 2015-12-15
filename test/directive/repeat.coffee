@@ -335,7 +335,7 @@ Test('repeat-store-to-0', 'repeat-store-to-0').run ($test, alight) ->
         onChange: (value) ->
             env.setValue makeResult
 
-    dom = ttDOM '<div class="item" al-repeat="it in list | myfilter store to filteredList"></div>'
+    dom = ttDOM '<div class="item" al-repeat="it in list | myfilter | storeTo:filteredList"></div>'
 
     scope = alight.Scope()
     scope.filteredList = []

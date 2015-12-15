@@ -7,12 +7,10 @@
     "item in list track by $index"
     "item in list track by $id(item)"
     "item in list track by item.id"
-    "item in list | filter store to filteredList"
-    "item in list | filter track by trackExpression store to filteredList"
 
     "(key, value) in object"
-    "(key, value) in object orderBy:key:reverse store to filteredList"
-    "(key, value) in object | filter orderBy:key,reverse store to filteredList"
+    "(key, value) in object orderBy:key:reverse"
+    "(key, value) in object | filter orderBy:key,reverse"
 ###
 
 alight.directives.al.repeat =
@@ -32,12 +30,6 @@ alight.directives.al.repeat =
 
             parsExpression: ->
                 s = exp.trim()
-
-                # store to
-                r = s.match /(.*) store to ([\w\.]+)$/
-                if r
-                    self.storeTo = r[2]
-                    s = r[1]
 
                 if s[0] is '('
                     # object
@@ -355,11 +347,6 @@ alight.directives.al.repeat =
                             for it in applyList
                                 alight.bind it.cd, it.el,
                                     skip_attr: skippedAttrs
-
-                            if self.storeTo
-                                CD.setValue self.storeTo, list
-                                return
-
                             return
                     else
                         # method update for a single element
@@ -489,8 +476,4 @@ alight.directives.al.repeat =
                                         skip_attr: skippedAttrs
                                     if r.directive is 0 and r.hook is 0
                                         fastBinding = new alight.core.fastBinding self.base_element
-
-                            if self.storeTo
-                                CD.setValue self.storeTo, list
-
                             return
