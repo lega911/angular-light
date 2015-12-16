@@ -1,13 +1,16 @@
 
-alight.filters.throttle = (delay, cd, env) ->
-    delay = Number delay
-    to = null
+alight.filters.throttle =
+    init: (delay, scope) ->
+        @.delay = Number delay
+        @.to = null
+        @.scope = scope
 
     onChange: (value) ->
-        if to
-            clearTimeout to
-        to = setTimeout ->
-            to = null
-            env.setValue value
-            cd.scan()
-        , delay
+        that = @
+        if @.to
+            clearTimeout @.to
+        @.to = setTimeout ->
+            that.to = null
+            that.setValue value
+            that.scope.$scan()
+        , @.delay

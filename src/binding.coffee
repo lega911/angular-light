@@ -166,11 +166,10 @@ do ->
 
                     parentCD.watch '$destroy', ->
                         childCD.destroy()
-
-                    @.env.parentChangeDetector = parentCD
                 else
                     throw 'Wrong scope value: ' + @.directive.scope
 
+            @.env.parentChangeDetector = parentCD
             scope.$parent = parentCD.scope
             scope.$rootChangeDetector = childCD
             @.cd = childCD
