@@ -95,12 +95,11 @@ Test('$watchText #3').run ($test, alight) ->
             $test.close()
 
 
-Test('$watchText #4').run ($test, alight) ->
+Test('watchtext-4').run ($test, alight) ->
     $test.start 2
 
-    alight.filters.double = ->
-        (v) ->
-            v+'-'+v
+    alight.filters.double = (v) ->
+        v+'-'+v
 
     scope =
         data:
@@ -313,9 +312,8 @@ Test('watch-static-0', 'watch-static-0').run ($test, alight) ->
 Test('watch-static-1', 'watch-static-1').run ($test, alight) ->
     $test.start 1
 
-    alight.filters.double = ->
-        (x) ->
-            x+x
+    alight.filters.double = (x) ->
+        x+x
 
     el = ttDOM '<div>{{"one" | double}}</div>'
     scope = alight.bootstrap el

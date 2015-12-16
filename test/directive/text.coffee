@@ -30,10 +30,11 @@ Test('bindonce').run ($test, alight) ->
 Test('text-directive-0', 'text-directive-0').run ($test, alight, timeout) ->
     $test.start 4
 
-    alight.filters.minus = (exp, cd) ->
-        delta = cd.eval exp
-        (value) ->
-            value - delta
+    alight.filters.minus =
+        init: (exp, scope) ->
+            @.delta = scope.$eval exp
+        onChange: (value) ->
+            @.setValue value - @.delta
 
     alight.text.double = (callback, expression, scope) ->
         callback '$'

@@ -1,5 +1,4 @@
 
-alight.filters.storeTo = (key, cd) ->
-    (value) ->
-        cd.setValue key, value
-        value
+alight.filters.storeTo = (value, key, scope) ->
+    scope.$setValue key, value
+    value

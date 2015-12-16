@@ -39,8 +39,7 @@ Test('ns-0', 'ns-0').run ($test, alight) ->
             $ns:
                 filters:
                     double: ->
-                        ->
-                            'linux'
+                        'linux'
 
         el = ttDOM '<p>{{x | double}}</p>'
 

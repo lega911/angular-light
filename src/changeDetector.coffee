@@ -168,27 +168,28 @@ makeFilterChain = do ->
                 filterName = filterExp
                 filterArg = null
 
-            filterBuilder = getFilter filterName, cd, filterArg
-
-            filter = filterBuilder filterArg, cd,
-                setValue: prevCallback
-
+            filter = getFilter filterName, cd, filterArg
             if f$.isFunction filter
-                prevCallback = do (filter, prevCallback) ->
+                prevCallback = do (filter, prevCallback, filterArg, cd) ->
                     (value) ->
-                        prevCallback filter value
+                        prevCallback filter value, filterArg, cd.scope
             else
+                fobj =
+                    setValue: prevCallback
+
                 if filter.watchMode
                     watchMode = filter.watchMode
-                prevCallback = filter.onChange
+                if filter.onChange
+                    prevCallback = do (onChange=filter.onChange, fobj) ->
+                        (value) ->
+                            onChange.call fobj, value
                 if filter.onStop
-                    onStop.push filter.onStop
-
-                if not f$.isFunction prevCallback
-                    alight.exceptionHandler '', 'wrong filter: ' + filterName,
-                        name: filterName
-                        args: filterArg
-                    return
+                    stopFn = do (fobj, onStop=filter.onStop) ->
+                        ->
+                            onStop.call fobj
+                    onStop.push stopFn
+                if filter.init
+                    filter.init.call fobj, filterArg, cd.scope
 
         watchOptions =
             oneTime: option.oneTime

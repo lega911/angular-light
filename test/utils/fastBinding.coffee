@@ -64,9 +64,8 @@ Test('fast-binding-1').run ($test, alight) ->
         </div>
     """
 
-    alight.filters.double = ->
-        (x) ->
-            x*2
+    alight.filters.double = (x) ->
+        x*2
 
     alight.text.dd = (callback, expression, scope, env) ->
         value = scope.$eval expression

@@ -2,9 +2,8 @@
 Test('binding-0').run ($test, alight) ->
     $test.start 4
 
-    alight.filters.double = ->
-        (value) ->
-            value + value
+    alight.filters.double = (value) ->
+        value + value
 
     el = ttDOM '<div attr="{{ num + 5 }}">Text {{ num | double }}</div>'
 
