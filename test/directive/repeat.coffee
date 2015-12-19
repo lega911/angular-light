@@ -326,17 +326,17 @@ Test('al-repeat one-time-bindings', 'al-repeat-one-time-bindings').run ($test, a
             $test.close()
 
 
-Test('repeat-store-to-0', 'repeat-store-to-0').run ($test, alight) ->
+Test('repeat-store-to-0').run ($test, alight) ->
     $test.start 6
 
     setter = null
-    alight.filters.myfilter =
-        init: ->
-            that = this
+    alight.filters.myfilter = class F
+        ext: true
+        constructor: (_, scope, env) ->
             setter = (value) ->
-                that.setValue value
-        onChange: (value) ->
-            this.setValue makeResult
+                env.setValue value
+            @.onChange = (value) ->
+                env.setValue makeResult
 
     dom = ttDOM '<div class="item" al-repeat="it in list | myfilter | storeTo:filteredList"></div>'
 

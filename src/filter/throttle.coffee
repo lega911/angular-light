@@ -1,16 +1,15 @@
 
-alight.filters.throttle =
-    init: (delay, scope) ->
-        @.delay = Number delay
-        @.to = null
-        @.scope = scope
+alight.filters.throttle = class T
+    ext: true
+    constructor: (delay, scope, env) ->
+        delay = Number delay
+        to = null
 
-    onChange: (value) ->
-        that = @
-        if @.to
-            clearTimeout @.to
-        @.to = setTimeout ->
-            that.to = null
-            that.setValue value
-            that.scope.$scan()
-        , @.delay
+        @.onChange = (value) ->
+            if to
+                clearTimeout to
+            to = setTimeout ->
+                to = null
+                env.setValue value
+                scope.$scan()
+            , delay

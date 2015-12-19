@@ -1,6 +1,6 @@
 
-alight.filters.filter =
-    init: (exp, scope, env) ->
+alight.filters.filter = class F
+    constructor: (exp, scope, env) ->
         that = @
         filterObject = null
         @.value = []
@@ -8,13 +8,13 @@ alight.filters.filter =
         @.doFiltering = ->
             e = filterObject
             if not e
-                that.setValue that.value
+                env.setValue that.value
                 return null
             if typeof(e) is 'string'
                 e =
                     __all: e
             else if typeof(e) isnt 'object'
-                that.setValue that.value
+                env.setValue that.value
                 return null
 
             result = for r in that.value
@@ -53,7 +53,7 @@ alight.filters.filter =
                         continue
                     r
 
-            that.setValue result
+            env.setValue result
             null
 
         scope.$watch exp, (input) ->

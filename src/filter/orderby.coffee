@@ -1,7 +1,7 @@
 
 # | orderBy: key, reverse
-alight.filters.orderBy =
-    init: (exp, scope) ->
+alight.filters.orderBy = class O
+    constructor: (exp, scope) ->
         that = @
         d = exp.split ','
 

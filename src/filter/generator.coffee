@@ -1,12 +1,12 @@
 
-alight.filters.generator =
+alight.filters.generator = class G
     watchMode: 'simple'
-    init: ->
-        @.list = []
-    onChange: (size) ->
-        if @.list.length >= size
-            @.list.length = size
-        else
-            while @.list.length < size
-                @.list.push {}
-        @.setValue @.list
+    constructor: (key, scope, env) ->
+        list = []
+        @.onChange = (size) ->
+            if list.length >= size
+                list.length = size
+            else
+                while list.length < size
+                    list.push {}
+            env.setValue list
