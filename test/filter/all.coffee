@@ -92,11 +92,10 @@ Test('filter-async-0', 'filter-async-0').run ($test, alight) ->
     result0 = []
     result1 = []
     result2 = []
-    alight.filters.get =
-        init: (exp, scope) ->
-            that = this
+    alight.filters.get = class
+        constructor: (exp, scope, env) ->
             setters.push (value) ->
-                that.setValue value
+                env.setValue value
         onChange: (value) ->
             async.push value
 
@@ -227,8 +226,9 @@ Test('filter-async-2', 'filter-async-2').run ($test, alight, timeout) ->
     $test.start 14
 
     rdestroy = 0
-    alight.filters.foo =
-        init: (exp, scope) ->
+
+    alight.filters.foo = class FooFilter
+        constructor: (exp, scope, env) ->
             that = @
             @.value = null
             active = true
@@ -297,7 +297,7 @@ Test('async-filter-watch-text-0').run ($test, alight, timeout) ->
         rfoo++
         value+':'+value
 
-    alight.filters.get =
+    alight.filters.get = class
         onChange: (value) ->
             that = @
             rasync++
@@ -444,8 +444,8 @@ Test('filter-async-3', 'filter-async-3').run ($test, alight, timeout) ->
     fooChange = 0
     fooStop = 0
     fooDestroy = 0
-    alight.filters.foo =
-        init: (exp, scope) ->
+    alight.filters.foo = class FooFilter
+        constructor: (exp, scope) ->
             that = @
             fooInited++
             @.active = true
@@ -522,11 +522,12 @@ Test('filter-async-4', 'filter-async-4').run ($test, alight, timeout) ->
 
     fooStop = 0
     count = 0
-    alight.filters.foo =
-        onChange: (input) ->
+    alight.filters.foo = ->
+        @.onChange = (input) ->
             @.setValue '#' + input
-        onStop: ->
-            fooStop++
+        @
+    alight.filters.foo::onStop = ->
+        fooStop++
 
     cd = alight.ChangeDetector
         one: 5

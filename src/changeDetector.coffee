@@ -126,7 +126,7 @@ ChangeDetector::destroy = ->
     return
 
 
-getFilter = (name, cd, param) ->
+getFilter = (name, cd) ->
     error = false
     scope = cd.scope
     if scope.$ns and scope.$ns.filters
@@ -168,28 +168,26 @@ makeFilterChain = do ->
                 filterName = filterExp
                 filterArg = null
 
-            filter = getFilter filterName, cd, filterArg
-            if f$.isFunction filter
-                prevCallback = do (filter, prevCallback, filterArg, cd) ->
-                    (value) ->
-                        prevCallback filter value, filterArg, cd.scope
-            else
-                fobj =
+            filterObject = getFilter filterName, cd
+            if Object.keys(filterObject::).length
+                # class
+                filter = new filterObject filterArg, cd.scope,
                     setValue: prevCallback
+                    changeDetector: cd
+                filter.setValue = prevCallback
 
                 if filter.watchMode
                     watchMode = filter.watchMode
-                if filter.onChange
-                    prevCallback = do (onChange=filter.onChange, fobj) ->
-                        (value) ->
-                            onChange.call fobj, value
+
                 if filter.onStop
-                    stopFn = do (fobj, onStop=filter.onStop) ->
-                        ->
-                            onStop.call fobj
-                    onStop.push stopFn
-                if filter.init
-                    filter.init.call fobj, filterArg, cd.scope
+                    onStop.push filter.onStop.bind filter
+
+                if filter.onChange
+                    prevCallback = filter.onChange.bind filter
+            else
+                prevCallback = do (filter=filterObject, prevCallback, filterArg, cd) ->
+                    (value) ->
+                        prevCallback filter value, filterArg, cd.scope
 
         watchOptions =
             oneTime: option.oneTime
