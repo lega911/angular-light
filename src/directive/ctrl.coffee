@@ -2,6 +2,7 @@
 alight.d.al.ctrl =
     global: false
     stopBinding: true
+    priority: 500
     link: (scope, element, name, env) ->
         error = (e, title) ->
             alight.exceptionHandler e, title,
