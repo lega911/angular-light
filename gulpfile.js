@@ -47,121 +47,78 @@ gulp.task('compile_text', ['clean'], function() {
     .pipe(gulp.dest('tmp/text'))
 });
 
+var allFiles = [
+  './src/js/prefix.js',
+  './src/js/fquery.js',
+  './tmp/changeDetector.js',
+  './tmp/scope.js',
+  './tmp/watchText.js',
+  './tmp/binding.js',
+  './tmp/utils.js',
+  './tmp/parser/parseExpression.js',
+  './tmp/parser/parseText.js',
+  './tmp/compile.js',
+  './tmp/fastBinding.js',
+
+  './tmp/directive/click.js',
+  './tmp/directive/value.js',
+  './tmp/directive/checked.js',
+  './tmp/directive/if.js',
+  './tmp/directive/repeat.js',
+  './tmp/directive/init.js',
+  './tmp/directive/class.js',
+  './tmp/directive/src.js',
+  './tmp/directive/text.js',
+  './tmp/directive/app.js',
+  './tmp/directive/bindonce.js',
+  './tmp/directive/stop.js',
+  './tmp/directive/include.js',
+
+  './tmp/directive/cloak.js',
+  './tmp/directive/enable.js',
+  './tmp/directive/focused.js',
+  './tmp/directive/readonly.js',
+  './tmp/directive/submit.js',
+  './tmp/directive/event.js',
+  './tmp/directive/html.js',
+  './tmp/directive/radio.js',
+  './tmp/directive/showHide.js',
+  './tmp/directive/style.js',
+  './tmp/directive/select.js',
+  './tmp/directive/ctrl.js',
+
+  './tmp/filter/slice.js',
+  './tmp/filter/date.js',
+  './tmp/filter/json.js',
+  './tmp/filter/filter.js',
+  './tmp/filter/generator.js',
+  './tmp/filter/orderby.js',
+  './tmp/filter/throttle.js',
+  './tmp/filter/toarray.js',
+  './tmp/filter/storeto.js',
+
+  './tmp/text/bindOnce.js',
+  './tmp/text/oneTimeBinding.js',
+  './tmp/text/textWatch.js',
+
+  './src/js/postfix.js'
+];
+
 gulp.task('assemble', ['compile'], function() {
-  var files = [
-    './src/js/prefix.js',
-    './src/js/fquery.js',
-    './tmp/changeDetector.js',
-    './tmp/scope.js',
-    './tmp/watchText.js',
-    './tmp/binding.js',
-    './tmp/utils.js',
-    './tmp/parser/parseExpression.js',
-    './tmp/parser/parseText.js',
-    './tmp/compile.js',
-    './tmp/fastBinding.js',
-
-    './tmp/directive/click.js',
-    './tmp/directive/value.js',
-    './tmp/directive/checked.js',
-    './tmp/directive/if.js',
-    './tmp/directive/repeat.js',
-    './tmp/directive/init.js',
-    './tmp/directive/class.js',
-    './tmp/directive/src.js',
-    './tmp/directive/text.js',
-    './tmp/directive/app.js',
-    './tmp/directive/bindonce.js',
-    './tmp/directive/stop.js',
-    './tmp/directive/include.js',
-
-    './tmp/directive/cloak.js',
-    './tmp/directive/enable.js',
-    './tmp/directive/focused.js',
-    './tmp/directive/readonly.js',
-    './tmp/directive/submit.js',
-    './tmp/directive/event.js',
-    './tmp/directive/html.js',
-    './tmp/directive/radio.js',
-    './tmp/directive/showHide.js',
-    './tmp/directive/style.js',    
-    './tmp/directive/select.js',
-    './tmp/directive/ctrl.js',
-
-    './tmp/filter/slice.js',
-    './tmp/filter/date.js',
-    './tmp/filter/json.js',
-    './tmp/filter/filter.js',
-    './tmp/filter/generator.js',
-    './tmp/filter/orderby.js',
-    './tmp/filter/throttle.js',
-    './tmp/filter/toarray.js',
-    './tmp/filter/storeto.js',
-
-    './tmp/text/bindOnce.js',
-    './tmp/text/oneTimeBinding.js',
-    './tmp/text/textWatch.js',
-
-    './src/js/postfix.js'
-  ];
-  return gulp.src(files)
+  return gulp.src(allFiles)
     .pipe(concat('alight.js'))
     .pipe(replace('{{{version}}}', version.version))
     .pipe(header("/**\n * Angular Light " + version.version + "\n * (c) 2015 Oleg Nechaev\n * Released under the MIT License.\n * " + version.date + ", http://angularlight.org/ \n */"))
     .pipe(gulp.dest('bin'));
 });
 
-gulp.task('assembleCore', ['compile'], function() {
-  var files = [
-    './src/js/prefix.js',
-    './src/js/fquery.js',
-    './tmp/changeDetector.js',
-    './tmp/scope.js',
-    './tmp/watchText.js',
-    './tmp/binding.js',
-    './tmp/utils.js',
-    './tmp/parser/parseExpression.js',
-    './tmp/parser/parseText.js',
-    './tmp/compile.js',
-    './tmp/fastBinding.js',
-
-    './tmp/directive/click.js',
-    './tmp/directive/value.js',
-    './tmp/directive/checked.js',
-    './tmp/directive/if.js',
-    './tmp/directive/repeat.js',
-    './tmp/directive/init.js',
-    './tmp/directive/class.js',
-    './tmp/directive/src.js',
-    './tmp/directive/app.js',
-    './tmp/directive/include.js',
-    './tmp/directive/cloak.js',
-
-    './tmp/directive/enable.js',
-    './tmp/directive/focused.js',
-    './tmp/directive/readonly.js',
-    './tmp/directive/submit.js',
-    './tmp/directive/event.js',
-    './tmp/directive/html.js',
-
-    './tmp/directive/radio.js',
-    './tmp/directive/showHide.js',
-    './tmp/directive/ctrl.js',
-
-    './tmp/filter/date.js',
-    './tmp/filter/json.js',
-    './tmp/filter/generator.js',
-
-    './tmp/text/bindOnce.js',
-    './tmp/text/oneTimeBinding.js',
-
-    './src/js/postfix.js'
-  ];
-  return gulp.src(files)
-    .pipe(concat('core.js'))
-    .pipe(replace('{{{version}}}', version.version))
-    .pipe(header("/**\n * Angular Light " + version.version + "\n * (c) 2015 Oleg Nechaev\n * Released under the MIT License.\n * " + version.date + ", http://angularlight.org/ \n */"))
-    .pipe(gulp.dest('bin'));
+gulp.task('assembleIE8', ['compile'], function() {
+    allFiles.splice(2, 0, './src/js/fqueryIE8.js');
+    return gulp.src(allFiles)
+        .pipe(concat('alightie.js'))
+        .pipe(replace('{{{version}}}', version.version))
+        .pipe(header("/**\n * Angular Light " + version.version + "\n * (c) 2015 Oleg Nechaev\n * Released under the MIT License.\n * " + version.date + ", http://angularlight.org/ \n */"))
+        .pipe(gulp.dest('bin'));
 });
 
 gulp.task('compress', ['assemble'], function() {
@@ -174,8 +131,8 @@ gulp.task('compress', ['assemble'], function() {
     .pipe(gulp.dest('bin'))
 });
 
-gulp.task('core', ['assembleCore'], function() {
-  return gulp.src('./bin/core.js')
+gulp.task('ie', ['assembleIE8'], function() {
+  return gulp.src('./bin/alightie.js')
     .pipe(uglify())
     .pipe(rename({
        extname: '.min.js'

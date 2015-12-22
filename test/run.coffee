@@ -21,6 +21,11 @@ window.f$_attr = (el, name, value) ->
 window.f$_find = (el, q) ->
     el.querySelectorAll q
 
+if not Function.prototype.bind
+    Function.prototype.bind = (thisp) ->
+        fn = this;
+        ->
+            fn.apply thisp, arguments
 
 stat =
     started: 0
