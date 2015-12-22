@@ -1,16 +1,19 @@
 
-alight.d.al.submit = (scope, cd, element, name) ->
+alight.d.al.submit = (scope, element, name) ->
     self =
-        callback: cd.compile name,
+        callback: scope.$compile name,
             no_return: true
             input: ['$event']
         start: ->
             self.onDom()
+            return
         onDom: ->
             f$.on element, 'submit', self.doCallback
-            cd.watch '$destroy', self.offDom
+            scope.$watch '$destroy', self.offDom
+            return
         offDom: ->
             f$.off element, 'submit', self.doCallback
+            return
         doCallback: (e) ->
             e.preventDefault()
             e.stopPropagation()
@@ -19,7 +22,7 @@ alight.d.al.submit = (scope, cd, element, name) ->
             catch e
                 alight.exceptionHandler e, 'al-submit, error in expression: ' + name,
                     name: name
-                    cd: cd
                     scope: scope
                     element: element
-            cd.scan()
+            scope.$scan()
+            return

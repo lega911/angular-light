@@ -1,5 +1,5 @@
 
-alight.filters.date = do ->
+do ->
     d2 = (x) ->
         if x < 10
             return '0' + x
@@ -24,6 +24,5 @@ alight.filters.date = do ->
             r = r.replace d[0], d[1]
         r
 
-    (exp, cd) ->
-        (value) ->
-            makeDate exp, value
+    alight.filters.date = (value, exp) ->
+        makeDate exp, value

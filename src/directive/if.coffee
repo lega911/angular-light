@@ -2,56 +2,66 @@
 alight.d.al.if =
     priority: 700
     stopBinding: true
-    link: (scope, cd, element, name, env) ->
+    link: (scope, element, name, env) ->
         self =
             item: null
-            child: null
+            childCD: null
             base_element: null
             top_element: null
             start: ->
                 self.prepare()
                 self.watchModel()
+                return
             prepare: ->
                 self.base_element = element
-                self.top_element = f$.createComment " #{env.attrName}: #{name} "
+                self.top_element = document.createComment " #{env.attrName}: #{name} "
                 f$.before element, self.top_element
                 f$.remove element
+                return
             updateDom: (value) ->
                 if value
                     self.insertBlock value
                 else
                     self.removeBlock()
+                return
             removeBlock: ->
-                if not self.child
+                if not self.childCD
                     return
-                self.child.destroy()
+                self.childCD.destroy()
+                self.childCD = null
                 self.removeDom self.item
-                self.child = null
                 self.item = null
+                return
             insertBlock: ->
-                if self.child
+                if self.childCD
                     return
-                self.item = f$.clone self.base_element
+                self.item = self.base_element.cloneNode true
                 self.insertDom self.top_element, self.item
-                self.child = cd.new()
-                alight.bind self.child, self.item,
-                    skip_attr:env.skippedAttr()
+                self.childCD = env.changeDetector.new()
+
+                alight.bind self.childCD, self.item,
+                    skip_attr: env.skippedAttr()    
+                return
             watchModel: ->
-                cd.watch name, self.updateDom
+                scope.$watch name, self.updateDom
+                return
             removeDom: (element) ->
                 f$.remove element
+                return
             insertDom: (base, element) ->
                 f$.after base, element
+                return
 
 
 alight.d.al.ifnot =
     priority: 700
     stopBinding: true
-    link: (scope, cd, element, name, env) ->
-        self = alight.d.al.if.link scope, cd, element, name, env
+    link: (scope, element, name, env) ->
+        self = alight.d.al.if.link scope, element, name, env
         self.updateDom = (value) ->
             if value
                 self.removeBlock()
             else
                 self.insertBlock()
+            return
         self

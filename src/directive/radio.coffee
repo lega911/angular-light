@@ -1,30 +1,36 @@
 
 alight.d.al.radio =
     priority: 10
-    link: (scope, cd, element, name, env) ->
+    link: (scope, element, name, env) ->
         self =
             start: ->
                 self.makeValue()
                 self.onDom()
                 self.watchModel()
+                return
             makeValue: ->
                 key = env.takeAttr 'al-value'
                 if key
-                    value = cd.eval key
+                    value = scope.$eval key
                 else
                     value = env.takeAttr 'value'
                 self.value = value
+                return
             onDom: ->
                 f$.on element, 'change', self.updateModel
-                cd.watch '$destroy', self.offDom
+                scope.$watch '$destroy', self.offDom
+                return
             offDom: ->
                 f$.off element, 'change', self.updateModel
+                return
             updateModel: ->
-                cd.setValue name, self.value
-                cd.scan
+                scope.$setValue name, self.value
+                scope.$scan
                     skipWatch: self.watch
+                return
             watchModel: ->
-                self.watch = cd.watch name, self.updateDom
+                self.watch = scope.$watch name, self.updateDom
+                return
             updateDom: (value) ->
-                f$.prop element, 'checked', value is self.value
+                element.checked = value is self.value
                 '$scanNoChanges'

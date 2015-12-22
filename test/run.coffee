@@ -6,9 +6,26 @@ window.ttDOM = (html) ->
 
 
 window.ttGetText = (el) ->
-    result = el.innerText.replace /\s+/g, ' '
+    result = el.textContent
+    if typeof(result) isnt 'string'
+        result = el.innerText
+    result = result.replace /\s+/g, ' '
     result.trim()
 
+window.f$_attr = (el, name, value) ->
+    if arguments.length is 3
+        el.setAttribute name, value
+    else
+        el.getAttribute name
+
+window.f$_find = (el, q) ->
+    el.querySelectorAll q
+
+if not Function.prototype.bind
+    Function.prototype.bind = (thisp) ->
+        fn = this;
+        ->
+            fn.apply thisp, arguments
 
 stat =
     started: 0
@@ -76,6 +93,8 @@ window.Test = do ->
     codes = {}
     filterByCode = document.location.hash[1..]
     (title, uniqCode) ->
+        if uniqCode
+            title = uniqCode
         if not uniqCode
             uniqCode = title
         if uniqCode

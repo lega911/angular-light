@@ -11,8 +11,8 @@ Test('al-include').run ($test, alight, timeout) ->
                 option.success 'two-{{link}}'
         else option.error()
 
-    cd = alight.ChangeDetector
-        link: 'link1'
+    scope = alight.Scope()
+    scope.link = 'link1'
 
     el = ttDOM """
         start
@@ -20,18 +20,18 @@ Test('al-include').run ($test, alight, timeout) ->
         finish
     """
 
-    alight.bind cd, el
+    alight.bind scope, el
 
     $test.equal ttGetText(el), 'start finish'
     timeout.add 20, ->
         $test.equal ttGetText(el), 'start one-link1 finish'
 
-        cd.scope.link = null
-        cd.scan()
+        scope.link = null
+        scope.$scan()
         $test.equal ttGetText(el), 'start finish'
 
-        cd.scope.link = 'link2'
-        cd.scan()
+        scope.link = 'link2'
+        scope.$scan()
         timeout.add 20, ->
             $test.equal ttGetText(el), 'start two-link2 finish'
 

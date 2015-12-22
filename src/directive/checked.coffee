@@ -1,23 +1,28 @@
 
 alight.d.al.checked =
     priority: 100
-    link: (scope, cd, element, name) ->
+    link: (scope, element, name) ->
         self =
             start: ->
                 self.onDom()
                 self.watchModel()
+                return
             onDom: ->
                 f$.on element, 'change', self.updateModel
-                cd.watch '$destroy', self.offDom
+                scope.$watch '$destroy', self.offDom
+                return
             offDom: ->
                 f$.off element, 'change', self.updateModel
+                return
             updateModel: ->
-                value = f$.prop element, 'checked'
-                cd.setValue name, value
-                cd.scan
+                value = element.checked
+                scope.$setValue name, value
+                scope.$scan
                     skipWatch: self.watch
+                return
             watchModel: ->
-                self.watch = cd.watch name, self.updateDom
+                self.watch = scope.$watch name, self.updateDom
+                return
             updateDom: (value) ->
-                f$.prop element, 'checked', !!value
+                element.checked = !!value
                 '$scanNoChanges'

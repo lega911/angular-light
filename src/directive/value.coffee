@@ -1,25 +1,31 @@
 
-alight.d.al.value = (scope, cd, element, variable) ->
+alight.d.al.value = (scope, element, variable) ->
     self =
         onDom: ->
             f$.on element, 'input', self.updateModel
             f$.on element, 'change', self.updateModel
-            cd.watch '$destroy', self.offDom
+            scope.$watch '$destroy', self.offDom
+            return
         offDom: ->
             f$.off element, 'input', self.updateModel
             f$.off element, 'change', self.updateModel
+            return
         updateModel: ->
             alight.nextTick ->
-                value = f$.val element
-                cd.setValue variable, value
-                cd.scan
+                value = element.value
+                scope.$setValue variable, value
+                scope.$scan
                     skipWatch: self.watch
+                return
+            return
         watchModel: ->
-            self.watch = cd.watch variable, self.updateDom
+            self.watch = scope.$watch variable, self.updateDom
+            return
         updateDom: (value) ->
             value ?= ''
-            f$.val element, value
+            element.value = value
             '$scanNoChanges'
         start: ->
             self.onDom()
             self.watchModel()
+            return

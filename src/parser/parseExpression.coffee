@@ -12,6 +12,17 @@ reserved =
     'function': true
     'return': true
 
+###
+
+return:
+    result
+    expression
+    filters
+    isSimple
+    simpleVariables
+
+###
+
 alight.utils.parsExpression = (line, cfg) ->
     cfg = cfg or {}
     input = cfg.input or []
@@ -73,7 +84,8 @@ alight.utils.parsExpression = (line, cfg) ->
                     var_before = false
 
             if a is '='
-                if ap isnt '=' and an isnt '=' # assignment in prev variable
+                # assignment in prev variable
+                if (not (ap is '=' or an is '=')) and (ap isnt '<') and (ap isnt '>')
                     variable_assignment[variable_assignment.length-1] = true
 
             if a is '+'
@@ -167,12 +179,15 @@ alight.utils.parsExpression = (line, cfg) ->
     if alight.debug.parser
         console.log 'parser', result
 
-    hasFilters = result.length > 1
-    if hasFilters
-        isSimple = false
+    ret =
+        result: result[0]
+        expression: expression
+        filters: null
+        isSimple: isSimple
+        simpleVariables: simpleVariables
 
-    result: result
-    expression: expression
-    simpleVariables: simpleVariables
-    isSimple: isSimple
-    hasFilters: hasFilters
+    if result.length > 1
+        ret.isSimple = false
+        ret.filters = result.slice(1)
+
+    ret

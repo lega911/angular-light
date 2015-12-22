@@ -12,22 +12,26 @@ makeSkipWatchObject = ->
         map = new Map
         set: (w) ->
             map.set w, true
+            return
         get: (w) ->
             if not map.size
                 return false
             map.get w
         clear: ->
             map.clear()
+            return
     else
         list = []
         set: (w) ->
             list.push w
+            return
         get: (w) ->
             if not list.length
                 return false
             list.indexOf(w) >= 0
         clear: ->
             list.length = 0
+            return
 
 
 Root = () ->
@@ -90,6 +94,7 @@ ChangeDetector::new = (scope) ->
 ChangeDetector::destroy = ->
     cd = @
     root = cd.root
+    cd.scope = null
 
     removeItem root.cdLine, cd
 
@@ -118,9 +123,10 @@ ChangeDetector::destroy = ->
     if root.topCD is cd
         root.topCD = null
         root.destroy()
+    return
 
 
-getFilter = (name, cd, param) ->
+getFilter = (name, cd) ->
     error = false
     scope = cd.scope
     if scope.$ns and scope.$ns.filters
@@ -139,7 +145,7 @@ makeFilterChain = do ->
     getId = ->
         'wf' + (index++)
 
-    (cd, pe, baseCallback, option) ->
+    (cd, ce, baseCallback, option) ->
         root = cd.root
 
         # watchMode: simple, deep, array
@@ -150,10 +156,10 @@ makeFilterChain = do ->
         else
             watchMode = 'simple'
         prevCallback = baseCallback
-        rindex = pe.result.length - 1
+        rindex = ce.filters.length
         onStop = []
         while rindex > 0
-            filterExp = pe.result[rindex--].trim()
+            filterExp = ce.filters[--rindex].trim()
             i = filterExp.indexOf ':'
             if i>0
                 filterName = filterExp[..i-1]
@@ -162,27 +168,26 @@ makeFilterChain = do ->
                 filterName = filterExp
                 filterArg = null
 
-            filterBuilder = getFilter filterName, cd, filterArg
+            filterObject = getFilter filterName, cd
+            if Object.keys(filterObject::).length
+                # class
+                filter = new filterObject filterArg, cd.scope,
+                    setValue: prevCallback
+                    changeDetector: cd
+                filter.setValue = prevCallback
 
-            filter = filterBuilder filterArg, cd,
-                setValue: prevCallback
-
-            if f$.isFunction filter
-                prevCallback = do (filter, prevCallback) ->
-                    (value) ->
-                        prevCallback filter value
-            else
                 if filter.watchMode
                     watchMode = filter.watchMode
-                prevCallback = filter.onChange
-                if filter.onStop
-                    onStop.push filter.onStop
 
-                if not f$.isFunction prevCallback
-                    alight.exceptionHandler '', 'wrong filter: ' + filterName,
-                        name: filterName
-                        args: filterArg
-                    return
+                if filter.onStop
+                    onStop.push filter.onStop.bind filter
+
+                if filter.onChange
+                    prevCallback = filter.onChange.bind filter
+            else
+                prevCallback = do (filter=filterObject, prevCallback, filterArg, cd) ->
+                    (value) ->
+                        prevCallback filter value, filterArg, cd.scope
 
         watchOptions =
             oneTime: option.oneTime
@@ -194,7 +199,7 @@ makeFilterChain = do ->
             watchOptions.isArray = true
         else if watchMode is 'deep'
             watchOptions.deep = true
-        w = cd.watch pe.expression, prevCallback, watchOptions
+        w = cd.watch ce.expression, prevCallback, watchOptions
         w
 
 
@@ -286,10 +291,9 @@ ChangeDetector::watch = (name, callback, option) ->
         if option.watchText
             exp = option.watchText.fn
         else
-            pe = alight.utils.parsExpression name
-            if pe.result.length > 1  # has filters
-                return makeFilterChain cd, pe, callback, option
             ce = alight.utils.compile.expression(name)
+            if ce.filters
+                return makeFilterChain cd, ce, callback, option
             isStatic = ce.isSimple and ce.simpleVariables.length is 0 and not option.isArray
             exp = ce.fn
 
@@ -305,10 +309,12 @@ ChangeDetector::watch = (name, callback, option) ->
         exp: exp
         src: '' + name
         onStop: option.onStop or null
+        el: option.element or null
+        ea: option.elementAttr or null
 
     if isStatic
         cd.watch '$onScanOnce', ->
-            callback d.exp scope
+            execWatchObject scope, d, d.exp scope
     else
         cd.watchList.push d
 
@@ -338,10 +344,6 @@ get_time = do ->
         (new Date()).getTime()
 
 
-isFrozen = Object.isFrozen or ->
-    false
-
-
 notEqual = (a, b) ->
     if a is null or b is null
         return true
@@ -356,6 +358,17 @@ notEqual = (a, b) ->
             if v isnt b[i]
                 return true
     false
+
+
+execWatchObject = (scope, w, value) ->
+    if w.el
+        if w.ea
+            w.el.setAttribute w.ea, value
+        else
+            w.el.nodeValue = value
+    else
+        w.callback.call scope, value
+    return
 
 
 scanCore = (root, result) ->
@@ -375,29 +388,19 @@ scanCore = (root, result) ->
             if last isnt value
                 mutated = false
                 if w.isArray
-                    a0 = f$.isArray last
-                    a1 = f$.isArray value
+                    a0 = Array.isArray last
+                    a1 = Array.isArray value
                     if a0 is a1
                         if a0
-                            if isFrozen last
+                            if notEqual last, value
                                 mutated = true
-                            else
-                                if notEqual last, value
-                                    mutated = true
-                            if mutated
-                                if isFrozen value
-                                    w.value = value
-                                else
-                                    w.value = value.slice()
+                                w.value = value.slice()
                     else
                         mutated = true
-                        if not a1
-                            w.value = null
-                    if mutated and a1
-                        if isFrozen value
-                            w.value = value
-                        else
+                        if a1
                             w.value = value.slice()
+                        else
+                            w.value = null
                 else if w.deep
                     if not alight.utils.equal last, value
                         mutated = true
@@ -409,16 +412,27 @@ scanCore = (root, result) ->
                 if mutated
                     mutated = false
                     changes++
-                    if not root.skippedWatches.get w
-                        if w.callback.call(scope, value) isnt '$scanNoChanges'
-                            if w.extraLoop
-                                extraLoop = true
+
+                    # fire
+                    if w.el
+                        if w.ea
+                            w.el.setAttribute w.ea, value
+                        else
+                            w.el.nodeValue = value
+                    else
+                        if not root.skippedWatches.get w
+                            if last is watchInitValue
+                                last = undefined
+                            if w.callback.call(scope, value, last) isnt '$scanNoChanges'
+                                if w.extraLoop
+                                    extraLoop = true
                 if alight.debug.scan > 1
                     console.log 'changed:', w.src
 
     result.total = total
     result.changes = changes
     result.extraLoop = extraLoop
+    return
 
 
 Root::scan = (cfg) ->

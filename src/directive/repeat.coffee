@@ -7,19 +7,18 @@
     "item in list track by $index"
     "item in list track by $id(item)"
     "item in list track by item.id"
-    "item in list | filter store to filteredList"
-    "item in list | filter track by trackExpression store to filteredList"
 
     "(key, value) in object"
-    "(key, value) in object orderBy:key:reverse store to filteredList"
-    "(key, value) in object | filter orderBy:key,reverse store to filteredList"
+    "(key, value) in object orderBy:key:reverse"
+    "(key, value) in object | filter orderBy:key,reverse"
 ###
 
 alight.directives.al.repeat =
     priority: 1000
     restrict: 'AM'
     stopBinding: true
-    init: (parentScope, CD, element, exp, env) ->  # Change Detector
+    init: (parentScope, element, exp, env) ->  # Change Detector
+        CD = parentScope.$changeDetector
         self =
             start: ->
                 self.parsExpression()
@@ -27,15 +26,10 @@ alight.directives.al.repeat =
                 self.buildUpdateDom()
                 self.watchModel()
                 self.makeChildConstructor()
+                return
 
             parsExpression: ->
                 s = exp.trim()
-
-                # store to
-                r = s.match /(.*) store to ([\w\.]+)$/
-                if r
-                    self.storeTo = r[2]
-                    s = r[1]
 
                 if s[0] is '('
                     # object
@@ -69,6 +63,7 @@ alight.directives.al.repeat =
                         throw 'Wrong repeat: ' + exp
                     self.nameOfKey = r[1]
                     self.expression = r[2]
+                return
 
             watchModel: ->
                 if self.objectMode
@@ -78,6 +73,7 @@ alight.directives.al.repeat =
                     flags =
                         isArray: true
                 self.watch = CD.watch self.expression, self.updateDom, flags
+                return
 
             prepareDom: ->
                 if element.nodeType is 8
@@ -89,19 +85,19 @@ alight.directives.al.repeat =
                             t = el.nodeValue
                             t2 = t.trim().split(/\s+/)
                             if t2[0] is '/directive:' and t2[1] is 'al-repeat'
-                                alight.utils.setData el, 'skipBinding', true
+                                env.skipToElement = el
                                 break
                         element_list.push el
                         el = el.nextSibling
                     for el in element_list
                         f$.remove el
-                        alight.utils.setData el, 'skipBinding', true
                     null
                 else
                     self.base_element = element
-                    self.top_element = f$.createComment " #{exp} "
+                    self.top_element = document.createComment " #{exp} "
                     f$.before element, self.top_element
                     f$.remove element
+                return
 
             makeChildConstructor: ->
                 ChildScope = ->
@@ -109,10 +105,11 @@ alight.directives.al.repeat =
                     @
                 ChildScope:: = CD.scope
                 self.ChildScope = ChildScope
+                return
 
             makeChild: (item, index, list) ->
                 scope = new self.ChildScope()
-                childCD = CD.new scope
+                scope.$rootChangeDetector = childCD = CD.new scope
                 self.updateChild childCD, item, index, list
                 childCD
 
@@ -126,13 +123,14 @@ alight.directives.al.repeat =
                 scope.$index = index
                 scope.$first = index is 0
                 scope.$last = index is list.length-1
+                return
 
             rawUpdateDom: (removes, inserts) ->
                 for e in removes
                     f$.remove e
                 for it in inserts
                     f$.after it.after, it.element
-                null
+                return
 
             buildUpdateDom: ->
                 self.updateDom = do ->
@@ -149,13 +147,13 @@ alight.directives.al.repeat =
                         node_del = (node) ->
                             $id = node.$id
                             `if($id != null) delete node_by_id[$id]`
-                            null
+                            return
 
                         node_set = (item, node) ->
                             $id = index
                             node.$id = $id
                             node_by_id[$id] = node
-                            null
+                            return
                     else
                         if self.trackExpression
                             node_by_id = {}
@@ -179,13 +177,13 @@ alight.directives.al.repeat =
                             node_del = (node) ->
                                 $id = node.$id
                                 `if($id != null) delete node_by_id[$id]`
-                                null
+                                return
 
                             node_set = (item, node) ->
                                 $id = _getId _id, item
                                 node.$id = $id
                                 node_by_id[$id] = node
-                                null
+                                return
 
                         else
                             if window.Map
@@ -195,11 +193,11 @@ alight.directives.al.repeat =
 
                                 node_del = (node) ->
                                     node_by_id.delete node.item
-                                    null
+                                    return
 
                                 node_set = (item, node) ->
                                     node_by_id.set item, node
-                                    null
+                                    return
 
                             else
                                 node_by_id = {}
@@ -213,14 +211,14 @@ alight.directives.al.repeat =
                                     $id = node.$id
                                     if $id
                                         delete node_by_id[$id]
-                                    null
+                                    return
 
                                 node_set = (item, node) ->
                                     $id = alight.utils.getId()
                                     item.$alite_id = $id
                                     node.$id = $id
                                     node_by_id[$id] = node
-                                    null
+                                    return
 
                     if self.element_list
                         (list) ->
@@ -304,8 +302,10 @@ alight.directives.al.repeat =
                                 childCD = self.makeChild item_value, index, list
 
                                 element_list = for bel in self.element_list
-                                    el = f$.clone bel
-                                    applyList.push [childCD, el]
+                                    el = bel.cloneNode true
+                                    applyList.push
+                                        cd: childCD
+                                        el: el
 
                                     dom_inserts.push
                                         element: el
@@ -345,14 +345,9 @@ alight.directives.al.repeat =
                             #applying
                             skippedAttrs = env.skippedAttr()
                             for it in applyList
-                                alight.bind it[0], it[1],
+                                alight.bind it.cd, it.el,
                                     skip_attr: skippedAttrs
-
-                            if self.storeTo
-                                CD.setValue self.storeTo, list
-                                return
-
-                            null
+                            return
                     else
                         # method update for a single element
                         (list) ->
@@ -431,8 +426,10 @@ alight.directives.al.repeat =
 
                                 childCD = self.makeChild item_value, index, list
 
-                                element = f$.clone self.base_element
-                                applyList.push [childCD, element]
+                                element = self.base_element.cloneNode true
+                                applyList.push
+                                    cd: childCD
+                                    el: element
 
                                 dom_inserts.push
                                     element: element
@@ -473,28 +470,10 @@ alight.directives.al.repeat =
                             skippedAttrs = env.skippedAttr()
                             for it in applyList
                                 if fastBinding
-                                    fastBinding.bind it[0], it[1]
+                                    fastBinding.bind it.cd, it.el
                                 else
-                                    r = alight.bind it[0], it[1],
+                                    r = alight.bind it.cd, it.el,
                                         skip_attr: skippedAttrs
                                     if r.directive is 0 and r.hook is 0
                                         fastBinding = new alight.core.fastBinding self.base_element
-
-                            if self.storeTo
-                                CD.setValue self.storeTo, list
-
-                            null
-
-
-alight.directives.bo.repeat =
-    priority: 1000
-    restrict: 'AM'
-    stopBinding: true
-    init: (scope, CD, element, exp, env) ->
-        self = alight.directives.al.repeat.init scope, CD, element, exp, env
-        originalStart = self.start
-        self.start = ->
-            originalStart()
-            CD.watch '$finishScanOnce', ->
-                self.watch.stop()  # stop watching
-        self
+                            return

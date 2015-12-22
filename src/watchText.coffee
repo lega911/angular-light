@@ -27,46 +27,40 @@ do ->
             i++
             'wt' + i
 
-    alight.text.$base = (conf) ->
-        point = conf.point
+    alight.text.$base = (option) ->
+        point = option.point
 
-        exp = conf.exp
-        i = exp.indexOf ' '
-        if i < 0
-            dirName = exp.slice 1
-            exp = ''
-        else
-            dirName = exp.slice 1, i
-            exp = exp.slice i
-
-        cd = conf.cd
+        cd = option.cd
         scope = cd.scope
         if scope.$ns and scope.$ns.text
-            dir = scope.$ns.text[dirName]
+            dir = scope.$ns.text[option.name]
         else
-            dir = alight.text[dirName]
+            dir = alight.text[option.name]
         if not dir
-            throw 'No directive alight.text.' + dirName
+            throw 'No directive alight.text.' + option.name
 
         env =
+            changeDetector: cd
             setter: (value) ->
                 if value == null
                     point.value = ''
                 else
                     point.value = '' + value
-                conf.update()
+                option.update()
             finally: (value) ->  # prebuild finally
                 if value == null
                     point.value = ''
                 else
                     point.value = '' + value
                 point.type = 'text'
-                conf.finally()
+                option.finally()
 
-        dir env.setter, exp, cd, env
+        scope.$changeDetector = cd
+        dir env.setter, option.exp, scope, env
+        scope.$changeDetector = null
 
 
-    alight.core.ChangeDetector::watchText = (expression, callback, config) ->
+    watchText = (expression, callback, config) ->
         config = config or {}
         cd = @
         if alight.debug.watchText
@@ -77,6 +71,8 @@ do ->
         if st
             cd.watch expression, callback,
                 watchText: st
+                element: config.element
+                elementAttr: config.elementAttr
             return
 
         data = alight.utils.parsText expression
@@ -92,13 +88,22 @@ do ->
 
                 # check for a text directive
                 exp = d.list.join ' | '
-                if exp[0] is '='
-                    exp = '#bindonce ' + exp[1..]
-                else if exp[0..1] is '::'
-                    exp = '#oneTimeBinding ' + exp[2..]
+                lname = exp.match /^([^\w\d\s\$"']+)/
+                if lname
+                    name = lname[1]
+                    if name is '#'
+                        i = exp.indexOf ' '
+                        if i < 0
+                            name = exp.substring 1
+                            exp = ''
+                        else
+                            name = exp.slice 1, i
+                            exp = exp.slice i
+                    else
+                        exp = exp.substring name.length
 
-                if exp[0] is '#'
                     alight.text.$base
+                        name: name
                         exp: exp
                         cd: cd
                         point: d
@@ -112,13 +117,10 @@ do ->
                         watchCount++
                         canUseSimpleBuilder = false
                 else
-                    pe = alight.utils.parsExpression exp
-                    if not pe.hasFilters
-                        ce = alight.utils.compile.expression pe.expression,
-                            string: true
-                            full: true
-                            rawExpression: true
+                    ce = alight.utils.compile.expression exp,
+                        string: true
 
+                    if not ce.filters
                         d.fn = ce.fn
                         if not ce.rawExpression
                             throw 'Error'
@@ -143,7 +145,11 @@ do ->
             for d in data
                 value += d.value
             cd.watch '$onScanOnce', ->
-                callback value
+                execWatchObject cd.scope,
+                    callback: callback
+                    el: config.element
+                    ea: config.elementAttr
+                , value
             return
 
         if canUseSimpleBuilder
@@ -154,6 +160,8 @@ do ->
             cd.watch expression, callback,
                 watchText:
                     fn: st.fn
+                element: config.element
+                elementAttr: config.elementAttr
             return
 
         w = null
@@ -177,5 +185,22 @@ do ->
         privateValue = ->
             resultValue
         doUpdate()
-        w = cd.watch privateValue, callback
-        null
+        w = cd.watch privateValue, callback,
+            element: config.element
+            elementAttr: config.elementAttr
+        return
+
+    ChangeDetector::watchText = watchText
+
+    Scope::$watchText = (expression, callback, option) ->
+        cd = @.$changeDetector
+        if not cd and not @.$rootChangeDetector.children.length  # no child scopes
+            cd = @.$rootChangeDetector
+        if cd
+            cd.watchText expression, callback, option
+        else
+            alight.exceptionHandler '', 'You can do $watchText during binding only: ' + expression,
+                expression: expression
+                option: option
+                scope: @
+        return

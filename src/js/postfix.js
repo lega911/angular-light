@@ -14,6 +14,7 @@
 	} else if(typeof(alightInitCallback) === 'function') {
 		alightInitCallback(alight)
 	} else {
+		alight.d.al.ctrl.global = true;  // global controllers
 		window.alight = alight;
 		alight.f$.ready(alight.bootstrap);
 	};

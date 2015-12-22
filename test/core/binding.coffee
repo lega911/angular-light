@@ -1,25 +1,22 @@
 
-Test('binding 0', 'binding-0').run ($test, alight) ->
+Test('binding-0').run ($test, alight) ->
     $test.start 4
 
-    alight.filters.double = ->
-        (value) ->
-            value + value
+    alight.filters.double = (value) ->
+        value + value
 
-    dom = $ '<div attr="{{ num + 5 }}">Text {{ num | double }}</div>'
-    scope =
+    el = ttDOM '<div attr="{{ num + 5 }}">Text {{ num | double }}</div>'
+
+    scope = alight.bootstrap el,
         num: 15
-    cd = alight.ChangeDetector scope
 
-    alight.applyBindings cd, dom[0]
-
-    $test.equal dom.text(), 'Text 30'
-    $test.equal dom.attr('attr'), '20'
+    $test.equal ttGetText(el), 'Text 30'
+    $test.equal f$_attr(el.childNodes[0], 'attr'), '20'
 
     scope.num = 50
-    cd.scan ->
-        $test.equal dom.text(), 'Text 100'
-        $test.equal dom.attr('attr'), '55'
+    scope.$scan ->
+        $test.equal ttGetText(el), 'Text 100'
+        $test.equal f$_attr(el.childNodes[0], 'attr'), '55'
         $test.close()
 
 
@@ -28,7 +25,7 @@ Test('test-take-attr').run ($test, alight) ->
     alight.directives.ut =
         test0:
             priority: 500
-            init: (scope, cd, el, name, env) ->
+            init: (scope, el, name, env) ->
                 $test.equal env.attributes[0].attrName, 'ut-test0'
                 for attr in env.attributes
                     if attr.attrName is 'ut-text'
@@ -39,16 +36,16 @@ Test('test-take-attr').run ($test, alight) ->
                 $test.equal 'mo{{d}}el1', env.takeAttr 'ut-css'
 
     $test.start 5
-    dom = $ '<div ut-test0 ut-text="mo{{d}}el0" ut-css="mo{{d}}el1"></div>'
+    el = ttDOM '<div ut-test0 ut-text="mo{{d}}el0" ut-css="mo{{d}}el1"></div>'
 
-    cd = alight.ChangeDetector()
+    scope = alight.Scope()
 
-    alight.applyBindings cd, dom[0],
+    alight.bind scope, el.childNodes[0],
         skip_attr: ['ut-text']
     $test.close()
 
 
-Test('skipped attrs').run ($test, alight) ->
+Test('skipped-attrs-0').run ($test, alight) ->
     $test.start 6
 
     activeAttr = (env) ->
@@ -65,7 +62,7 @@ Test('skipped attrs').run ($test, alight) ->
     alight.directives.ut =
         testAttr0:
             priority: 50
-            init: (scope, cd, el, name, env) ->
+            init: (scope, el, name, env) ->
                 $test.equal skippedAttr(env), 'ut-test-attr0,ut-two'
                 $test.equal activeAttr(env), 'one,ut-test-attr1,ut-three'
                 env.takeAttr 'ut-three'
@@ -74,21 +71,21 @@ Test('skipped attrs').run ($test, alight) ->
 
         testAttr1:
             priority: -50
-            init: (scope, cd, el, name, env) ->
+            init: (scope, el, name, env) ->
                 $test.equal skippedAttr(env), 'one,ut-test-attr0,ut-test-attr1,ut-three,ut-two'
                 $test.equal activeAttr(env), ''
 
-    cd = alight.ChangeDetector()
+    scope = alight.Scope()
     dom = document.createElement 'div'
     dom.innerHTML = '<div one="1" ut-test-attr1 ut-test-attr0 ut-two ut-three></div>'
     element = dom.children[0]
 
-    alight.applyBindings cd, element,
+    alight.bind scope, element,
         skip_attr: ['ut-two']
     $test.close()
 
 
-Test('deferred process', 'deferred-process').run ($test, alight, timeout) ->
+Test('deferred-process').run ($test, alight, timeout) ->
     $test.start 9
 
     # mock ajax
@@ -105,28 +102,26 @@ Test('deferred process', 'deferred-process').run ($test, alight, timeout) ->
         test5:
             templateUrl: 'testDeferredProcess'
             scope: true
-            link: (scope, cd, el, name) ->
+            link: (scope, el, name) ->
                 scope.name = 'linux'
                 scope5 = scope
         test3:
             templateUrl: 'testDeferredProcess'
-            link: (scope, cd, el, name) ->
+            link: (scope, el, name) ->
                 scope.name = 'linux'
                 scope3 = scope
 
     runOne = (template) ->
-        root =
-            name: 'root'
-        cd = alight.ChangeDetector root
+        scope = alight.Scope()
+        scope.name = 'root'
 
         dom = document.createElement 'div'
         dom.innerHTML = template
 
-        alight.applyBindings cd, dom
+        alight.bind scope, dom
 
         response =
-            root: root
-            cd: cd
+            scope: scope
             html: ->
                 dom.innerHTML.toLowerCase()
         response
@@ -137,29 +132,29 @@ Test('deferred process', 'deferred-process').run ($test, alight, timeout) ->
     timeout.add 200, ->
         # 0
         $test.equal alight.directives.ut.test5.template, undefined
-        $test.equal r0.root.name, 'root'
-        $test.equal r0.cd.children[0].scope.name, 'linux'
+        $test.equal r0.scope.name, 'root'
+        $test.equal r0.scope.$rootChangeDetector.children[0].scope.name, 'linux'
         $test.equal scope5.name, 'linux'
         $test.equal r0.html(), '<span ut-test5="noop"><p>linux</p></span>'
         
         # 1
-        $test.equal scope3, r1.root
-        $test.equal r1.root.name, 'linux'
-        $test.equal r1.cd.children.length, 0
+        $test.equal scope3, r1.scope
+        $test.equal r1.scope.name, 'linux'
+        $test.equal r1.scope.$rootChangeDetector.children.length, 0
         $test.equal r1.html(), '<span ut-test3="noop"><p>linux</p></span>'
         
         $test.close()
 
 
-Test('html prefix-data').run ($test, alight) ->
+Test('html-prefix-data').run ($test, alight) ->
     $test.start 3
 
     r = []
-    alight.directives.al.test = (scope, cd, el, value) ->
+    alight.directives.al.test = (scope, el, value) ->
         r.push value
 
-    dom = $ '<div> <b al-test="one"></b> <b data-al-test="two"></b> </div>'
-    alight.applyBindings alight.ChangeDetector(), dom[0]
+    el = ttDOM '<div> <b al-test="one"></b> <b data-al-test="two"></b> </div>'
+    alight.bind alight.Scope(), el.childNodes[0]
 
     $test.equal r[0], 'one'
     $test.equal r[1], 'two'
@@ -172,30 +167,29 @@ Test 'root-scope-access-to-parent'
     .run ($test, alight) ->
         $test.start 2
 
-        alight.ctrl.test =
-            scope: true
-            ChangeDetector: 'root'
-            link: (scope, cd, el, key, env) ->
+        alight.d.al.test =
+            scope: 'root'
+            link: (scope, el, key, env) ->
                 env.parentChangeDetector.watch key, (value) ->
                     scope.title = value
-                    cd.scan()
+                    scope.$scan()
 
         el = ttDOM """
             {{name}}
-            <div ctrl-test="name">
+            <div al-test="name">
                 {{title}}-{{title2}}
             </div>
         """
 
-        cd = alight.ChangeDetector
-            name: 'linux'
+        scope = alight.Scope()
+        scope.name = 'linux'
 
-        alight.bind cd, el
+        alight.bind scope, el
 
         $test.equal ttGetText(el), 'linux linux-'
         
-        cd.scope.name = 'ubuntu'
-        cd.scan()
+        scope.name = 'ubuntu'
+        scope.$scan()
         $test.equal ttGetText(el), 'ubuntu ubuntu-'
 
         $test.close()
@@ -205,10 +199,10 @@ Test 'stop-binding-0'
     .run ($test, alight) ->
         $test.start 1
 
-        alight.ctrl.one =
+        alight.d.al.one =
             stopBinding: true
 
-        el = ttDOM '<div>{{name}} <div ctrl-one>{{name}}</div> </div>'
+        el = ttDOM '<div>{{name}} <div al-one>{{name}}</div> </div>'
 
         alight.bootstrap el,
             name: 'linux'
@@ -222,16 +216,16 @@ Test 'stop-binding-1'
     .run ($test, alight) ->
         $test.start 1
 
-        alight.ctrl.one =
-            link: (scope, cd, el, key, env) ->
+        alight.d.al.one =
+            link: (scope, el, key, env) ->
                 if key is 'stop'
                     env.stopBinding = true
 
         el = ttDOM """
             <div>
                 {{name}}
-                <div ctrl-one="stop">1{{name}}</div>
-                <div ctrl-one>2{{name}}</div>
+                <div al-one="stop">1{{name}}</div>
+                <div al-one>2{{name}}</div>
             </div>
         """
 
@@ -248,29 +242,67 @@ Test 'binding-order-0'
         $test.start 1
 
         el = ttDOM """
-            <div ctrl-parent>
+            <div al-parent>
                 <div al-repeat="it in list">
-                    <i ctrl-child></i>
+                    <i al-child></i>
                 </div>
             </div>
         """
 
         order = []
 
-        alight.ctrl.parent = (scope, cd) ->
+        alight.d.al.parent = (scope) ->
             order.push 'p0'
-            cd.watch '$finishBinding', ->
+            scope.$watch '$finishBinding', ->
                 order.push 'p1'
 
-        alight.ctrl.child = (scope, cd) ->
+        alight.d.al.child = (scope) ->
             order.push 'c0-' + scope.$index
-            cd.watch '$finishBinding', ->
+            scope.$watch '$finishBinding', ->
                 order.push 'c1-' + scope.$index
 
-        cd = alight.bootstrap el,
+        scope = alight.bootstrap el,
             list: [{}, {}]
 
         order = order.join ' '
         $test.equal order, 'p0 c0-0 c0-1 p1 c1-0 c1-1'
+
+        $test.close()
+
+
+Test 'binding-order-1'
+    .run ($test, alight) ->
+        $test.start 2
+
+        el = ttDOM """
+            <div al-parent>
+                <i al-child></i>
+                <!-- directive: al-test -->
+            </div>
+        """
+
+        order = []
+        testCount = 0
+
+        alight.d.al.parent =
+            scope: true
+            link: (scope) ->
+                start: ->
+                    order.push 'parent'
+
+        alight.d.al.child = (scope) ->
+            order.push 'child'
+
+        alight.d.al.test =
+            restrict: 'M'
+            link: ->
+                start: ->
+                    testCount++
+
+        alight.bootstrap el
+
+        order = order.join ' '
+        $test.equal order, 'parent child'
+        $test.equal testCount, 1
 
         $test.close()

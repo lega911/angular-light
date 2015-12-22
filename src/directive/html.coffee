@@ -2,19 +2,21 @@
 alight.d.al.html =
     priority: 100
     stopBinding: true
-    link: (scope, cd, element, name, env) ->
+    link: (scope, element, name, env) ->
+        cd = env.changeDetector
         child = null
         setter = (html) ->
             if child
-                child.$destroy()
+                child.destroy()
                 child = null
             if not html
-                f$.html element, ''
+                element.innerHTML = ''
                 return
-            f$.html element, html
+            element.innerHTML = html
             child = cd.new()
             alight.bind child, element,
                 skip_attr: env.skippedAttr()
+            return
 
         cd.watch name, setter
-        null
+        return

@@ -3,12 +3,12 @@
         var alight = {
             filters: {},
             text: {},
+            ctrl: {},
             core: {},
             utils: {},
             d: {
                 al: {},
-                bo: {},
-                ctrl: {}
+                bo: {}
             },
             hooks: {
                 directive: [],
@@ -18,7 +18,7 @@
         var f$ = {};
         alight.f$ = f$;
         alight.directives = alight.d;
-        alight.ctrl = alight.d.ctrl;
+        alight.controllers = alight.ctrl;
 
         var removeItem = function(list, item) {
             var i = list.indexOf(item);

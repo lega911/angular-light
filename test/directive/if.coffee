@@ -3,11 +3,6 @@ Test('al-if').run ($test, alight) ->
     $test.start 5
 
     index = 1
-    cd = alight.ChangeDetector
-        name: 'linux'
-        counter: ->
-            index++
-
     el = ttDOM """
         <div>
             {{name}}-{{=counter()}}
@@ -20,24 +15,27 @@ Test('al-if').run ($test, alight) ->
         </div>
     """
 
-    alight.bind cd, el
+    scope = alight.bootstrap el,
+        name: 'linux'
+        counter: ->
+            index++
 
     $test.equal ttGetText(el), 'linux-1'
 
-    cd.scope.name = 'unix'
-    cd.scan()
+    scope.name = 'unix'
+    scope.$scan()
     $test.equal ttGetText(el), 'unix-1 child2=unix-2'
 
-    cd.scope.name = 'ubuntu'
-    cd.scan()
+    scope.name = 'ubuntu'
+    scope.$scan()
     $test.equal ttGetText(el), 'ubuntu-1 child1=ubuntu-3 child2=ubuntu-2'
 
-    cd.scope.name = 'linux'
-    cd.scan()
+    scope.name = 'linux'
+    scope.$scan()
     $test.equal ttGetText(el), 'linux-1'
 
-    cd.scope.name = 'mac'
-    cd.scan()
+    scope.name = 'mac'
+    scope.$scan()
     $test.equal ttGetText(el), 'mac-1 child2=mac-4'
 
     $test.close()

@@ -79,7 +79,6 @@ alight.directivePreprocessor = (attrName, args) ->
             name: name
             args: args
             directive: dir
-            result: {}
             
             isDeferred: false
             procLine: alight.hooks.directive
@@ -95,8 +94,8 @@ alight.directivePreprocessor = (attrName, args) ->
         if dir.stopBinding
             dscope.env.stopBinding = true
 
-        doProcess()        
-        dscope.result
+        doProcess()
+        return
     dir
 
 
@@ -110,11 +109,13 @@ do ->
                 if alight.debug.directive
                     if @.directive.scope or @.directive.ChangeDetector
                         console.warn "#{@.ns}-#{@.name} uses scope and init together, probably you need use link instead of init"
-                result = @.directive.init @.cd.scope, @.cd, @.element, @.value, @.env
-                if f$.isObject result
-                    @.result = result
-                    if result.owner
-                        @.env.stopBinding = true
+                @.env.changeDetector = @.cd
+                @.cd.scope.$changeDetector = @.cd
+                result = @.directive.init @.cd.scope, @.element, @.value, @.env
+                if result and result.start
+                    result.start()
+                @.cd.scope.$changeDetector = null
+            return
 
     ext.push
         code: 'templateUrl'
@@ -129,57 +130,65 @@ do ->
                         ds.directive.template = html
                         callback()
                     error: callback
+            return
 
     ext.push
         code: 'template'
         fn: ->
             if @.directive.template
                 if @.element.nodeType is 1
-                    f$.html @.element, @.directive.template
+                    @.element.innerHTML = @.directive.template
                 else if @.element.nodeType is 8
                     el = document.createElement 'p'
-                    el.innerHTML = @.directive.template.trimLeft()
+                    el.innerHTML = @.directive.template.trim()
                     el = el.firstChild
                     f$.after @.element, el
                     @.element = el
                     @.doBinding = true
+            return
 
     ext.push
         code: 'scope'
         fn: ->
-            # scope: false, true
-            # ChangeDetector: false, true, 'root'
-            if not (@.directive.scope or @.directive.ChangeDetector)
+            # scope: false, true, 'root'
+            if not @.directive.scope
                 return
 
             parentCD = @.cd
+            scope = alight.Scope
+                changeDetector: null
 
-            if @.directive.scope
-                scope =
-                    $parent: parentCD.scope
-            else
-                scope = parentCD.scope
+            switch @.directive.scope
+                when true
+                    childCD = parentCD.new scope
+                when 'root'
+                    childCD = alight.ChangeDetector scope
 
-            if @.directive.ChangeDetector is 'root'
-                @.cd = childCD = alight.ChangeDetector scope
-                parentCD.watch '$destroy', ->
-                    childCD.destroy()
-            else
-                @.cd = parentCD.new scope
+                    parentCD.watch '$destroy', ->
+                        childCD.destroy()
+                else
+                    throw 'Wrong scope value: ' + @.directive.scope
 
             @.env.parentChangeDetector = parentCD
+            scope.$parent = parentCD.scope
+            scope.$rootChangeDetector = childCD
+            @.cd = childCD
+
             @.env.stopBinding = true
             @.doBinding = true
+            return
 
     ext.push
         code: 'link'
         fn: ->
             if @.directive.link
-                result = @.directive.link @.cd.scope, @.cd, @.element, @.value, @.env
-                if f$.isObject result
-                    if result.owner
-                        @.env.stopBinding = true
-                    @.result = result
+                @.env.changeDetector = @.cd
+                @.cd.scope.$changeDetector = @.cd
+                result = @.directive.link @.cd.scope, @.element, @.value, @.env
+                if result and result.start
+                    result.start()
+                @.cd.scope.$changeDetector = null
+            return
 
     ext.push
         code: 'scopeBinding'
@@ -187,6 +196,7 @@ do ->
             if @.doBinding
                 alight.bind @.cd, @.element,
                     skip_attr: @.env.skippedAttr()
+            return
 
 
 testDirective = do ->
@@ -231,10 +241,9 @@ attrBinding = (cd, element, value, attrName) ->
     if text.indexOf(alight.utils.pars_start_tag) < 0
         return
 
-    setter = (result) ->
-        f$.attr element, attrName, result
-        '$scanNoChanges'
-    cd.watchText text, setter
+    cd.watchText text, null,
+        element: element
+        elementAttr: attrName
     true
 
 
@@ -242,18 +251,16 @@ bindText = (cd, element) ->
     text = element.data
     if text.indexOf(alight.utils.pars_start_tag) < 0
         return
-    setter = (result) ->
-        element.nodeValue = result
-        '$scanNoChanges'
-    cd.watchText text, setter
+    cd.watchText text, null,
+        element: element
     true
 
 
 bindComment = (cd, element, option) ->
-    text = element.nodeValue.trimLeft()
+    text = element.nodeValue.trim()
     if text[0..9] isnt 'directive:'
         return
-    text = text[10..].trimLeft()
+    text = text[10..].trim()
     i = text.indexOf ' '
     if i >= 0
         dirName = text[0..i-1]
@@ -285,9 +292,7 @@ bindComment = (cd, element, option) ->
     if alight.debug.directive
         console.log 'bind', d.attrName, value, d
     try
-        result = directive.$init cd, element, value, env
-        if result and result.start
-            result.start()
+        directive.$init cd, element, value, env
     catch e
         alight.exceptionHandler e, 'Error in directive: ' + d.name,
             value: value
@@ -295,7 +300,14 @@ bindComment = (cd, element, option) ->
             cd: cd
             scope: cd.scope
             element: element
-    true
+    if env.skipToElement
+        return {
+            directive: 1
+            skipToElement: env.skipToElement
+        }
+
+    directive: 1
+    skipToElement: null
 
 
 bindElement = do ->
@@ -307,7 +319,7 @@ bindElement = do ->
                 continue
             if skip
                 attr.skip = true
-            value = f$.attr @.element, name
+            value = @.element.getAttribute name
             return value or true
 
     skippedAttr = ->
@@ -322,6 +334,7 @@ bindElement = do ->
             text: 0
             attr: 0
             hook: 0
+            skipToElement: null
         config = config || {}
         skipChildren = false
         skip_attr = config.skip_attr or []
@@ -340,9 +353,12 @@ bindElement = do ->
             testDirective attrName, args
 
             args.attr_type = 'A'
-            attrs = f$.getAttributes element
-            for attrName, attr_value of attrs
-                testDirective attrName, args
+            for attr in element.attributes
+                testDirective attr.name, args
+
+            if config.attachDirective
+                for attrName, attrValue of config.attachDirective
+                    testDirective attrName, args
 
             # sort by priority
             list = list.sort sortByPriority
@@ -353,7 +369,10 @@ bindElement = do ->
                 if d.noDirective
                     throw "Directive not found: #{d.name}"
                 d.skip = true
-                value = f$.attr element, d.attrName
+                if config.attachDirective and config.attachDirective[d.attrName]
+                    value = config.attachDirective[d.attrName]
+                else
+                    value = element.getAttribute d.attrName
                 if d.is_attr
                     if attrBinding cd, element, value, d.attrName
                         bindResult.attr++
@@ -370,9 +389,7 @@ bindElement = do ->
                     if alight.debug.directive
                         console.log 'bind', d.attrName, value, d
                     try
-                        result = directive.$init cd, element, value, env
-                        if result and result.start
-                            result.start()
+                        directive.$init cd, element, value, env
                     catch e
                         alight.exceptionHandler e, 'Error in directive: ' + d.attrName,
                             value: value
@@ -385,16 +402,27 @@ bindElement = do ->
                         skipChildren = true
                         break
 
+                    if env.skipToElement
+                        bindResult.skipToElement = env.skipToElement
+
         if !skipChildren
             # text bindings
-            for childElement in f$.childNodes element
+            skipToElement = null
+            childNodes = for childElement in element.childNodes
+                childElement
+            for childElement in childNodes
                 if not childElement
+                    continue
+                if skipToElement
+                    if skipToElement is childElement
+                        skipToElement = null
                     continue
                 r = bindNode cd, childElement
                 bindResult.directive += r.directive
                 bindResult.text += r.text
                 bindResult.attr += r.attr
                 bindResult.hook += r.hook
+                skipToElement = r.skipToElement
 
         bindResult
 
@@ -405,8 +433,7 @@ bindNode = (cd, element, option) ->
         text: 0
         attr: 0
         hook: 0
-    if alight.utils.getData element, 'skipBinding'
-        return result
+        skipToElement: null
     if alight.hooks.binding.length
         for h in alight.hooks.binding
             result.hook += 1
@@ -420,12 +447,15 @@ bindNode = (cd, element, option) ->
         result.text += r.text
         result.attr += r.attr
         result.hook += r.hook
+        result.skipToElement = r.skipToElement
     else if element.nodeType is 3
         if bindText cd, element, option
             result.text++
     else if element.nodeType is 8
-        if bindComment cd, element, option
-            result.directive++
+        r = bindComment cd, element, option
+        if r
+            result.directive += r.directive
+            result.skipToElement = r.skipToElement
     result
 
 
@@ -454,13 +484,19 @@ alight.nextTick = do ->
         timer = setTimeout exec, 0
 
 
-alight.bind = alight.applyBindings = (cd, element, option) ->
+alight.bind = alight.applyBindings = (scope, element, option) ->
     if not element
         throw 'No element'
 
-    if not cd
-        throw 'No CD'
+    if not scope
+        throw 'No Scope'
 
+    option = option or {}
+
+    if scope instanceof alight.core.ChangeDetector
+        cd = scope
+    else    
+        cd = option.changeDetector or scope.$changeDetector or scope.$rootChangeDetector
     root = cd.root
 
     finishBinding = not root.finishBinding_lock
@@ -472,7 +508,6 @@ alight.bind = alight.applyBindings = (cd, element, option) ->
             attr: 0
             hook: 0
 
-    option = option or {}
     result = bindNode cd, element, option
 
     root.bindingResult.directive += result.directive
@@ -492,32 +527,37 @@ alight.bind = alight.applyBindings = (cd, element, option) ->
     result
 
 
-alight.bootstrap = (input, scope) ->
+alight.bootstrap = (input, data) ->
     if not input
-        input = f$.find document, '[al-app]'
+        input = document.querySelectorAll '[al-app]'
     if typeof(input) is 'string'
-        input = f$.find document.body, input
+        input = document.querySelectorAll input
     if f$.isElement input
         input = [input]
-    if f$.isArray(input) or typeof(input.length) is 'number'
-        lastCD = null
-        if scope
-            oneCD = alight.ChangeDetector scope
-        else
-            oneCD = null
+    if Array.isArray(input) or typeof(input.length) is 'number'
+        lastScope = null
+        if data            
+            oneScope = alight.Scope
+                data: data
         for element in input
             if element.ma_bootstrapped  # TODO change to getData/setData
                 continue
             element.ma_bootstrapped = true
-            attr = f$.attr element, 'al-app'
-            if oneCD
-                cd = oneCD
+            if oneScope
+                scope = oneScope
             else
-                cd = alight.ChangeDetector()
-            alight.bind cd, element,
+                scope = alight.Scope()
+            option =
                 skip_attr: 'al-app'
-            lastCD = cd
-        return cd
+
+            ctrlName = element.getAttribute 'al-app'
+            if ctrlName
+                option.attachDirective =
+                    'al-ctrl': ctrlName
+
+            alight.bind scope, element, option
+            lastScope = scope
+        return lastScope
     alight.exceptionHandler 'Error in bootstrap', 'Error input arguments',
         input: input
     null

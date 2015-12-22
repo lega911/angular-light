@@ -2,27 +2,30 @@
 clickMaker = (event) ->
     priority: 10
     stopPropagation: true
-    link: (scope, cd, element, name, env) ->
+    link: (scope, element, name, env) ->
         self =
             stopPropagation: @.stopPropagation
-            callback: cd.compile name,
+            callback: scope.$compile name,
                 no_return: true
                 input: ['$event']
             start: ->
                 self.onDom()
                 self.stop = env.takeAttr 'al-click-stop'
+                return
             onDom: ->
                 f$.on element, event, self.doCallback
-                cd.watch '$destroy', self.offDom
+                scope.$watch '$destroy', self.offDom
+                return
             offDom: ->
                 f$.off element, event, self.doCallback
+                return
             doCallback: (e) ->
                 if not self.stop
                     e.preventDefault()
                     if self.stopPropagation
                         e.stopPropagation()
 
-                if f$.attr element, 'disabled'
+                if element.getAttribute 'disabled'
                     return
 
                 try
@@ -30,16 +33,16 @@ clickMaker = (event) ->
                 catch e
                     alight.exceptionHandler e, 'al-click, error in expression: ' + name,
                         name: name
-                        cd: cd
                         scope: scope
                         element: element
 
-                if self.stop and cd.eval self.stop
+                if self.stop and scope.$eval self.stop
                     e.preventDefault()
                     if self.stopPropagation
                         e.stopPropagation()
 
-                cd.scan()
+                scope.$scan()
+                return
 
 alight.d.al.click = clickMaker 'click'
 alight.d.al.dblclick = clickMaker 'dblclick'

@@ -9,7 +9,7 @@ Test('fast-binding 0', 'fast-binding-0').run ($test, alight) ->
         <span>no bind <b><b attr4="{{attr4}}x"></b></b> </span>
         <span attr3="a{{attr3}}a">{{child2}}-from-child</span>
     '''
-    alight.f$.attr el, 'attr5', 'y{{attr5}}'
+    f$_attr el, 'attr5', 'y{{attr5}}'
 
     cd = alight.ChangeDetector
         rootValue: 'unix'
@@ -64,31 +64,30 @@ Test('fast-binding-1').run ($test, alight) ->
         </div>
     """
 
-    alight.filters.double = ->
-        (x) ->
-            x*2
+    alight.filters.double = (x) ->
+        x*2
 
-    alight.text.dd = (callback, expression, cd, env) ->
-        value = cd.eval expression
+    alight.text.dd = (callback, expression, scope, env) ->
+        value = scope.$eval expression
         env.setter value+value
 
-    cd = alight.ChangeDetector
-        list: [
-            {name: 'l', value: 5}
-            {name: 'u', value: 7}
-            {name: 'd', value: 11}
-        ]
-        foo: (x) ->
-            x*2
+    scope = alight.Scope()
+    scope.list = [
+        {name: 'l', value: 5}
+        {name: 'u', value: 7}
+        {name: 'd', value: 11}
+    ]
+    scope.foo = (x) ->
+        x*2
 
-    alight.bind cd, el
+    alight.bind scope, el
 
     $test.equal ttGetText(el), 'a-l b-10 c-10 d-l e-ll ' + 'a-u b-14 c-14 d-u e-uu ' + 'a-d b-22 c-22 d-d e-dd'
     
-    cd.scope.list[1] =
+    scope.list[1] =
         name: 'x'
         value: 3
-    cd.scan()
+    scope.$scan()
     $test.equal ttGetText(el), 'a-l b-10 c-10 d-l e-ll ' + 'a-x b-6 c-6 d-x e-xx ' + 'a-d b-22 c-22 d-d e-dd'
 
     $test.close()
@@ -106,8 +105,8 @@ Test('fast-binding-2').run ($test, alight) ->
         list: ['windows', 'mac', 'linux']
 
     $test.equal ttGetText(el), 'windows mac linux'
-    $test.equal alight.f$.find(el, 'option')[0].attributes.value.value, 'windows'
-    $test.equal alight.f$.find(el, 'option')[1].attributes.value.value, 'mac'
-    $test.equal alight.f$.find(el, 'option')[2].attributes.value.value, 'linux'
+    $test.equal f$_find(el, 'option')[0].attributes.value.value, 'windows'
+    $test.equal f$_find(el, 'option')[1].attributes.value.value, 'mac'
+    $test.equal f$_find(el, 'option')[2].attributes.value.value, 'linux'
 
     $test.close()

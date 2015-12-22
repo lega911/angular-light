@@ -28,8 +28,6 @@ compileText = (text) ->
 
         ce = alight.utils.compile.expression key,
             string: true
-            full: true
-            rawExpression: true
 
         if not ce.rawExpression
             throw 'Error'
@@ -57,12 +55,11 @@ alight.core.fastBinding = fastBinding = (element) ->
                 rel = pathToEl path
                 fn = compileText text
                 rtext = text.replace(/"/g, '\\"').replace(/\n/g, '\\n')
-                rCallback = 'function(value) {f$.attr(' + rel + ', "' + key + '", value); return "$scanNoChanges"}'
                 if fn
-                    source.push 's.fw("' + rtext + '", ' + self.fastWatchFn.length + ', ' + rCallback + ');'
+                    source.push "s.fw('#{rtext}', #{self.fastWatchFn.length}, #{rel}, '#{key}');"
                     self.fastWatchFn.push fn
                 else
-                    source.push 's.wt("' + rtext + '", ' + rCallback + ');'
+                    source.push "s.wt('#{rtext}', #{rel}, '#{key}');"
 
             # child nodes
             for childElement, i in element.childNodes
@@ -78,12 +75,11 @@ alight.core.fastBinding = fastBinding = (element) ->
             rel = pathToEl path
             fn = compileText text
             rtext = text.replace(/"/g, '\\"').replace(/\n/g, '\\n')
-            rCallback = 'function(value) {' + rel + '.nodeValue=value; return "$scanNoChanges"}'
             if fn
-                source.push 's.fw("' + rtext + '", ' + self.fastWatchFn.length + ', ' + rCallback + ');'
+                source.push 's.fw("' + rtext + '", ' + self.fastWatchFn.length + ', ' + rel + ');'
                 self.fastWatchFn.push fn
             else
-                source.push 's.wt("' + rtext + '", ' + rCallback + ');'
+                source.push 's.wt("' + rtext + '", ' + rel + ');'
 
         null
 
@@ -99,29 +95,34 @@ fastBinding::bind = (cd, element) ->
     self = @
     self.currentCD = cd
     self.resultFn self, element, f$
-    null
+    return
 
-fastBinding::fw = (text, fnIndex, callback) ->
+fastBinding::fw = (text, fnIndex, element, attr) ->
     self = @
     cd = self.currentCD
     fn = self.fastWatchFn[fnIndex]
     value = fn cd.scope
     
-    callback value
-    cd.watchList.push
+    w =
         isStatic: false
         isArray: false
         extraLoop: false
         deep: false
         value: value
-        callback: callback
+        callback: null
         exp: fn
         src: text
         onStop: null
-    null
+        el: element
+        ea: attr or null
+    cd.watchList.push w
+    execWatchObject cd.scope, w, value
+    return
 
 
-fastBinding::wt = (expression, callback) ->
-    @.currentCD.watchText expression, callback
+fastBinding::wt = (expression, element, attr) ->
+    @.currentCD.watchText expression, null,
+        element: element
+        elementAttr: attr
     @.currentCD.scan()  # require extra-loop
-    null
+    return

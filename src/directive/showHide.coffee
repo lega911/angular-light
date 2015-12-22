@@ -1,10 +1,12 @@
 
-alight.d.al.show = (scope, cd, element, exp) ->
+alight.d.al.show = (scope, element, exp) ->
     self =
         showDom: ->
-            f$.show element
+            f$.removeClass element, 'al-hide'
+            return
         hideDom: ->
-            f$.hide element
+            f$.addClass element, 'al-hide'
+            return
         updateDom: (value) ->
             if value
                 self.showDom()
@@ -12,13 +14,15 @@ alight.d.al.show = (scope, cd, element, exp) ->
                 self.hideDom()
             '$scanNoChanges'
         watchModel: ->
-            cd.watch exp, self.updateDom
+            scope.$watch exp, self.updateDom
+            return
         start: ->
             self.watchModel()
+            return
 
 
-alight.d.al.hide = (scope, cd, element, exp, env) ->
-    self = alight.d.al.show scope, cd, element, exp, env
+alight.d.al.hide = (scope, element, exp, env) ->
+    self = alight.d.al.show scope, element, exp, env
     self.updateDom = (value) ->
         if value
             self.hideDom()

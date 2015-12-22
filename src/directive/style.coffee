@@ -1,5 +1,5 @@
 
-alight.d.al.style = (scope, cd, element, name) ->
+alight.d.al.style = (scope, element, name) ->
     prev = {}
     setter = (style) ->
         for key, v of prev
@@ -11,6 +11,8 @@ alight.d.al.style = (scope, cd, element, name) ->
                 m.substring(1).toUpperCase()
             prev[key] = v
             element.style[key] = v or ''
+        return
 
-    cd.watch name, setter,
+    scope.$watch name, setter,
         deep: true
+    return

@@ -1,9 +1,10 @@
 
-alight.d.al.src = (scope, cd, element, name) ->
+alight.d.al.src = (scope, element, name) ->
     setter = (value) ->
         if not value
             value = ''
-        f$.attr element, 'src', value
+        element.setAttribute 'src', value
         '$scanNoChanges'
 
-    cd.watchText name, setter
+    scope.$watchText name, setter
+    return

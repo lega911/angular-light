@@ -2,11 +2,12 @@
 # al-css="class:exp"
 alight.d.al.class = alight.d.al.css =
     priority: 30
-    link: (scope, cd, element, exp) ->
+    link: (scope, element, exp) ->
         self =
             start: ->
                 self.parsLine()
                 self.prepare()
+                return
             parsLine: ->
                 self.list = list = []
 
@@ -16,14 +17,13 @@ alight.d.al.class = alight.d.al.css =
                         alight.exceptionHandler e, 'al-css, error in expression: ' + exp,
                             exp: exp
                             e: e
-                            cd: cd
                             scope: scope
                             element: element
                     else
                         list.push
                             css: e[0..i-1].trim().split ' '
                             exp: e[i+1..].trim()
-                null
+                return
             prepare: ->
                 for item in self.list
                     color = do (item) ->
@@ -31,8 +31,8 @@ alight.d.al.class = alight.d.al.css =
                             self.draw item, value
                             '$scanNoChanges'
 
-                    cd.watch item.exp, color
-                null
+                    scope.$watch item.exp, color
+                return
             draw: (item, value) ->
                 if value
                     for c in item.css
@@ -40,4 +40,4 @@ alight.d.al.class = alight.d.al.css =
                 else
                     for c in item.css
                         f$.removeClass element, c
-                null
+                return

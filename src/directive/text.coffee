@@ -1,11 +1,16 @@
 
-alight.d.al.text = (scope, cd, element, name) ->
+alight.d.al.text = (scope, element, name) ->
     self =
         start: ->
             self.watchModel()
+            return
         updateDom: (value) ->
-            `if(value == null) value = ''`
-            f$.text element, value
+            value ?= ''
+            if element.textContent isnt undefined
+                element.textContent = value
+            else
+                element.innerText = value
             '$scanNoChanges'
         watchModel: ->
-            cd.watch name, self.updateDom
+            scope.$watch name, self.updateDom
+            return

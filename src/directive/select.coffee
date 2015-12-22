@@ -26,13 +26,14 @@ do ->
             item = @.itemById[id]
             delete @.itemById[id]
             @.idByItem.delete item
-            null
+            return
 
         Mapper::replace = (id, item) ->
             old = @.itemById[id]
             @.idByItem.delete old
             @.idByItem.set item, id
             @.itemById[id] = item
+            return
 
         Mapper::getId = (item) ->
             @.idByItem.get item
@@ -61,9 +62,11 @@ do ->
 
         Mapper::release = (id) ->
             delete @.itemById[id]
+            return
 
         Mapper::replace = (id, item) ->
             @.itemById[id] = item
+            return
 
         Mapper::getId = (item) ->
             if item is null
@@ -77,30 +80,41 @@ do ->
             @.itemById[id] or null
 
 
-    alight.d.al.select =
-        ChangeDetector: true
-        link: (scope, cd, element, key, env) ->
-            cd.$select = mapper = new Mapper
-            watch = null
+    alight.d.al.select = (scope, element, key, env) ->
+        cd = env.changeDetector.new()  # child CD
+        env.stopBinding = true
 
-            # wait for al-repeat finish build DOM
-            cd.watch '$finishBinding', ->
-                watch = cd.watch key, (value) ->
-                    element.value = mapper.getId value
-                cd.scan()
+        cd.$select = mapper = new Mapper
+        watch = null
 
-            onChangeDOM = (event) ->
-                item = mapper.getItem event.target.value            
-                cd.setValue key, item
-                cd.scan
-                    skipWatch: watch
+        # wait for al-repeat finish build DOM
+        cd.watch '$finishBinding', ->
+            watch = cd.watch key, (value) ->
+                id = mapper.getId value
+                if id
+                    element.value = id
+                else
+                    element.selectedIndex = -1
+            cd.scan()
 
-            f$.on element, 'input', onChangeDOM
-            cd.watch '$destroy', ->
-                f$.off element, 'input', onChangeDOM
+        onChangeDOM = (event) ->
+            item = mapper.getItem event.target.value
+            cd.setValue key, item
+            cd.scan
+                skipWatch: watch
 
-    alight.d.al.option = (scope, cd, element, key) ->
-        step = cd
+        f$.on element, 'input', onChangeDOM
+        f$.on element, 'change', onChangeDOM
+        cd.watch '$destroy', ->
+            f$.off element, 'input', onChangeDOM
+            f$.off element, 'change', onChangeDOM
+
+        # bind
+        alight.bind cd, element,
+            skip_attr: env.skippedAttr()
+
+    alight.d.al.option = (scope, element, key, env) ->
+        cd = step = env.changeDetector
         for i in [0..4]
             mapper = step.$select
             if mapper
@@ -126,6 +140,8 @@ do ->
             else
                 id = mapper.acquire item
                 element.value = id
+            return
 
         cd.watch '$destroy', ->
             mapper.release id
+        return

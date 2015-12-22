@@ -2,7 +2,7 @@
 alight.d.al.include =
     priority: 100
     stopBinding: true
-    link: (scope, cd, element, name, env) ->
+    link: (scope, element, name, env) ->
         child = null
         baseElement = null
         topElement = null
@@ -11,13 +11,16 @@ alight.d.al.include =
             start: ->
                 self.prepare()
                 self.watchModel()
+                return
             prepare: ->
                 baseElement = element
-                topElement = f$.createComment " #{env.attrName}: #{name} "
+                topElement = document.createComment " #{env.attrName}: #{name} "
                 f$.before element, topElement
                 f$.remove element
+                return
             loadHtml: (cfg) ->
                 f$.ajax cfg
+                return
             removeBlock: ->
                 if child
                     child.destroy()
@@ -25,13 +28,15 @@ alight.d.al.include =
                 if activeElement
                     self.removeDom activeElement
                     activeElement = null
+                return
             insertBlock: (html) ->
-                activeElement = f$.clone baseElement
-                f$.html activeElement, html
+                activeElement = baseElement.cloneNode true
+                activeElement.innerHTML = html
                 self.insertDom topElement, activeElement
-                child = cd.new()
+                child = env.changeDetector.new()
                 alight.bind child, activeElement,
                     skip_attr: env.skippedAttr()
+                return
             updateDom: (url) ->
                 if not url
                     self.removeBlock()
@@ -43,11 +48,15 @@ alight.d.al.include =
                         self.removeBlock()
                         self.insertBlock html
                     error: self.removeBlock
+                return
             removeDom: (element) ->
                 f$.remove element
+                return
             insertDom: (base, element) ->
                 f$.after base, element
+                return
             watchModel: ->
-                cd.watch name, self.updateDom
+                scope.$watch name, self.updateDom
+                return
 
         self
