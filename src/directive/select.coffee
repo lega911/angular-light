@@ -80,32 +80,41 @@ do ->
             @.itemById[id] or null
 
 
-    alight.d.al.select =
-        ChangeDetector: true
-        link: (scope, element, key, env) ->
-            cd = env.changeDetector
-            cd.$select = mapper = new Mapper
-            watch = null
+    alight.d.al.select = (scope, element, key, env) ->
+        cd = env.changeDetector.new()  # child CD
+        env.stopBinding = true
 
-            # wait for al-repeat finish build DOM
-            cd.watch '$finishBinding', ->
-                watch = cd.watch key, (value) ->
-                    element.value = mapper.getId value
-                cd.scan()
+        cd.$select = mapper = new Mapper
+        watch = null
 
-            onChangeDOM = (event) ->
-                item = mapper.getItem event.target.value            
-                cd.setValue key, item
-                cd.scan
-                    skipWatch: watch
+        # wait for al-repeat finish build DOM
+        cd.watch '$finishBinding', ->
+            watch = cd.watch key, (value) ->
+                id = mapper.getId value
+                if id
+                    element.value = id
+                else
+                    element.selectedIndex = -1
+            cd.scan()
 
-            f$.on element, 'input', onChangeDOM
-            cd.watch '$destroy', ->
-                f$.off element, 'input', onChangeDOM
-            return
+        onChangeDOM = (event) ->
+            item = mapper.getItem event.target.value
+            cd.setValue key, item
+            cd.scan
+                skipWatch: watch
+
+        f$.on element, 'input', onChangeDOM
+        f$.on element, 'change', onChangeDOM
+        cd.watch '$destroy', ->
+            f$.off element, 'input', onChangeDOM
+            f$.off element, 'change', onChangeDOM
+
+        # bind
+        alight.bind cd, element,
+            skip_attr: env.skippedAttr()
 
     alight.d.al.option = (scope, element, key, env) ->
-        step = env.changeDetector
+        cd = step = env.changeDetector
         for i in [0..4]
             mapper = step.$select
             if mapper

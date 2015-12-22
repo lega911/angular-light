@@ -3,7 +3,7 @@ alight.d.al.html =
     priority: 100
     stopBinding: true
     link: (scope, element, name, env) ->
-        cd = scope.$childDetector
+        cd = env.changeDetector
         child = null
         setter = (html) ->
             if child
