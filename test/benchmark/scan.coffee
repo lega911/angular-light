@@ -28,6 +28,20 @@
         destroy 3.6
         destroy partial 3.9
 
+    0.12.2b Chrome
+        fill 46.7
+        scan 391.9
+        destroy 3.6
+        destroy partial 4.5
+        watch array 344.7
+
+    0.12.3b Chrome
+        fill 33.4
+        scan 420.9
+        destroy 3.3
+        destroy partial 3.8
+        watch array 344.5
+
 ###
 
 fillCD = (count) ->
@@ -46,7 +60,7 @@ fillCD = (count) ->
 
 print = (text) ->
     p = document.createElement 'p'
-    alight.f$.text p, text
+    p.innerText = text
     document.body.appendChild p
 
 
@@ -68,7 +82,7 @@ runScanning = ->
     # 100x100 watches x 1000 loops = 10M checks
     root = fillCD 100
     timeit 'scan', 1000, ->
-        root.root.scan()
+        root.scan()
 
 
 runDestroy = ->
@@ -109,21 +123,6 @@ runWatchArray = ->
         null
 
 
-runWatchFrozenArray = ->
-    list = for i in [0..10000]
-        {}
-    cd = alight.ChangeDetector
-        list: list
-    Object.freeze list
-    cd.watch 'list', ->
-        null
-    ,
-        isArray: true
-    timeit 'watch frozen array', 10000, ->
-        cd.scan()
-        null
-
-
 run = ->
     print alight.version
     line = [
@@ -131,12 +130,11 @@ run = ->
         runScanning,
         runDestroy,
         runDestroyPartial,
-        runWatchArray,
-        runWatchFrozenArray
+        runWatchArray
     ]
 
     n = Number location.hash.substring 1
-    if typeof n is 'number'
+    if n and typeof n is 'number'
         setTimeout ->
             line[n]()
         , 2000

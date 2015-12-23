@@ -84,7 +84,7 @@ Test('watch-4', 'watch-4').run ($test, alight) ->
     $test.start 2
 
     result0 = result1 = null
-    
+
     cd = alight.ChangeDetector
         name: 'linux'
 
@@ -233,7 +233,7 @@ Test('watch-frozen-array-0', 'watch-frozen-array-0').run ($test, alight) ->
                             $test.close()
 
 
-Test('watch-any', 'watch-any').run ($test, alight) ->
+Test('watch-any').run ($test, alight) ->
     $test.start 15
     scope =
         a: 1
@@ -378,7 +378,7 @@ Test('dynamic-read-only-watch', 'dynamic-read-only-watch').run ($test, alight) -
                 scope.one = 'three'
                 cd.scan ->
                     $test.equal count, 6
-    
+
                     cd.scan ->
                         $test.equal count, 7
                         $test.close()

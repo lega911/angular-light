@@ -286,7 +286,7 @@ Test('one-time-binding-3', 'one-time-binding-3').run ($test, alight) ->
     $test.close()
 
 
-Test('text-directive-finally', 'text-directive-finally').run ($test, alight) ->
+Test('text-directive-finally').run ($test, alight) ->
     env = null
     alight.text.test1 = (callback, text, cd, ienv) ->
         callback 'init'
@@ -294,7 +294,7 @@ Test('text-directive-finally', 'text-directive-finally').run ($test, alight) ->
 
     $test.start 13
     dom = $ '<div>Text {{#test1}}</div>'
-    
+
     scope = alight.Scope()
 
     scanCount = 0
@@ -308,29 +308,29 @@ Test('text-directive-finally', 'text-directive-finally').run ($test, alight) ->
     alight.bind scope, dom[0]
 
     $test.equal dom.text(), 'Text init'
-    
+
     $test.equal scope.$scan().total, 1
 
     env.setter 'two'
     scope.$scan
         late: true
         callback: ->
-            $test.equal scanCount, 3
-            $test.equal anyCount, 2
+            $test.equal scanCount, 2
+            $test.equal anyCount, 1
             $test.equal dom.text(), 'Text two'
 
             env.setter 'three'
             scope.$scan
                 late: true
                 callback: ->
-                    $test.equal scanCount, 4
-                    $test.equal anyCount, 3
+                    $test.equal scanCount, 3
+                    $test.equal anyCount, 2
                     $test.equal dom.text(), 'Text three'
 
                     env.finally 'four'
                     setTimeout ->
-                        $test.equal scanCount, 4
-                        $test.equal anyCount, 3
+                        $test.equal scanCount, 3
+                        $test.equal anyCount, 2
                         $test.equal dom.text(), 'Text three'
 
                         scope.$scan
@@ -354,7 +354,7 @@ Test('oneTime binding #4', 'one-time-binding-4').run ($test, alight) ->
         value = v
 
     scope.$scan()
-    
+
     $test.equal value, 'Hello world!'
     $test.equal scope.$scan().total, 0
     $test.close()

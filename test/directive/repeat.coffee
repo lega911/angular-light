@@ -140,7 +140,7 @@ do ->
         6: 'aa:1, gg:5, cc:7'
         7: 'aa:1, ii:8, cc:7'
 
-    run 'bo-repeat', '<div bo-repeat="it in list" al-test-repeat>{{r}}:{{=numerator()}}</div>',
+    run 'bo-repeat', '<div al-repeat="it in ::list" al-test-repeat>{{r}}:{{=numerator()}}</div>',
         0: 'aa:1, bb:2, cc:3, dd:4'
         1: 'aa:1, bb:2, cc:3, dd:4'
         2: 'aa:1, bb:2, cc:3, dd:4'

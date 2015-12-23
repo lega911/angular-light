@@ -35,7 +35,6 @@ makeSkipWatchObject = ->
 
 
 Root = () ->
-    @.cdLine = []
     @.watchers =
         any: []
         finishBinding: []
@@ -73,8 +72,6 @@ ChangeDetector = (root, scope) ->
     @.parent = null
     @.children = []
 
-    root.cdLine.push @
-
     #
     @.rwatchers =
         any: []
@@ -95,8 +92,6 @@ ChangeDetector::destroy = ->
     cd = @
     root = cd.root
     cd.scope = null
-
-    removeItem root.cdLine, cd
 
     if cd.parent
         removeItem cd.parent.children, cd
@@ -371,12 +366,19 @@ execWatchObject = (scope, w, value) ->
     return
 
 
-scanCore = (root, result) ->
+scanCore = (topCD, result) ->
+    root = topCD.root
     extraLoop = false
     changes = 0
     total = 0
 
-    for cd in root.cdLine.slice()
+    if not topCD
+        return
+
+    queue = []
+    index = 0
+    cd = topCD
+    while cd
         scope = cd.scope
 
         # default watchers
@@ -428,6 +430,8 @@ scanCore = (root, result) ->
                                     extraLoop = true
                 if alight.debug.scan > 1
                     console.log 'changed:', w.src
+        queue.push.apply queue, cd.children
+        cd = queue[index++]
 
     result.total = total
     result.changes = changes
@@ -435,34 +439,10 @@ scanCore = (root, result) ->
     return
 
 
-Root::scan = (cfg) ->
-    root = @
-    cfg = cfg or {}
-    if f$.isFunction cfg
-        cfg =
-            callback: cfg
-    if cfg.callback
-        root.watchers.finishScanOnce.push cfg.callback
-    if cfg.skipWatch
-        root.skippedWatches.set cfg.skipWatch.$
-    if cfg.late
-        if root.lateScan
-            return
-        root.lateScan = true
-        alight.nextTick ->
-            if root.lateScan
-                root.scan()
-        return
-    if root.status is 'scaning'
-        root.extraLoop = true
-        return
-    root.lateScan = false
-    root.status = 'scaning'
-
-    if alight.debug.scan
-        start = get_time()
-
+ChangeDetector::digest = ->
+    root = @.root
     mainLoop = 10
+    totalChanges = 0
     try
         result =
             total: 0
@@ -481,12 +461,9 @@ Root::scan = (cfg) ->
                 for callback in onScanOnce
                     callback.call root
 
-            scanCore root, result
+            scanCore @, result
+            totalChanges += result.changes
 
-            # call $any
-            if result.changes
-                for cb in root.watchers.any
-                    cb()
             if not result.extraLoop and not root.extraLoop
                 break
         if alight.debug.scan
@@ -496,19 +473,59 @@ Root::scan = (cfg) ->
         alight.exceptionHandler e, '$scan, error in expression: ' + result.src,
             src: result.src
             result: result
-    finally
-        root.status = null
-        root.skippedWatches.clear()
-        for callback in root.watchers.finishScan
-            callback()
+    result.mainLoop = mainLoop
+    result.totalChanges = totalChanges
+    result
 
-        # take finishScanOnce
-        finishScanOnce = root.watchers.finishScanOnce.slice()
-        root.watchers.finishScanOnce.length = 0
-        for callback in finishScanOnce
-            callback.call root
 
-    if mainLoop is 0
+ChangeDetector::scan = (cfg) ->
+    root = @.root
+    cfg = cfg or {}
+    if f$.isFunction cfg
+        cfg =
+            callback: cfg
+    if cfg.callback
+        root.watchers.finishScanOnce.push cfg.callback
+    if cfg.skipWatch
+        root.skippedWatches.set cfg.skipWatch.$
+    if cfg.late
+        if root.lateScan
+            return
+        root.lateScan = true
+        alight.nextTick ->
+            if root.lateScan
+                root.topCD.scan()
+        return
+    if root.status is 'scaning'
+        root.extraLoop = true
+        return
+    root.lateScan = false
+    root.status = 'scaning'
+
+    if alight.debug.scan
+        start = get_time()
+
+    if root.topCD
+        result = root.topCD.digest()
+    else
+        result = {}
+
+    if result.totalChanges
+        for cb in root.watchers.any
+            cb()
+
+    root.status = null
+    root.skippedWatches.clear()
+    for callback in root.watchers.finishScan
+        callback()
+
+    # take finishScanOnce
+    finishScanOnce = root.watchers.finishScanOnce.slice()
+    root.watchers.finishScanOnce.length = 0
+    for callback in finishScanOnce
+        callback.call root
+
+    if result.mainLoop is 0
         throw 'Infinity loop detected'
 
     result
@@ -519,9 +536,6 @@ alight.core.ChangeDetector = ChangeDetector
 
 ChangeDetector::compile = (expression, option) ->
     alight.utils.compile.expression(expression, option).fn
-
-ChangeDetector::scan = (option) ->
-    @.root.scan option
 
 ChangeDetector::setValue = (name, value) ->
     cd = @
