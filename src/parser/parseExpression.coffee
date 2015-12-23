@@ -38,6 +38,7 @@ alight.utils.parsExpression = (line, cfg) ->
     pars = (lvl, stop, convert, is_string) ->
         variable = ''
         variable_index = -1
+        assignIndex = null
         var_before = false
 
         check_variabe = ->
@@ -74,6 +75,8 @@ alight.utils.parsExpression = (line, cfg) ->
                             variable = ''
                     if check_variabe()
                         var_before = index
+                        if a is '['
+                            assignIndex = variable_assignment.length
                     variable = ''
 
             if a is stop
@@ -86,7 +89,11 @@ alight.utils.parsExpression = (line, cfg) ->
             if a is '='
                 # assignment in prev variable
                 if (not (ap is '=' or an is '=')) and (ap isnt '<') and (ap isnt '>')
-                    variable_assignment[variable_assignment.length-1] = true
+                    if assignIndex
+                        variable_assignment[assignIndex-1] = 2
+                        assignIndex = null
+                    else
+                        variable_assignment[variable_assignment.length-1] = true
 
             if a is '+'
                 if an is '+' or an is '='
@@ -125,10 +132,6 @@ alight.utils.parsExpression = (line, cfg) ->
     if variables.length
         exp = result[0]
         for n, i in variables by -1
-            # convert variables
-            # a -> $$scope.a
-            # a.b -> (($$=$$scope.a,$$==null)?undefined:$$.b)
-            # a.b.c -> (($$=$$scope.a,$$==null)?undefined:($$=$$.b,$$==null)?undefined:$$.c)
             variable = variable_names[i]
             assignment = variable_assignment[i]
             is_function = variable_fn[i]
@@ -170,7 +173,7 @@ alight.utils.parsExpression = (line, cfg) ->
                 else if d[0] is 'this'
                     newName = '$$scope.' + d[1..].join '.'
                 else
-                    if assignment and d.length is 1
+                    if assignment is true and d.length is 1
                         newName = '($$scope.$root || $$scope).' + variable
                     else
                         newName = '$$scope.' + variable
