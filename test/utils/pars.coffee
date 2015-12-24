@@ -65,10 +65,11 @@ Test('parsing', 'parsing').run ($test, alight) ->
     pars 'a=1', ["($$scope.$root || $$scope).a=1"]
     pars 'a.b=1', ["$$scope.a.b=1"]
     pars 'a.b.c=1', ["$$scope.a.b.c=1"]
-    pars 'data[$index]', ['(($$=$$scope.data,$$==null)?undefined:$$.data)[$$scope.$index]']
+    pars 'data[$index]', ['$$scope.data[$$scope.$index]']  # TODO: convert to $$
     pars 'path.data[$index]', ['(($$=$$scope.path,$$==null)?undefined:$$.data)[$$scope.$index]']
     pars 'data[$index]=$value', ['$$scope.data[$$scope.$index]=$value'], { input:['$value'] }
     pars 'path.data[$index]=$value', ['$$scope.path.data[$$scope.$index]=$value'], { input:['$value'] }
+    pars 'data[$index]++', ['$$scope.data[$$scope.$index]++']
 
     $test.close()
 
