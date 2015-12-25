@@ -209,6 +209,9 @@ testDirective = do ->
             attr.attrName = attrName
             attr.element = args.element
             args.list.push attr
+        else if args.attr_type is 'M'
+            args.list.push base
+        return
 
     (attrName, args) ->
         if args.skip_attr.indexOf(attrName) >= 0
@@ -216,15 +219,18 @@ testDirective = do ->
 
         directive = alight.directivePreprocessor attrName, args
         if directive.noNs
-            return addAttr attrName, args
+            addAttr attrName, args
+            return
         if directive.noDirective
-            return addAttr attrName, args, { noDirective:true }
+            addAttr attrName, args, { noDirective:true }
+            return
 
         args.list.push
             name: attrName
             directive: directive
             priority: directive.priority
             attrName: attrName
+        return
 
 
 sortByPriority = (a, b) ->
@@ -280,7 +286,7 @@ bindComment = (cd, element, option) ->
 
     d = list[0]
     if d.noDirective
-        throw "Directive not found: #{d.name}"
+        throw "Comment directive not found: #{dirName}"
 
     directive = d.directive
     env =
