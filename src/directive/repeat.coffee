@@ -220,11 +220,30 @@ alight.directives.al.repeat =
                                     node_by_id[$id] = node
                                     return
 
-                    if self.element_list
-                        (list) ->
-                            if not list or not list.length  # is it list?
-                                list = []
+                    generator = []
+                    getResultList = (input) ->
+                        t = typeof input
+                        if t is 'object'
+                            if input and input.length
+                                return input
+                        else
+                            if t is 'number'
+                                size = Math.floor input
+                            else if t is 'string'
+                                size = Math.floor input
+                                if isNaN size
+                                    return []
+                            if size < generator.length
+                                generator.length = size
+                            else
+                                while generator.length < size
+                                    generator.push generator.length
+                            return generator
+                        return []
 
+                    if self.element_list
+                        (input) ->
+                            list = getResultList input
                             last_element = self.top_element
 
                             dom_inserts = []
@@ -350,10 +369,8 @@ alight.directives.al.repeat =
                             return
                     else
                         # method update for a single element
-                        (list) ->
-                            if not list or not list.length  # is it list?
-                                list = []
-
+                        (input) ->
+                            list = getResultList input
                             last_element = self.top_element
 
                             dom_inserts = []

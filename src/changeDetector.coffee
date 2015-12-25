@@ -397,12 +397,15 @@ scanCore = (topCD, result) ->
                             if notEqual last, value
                                 mutated = true
                                 w.value = value.slice()
+                        else
+                            mutated = true
+                            w.value = value
                     else
                         mutated = true
                         if a1
                             w.value = value.slice()
                         else
-                            w.value = null
+                            w.value = value
                 else if w.deep
                     if not alight.utils.equal last, value
                         mutated = true
