@@ -79,7 +79,7 @@ alight.directivePreprocessor = (attrName, args) ->
             name: name
             args: args
             directive: dir
-            
+
             isDeferred: false
             procLine: alight.hooks.directive
             makeDeferred: ->
@@ -275,7 +275,7 @@ bindComment = (cd, element, option) ->
         attr_type: 'M'
         cd: cd
         skip_attr: []
-    
+
     testDirective dirName, args
 
     d = list[0]
@@ -348,7 +348,7 @@ bindElement = do ->
                 skip_attr: skip_attr
                 attr_type: 'E'
                 cd: cd
-            
+
             attrName = element.nodeName.toLowerCase()
             testDirective attrName, args
 
@@ -495,7 +495,7 @@ alight.bind = alight.applyBindings = (scope, element, option) ->
 
     if scope instanceof alight.core.ChangeDetector
         cd = scope
-    else    
+    else
         cd = option.changeDetector or scope.$changeDetector or scope.$rootChangeDetector
     root = cd.root
 
@@ -514,9 +514,10 @@ alight.bind = alight.applyBindings = (scope, element, option) ->
     root.bindingResult.text += result.text
     root.bindingResult.attr += result.attr
     root.bindingResult.hook += result.hook
-    
+
+    cd.digest()
     if finishBinding
-        cd.scan()
+        #cd.scan()
         root.finishBinding_lock = false
         lst = root.watchers.finishBinding.slice()
         root.watchers.finishBinding.length = 0
@@ -536,7 +537,7 @@ alight.bootstrap = (input, data) ->
         input = [input]
     if Array.isArray(input) or typeof(input.length) is 'number'
         lastScope = null
-        if data            
+        if data
             oneScope = alight.Scope
                 data: data
         for element in input

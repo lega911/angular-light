@@ -85,17 +85,17 @@ do ->
         env.stopBinding = true
 
         cd.$select = mapper = new Mapper
-        watch = null
 
-        # wait for al-repeat finish build DOM
-        cd.watch '$finishBinding', ->
-            watch = cd.watch key, (value) ->
-                id = mapper.getId value
-                if id
-                    element.value = id
-                else
-                    element.selectedIndex = -1
-            cd.scan()
+        alight.bind cd, element,
+            skip_attr: env.skippedAttr()
+
+        watch = cd.watch key, (value) ->
+            id = mapper.getId value
+            if id
+                element.value = id
+            else
+                element.selectedIndex = -1
+        cd.scan()
 
         onChangeDOM = (event) ->
             item = mapper.getItem event.target.value
@@ -108,10 +108,6 @@ do ->
         cd.watch '$destroy', ->
             f$.off element, 'input', onChangeDOM
             f$.off element, 'change', onChangeDOM
-
-        # bind
-        alight.bind cd, element,
-            skip_attr: env.skippedAttr()
 
     alight.d.al.option = (scope, element, key, env) ->
         cd = step = env.changeDetector

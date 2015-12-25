@@ -42,17 +42,3 @@ do ->
 
     alight.d.bo.if = makeBindOnceIf true
     alight.d.bo.ifnot = makeBindOnceIf false
-
-
-alight.d.bo.repeat =
-    priority: 1000
-    restrict: 'AM'
-    stopBinding: true
-    init: (scope, element, exp, env) ->        
-        self = alight.directives.al.repeat.init scope, element, exp, env
-        originalStart = self.start
-        self.start = ->
-            scope.$watch '$finishScanOnce', ->
-                self.watch.stop()  # stop watching
-            return originalStart()
-        self

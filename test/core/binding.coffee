@@ -136,13 +136,13 @@ Test('deferred-process').run ($test, alight, timeout) ->
         $test.equal r0.scope.$rootChangeDetector.children[0].scope.name, 'linux'
         $test.equal scope5.name, 'linux'
         $test.equal r0.html(), '<span ut-test5="noop"><p>linux</p></span>'
-        
+
         # 1
         $test.equal scope3, r1.scope
         $test.equal r1.scope.name, 'linux'
         $test.equal r1.scope.$rootChangeDetector.children.length, 0
         $test.equal r1.html(), '<span ut-test3="noop"><p>linux</p></span>'
-        
+
         $test.close()
 
 
@@ -187,7 +187,7 @@ Test 'root-scope-access-to-parent'
         alight.bind scope, el
 
         $test.equal ttGetText(el), 'linux linux-'
-        
+
         scope.name = 'ubuntu'
         scope.$scan()
         $test.equal ttGetText(el), 'ubuntu ubuntu-'
@@ -306,3 +306,90 @@ Test 'binding-order-1'
         $test.equal testCount, 1
 
         $test.close()
+
+
+Test('bind-complete-0').run ($test, alight) ->
+    $test.start 14
+
+    dom = ttDOM """
+        <div al-one>
+            1:{{name}}
+            <div al-two>
+                2:{{name}}
+                <div al-three>
+                    3:{{name}}
+                </div>
+                4:{{name}}
+            </div>
+            5:{{name}}
+        </div>
+    """
+
+    index = 1
+
+    alight.d.al.one = (scope, el, _, env) ->
+        env.stopBinding = true
+        cd = env.changeDetector
+
+        childScope = alight.Scope
+            changeDetector: null
+        childScope.name = 'one'
+
+        childCD = cd.new childScope
+
+        $test.equal index++, 1
+        $test.equal ttGetText(el), '1:{{name}} 2:{{name}} 3:{{name}} 4:{{name}} 5:{{name}}'
+
+        alight.bind childCD, el,
+            skip_attr: env.skippedAttr()
+
+        $test.equal index++, 6
+        $test.equal ttGetText(el), '1:one 2:two 3:three 4:two 5:one'
+
+    alight.d.al.two = (scope, el, _, env) ->
+        env.stopBinding = true
+
+        scope.$watch 'name', ->
+            cd = env.changeDetector
+            childScope = alight.Scope
+                changeDetector: null
+            childScope.name = 'two'
+
+            childCD = cd.new childScope
+
+            $test.equal index++, 2
+            $test.equal ttGetText(el), '2:{{name}} 3:{{name}} 4:{{name}}', 2
+
+            alight.bind childCD, el,
+                skip_attr: env.skippedAttr()
+
+            $test.equal index++, 5
+            $test.equal ttGetText(el), '2:two 3:three 4:two', 5
+
+    alight.d.al.three = (scope, el, _, env) ->
+        env.stopBinding = true
+
+        scope.$watch 'name', ->
+            cd = env.changeDetector
+
+            childScope = alight.Scope
+                changeDetector: null
+            childScope.name = 'three'
+
+            childCD = cd.new childScope
+
+            $test.equal index++, 3
+            $test.equal ttGetText(el), '3:{{name}}', 3
+
+            alight.bind childCD, el,
+                skip_attr: env.skippedAttr()
+
+            $test.equal index++, 4
+            $test.equal ttGetText(el), '3:three', 4
+
+    alight.bootstrap dom
+
+    $test.equal index++, 7
+    $test.equal ttGetText(dom), '1:one 2:two 3:three 4:two 5:one'
+
+    $test.close()

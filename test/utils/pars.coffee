@@ -5,7 +5,7 @@ Test('parsing', 'parsing').run ($test, alight) ->
         pe = alight.utils.parsExpression line, cfg
 
         if pe.result isnt expected[0]
-            $test.error expected
+            $test.error pe.result
             return
         else
             if pe.filters or expected.length > 1
@@ -48,7 +48,7 @@ Test('parsing', 'parsing').run ($test, alight) ->
     pars "[1,2,3,4,5,6,7,8,9]", ["[1,2,3,4,5,6,7,8,9]"]
     pars "$index===0", ["$$scope.$index===0"]
     pars "list[key].value", ['$$scope.list[$$scope.key].value']
-    pars "list[key].value = test", ['$$scope.list[($$scope.$root || $$scope).key].value = test'], { input:['test'] }
+    pars "list[key].value = test", ['$$scope.list[$$scope.key].value = test'], { input:['test'] }
     pars '((obj || {}).ext || {}).visible', ['(($$scope.obj || {}).ext || {}).visible']
     pars 'a || b | filter', ['$$scope.a || $$scope.b ', ' filter']
     pars "value = $event.keyCode", ['($$scope.$root || $$scope).value = $event.keyCode'], { input:['$event'] }
@@ -65,7 +65,11 @@ Test('parsing', 'parsing').run ($test, alight) ->
     pars 'a=1', ["($$scope.$root || $$scope).a=1"]
     pars 'a.b=1', ["$$scope.a.b=1"]
     pars 'a.b.c=1', ["$$scope.a.b.c=1"]
-    #pars '=obj.items.short_name || obj.name', []
+    pars 'data[$index]', ['$$scope.data[$$scope.$index]']  # TODO: convert to $$
+    pars 'path.data[$index]', ['(($$=$$scope.path,$$==null)?undefined:$$.data)[$$scope.$index]']
+    pars 'data[$index]=$value', ['$$scope.data[$$scope.$index]=$value'], { input:['$value'] }
+    pars 'path.data[$index]=$value', ['$$scope.path.data[$$scope.$index]=$value'], { input:['$value'] }
+    pars 'data[$index]++', ['$$scope.data[$$scope.$index]++']
 
     $test.close()
 

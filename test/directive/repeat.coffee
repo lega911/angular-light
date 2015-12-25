@@ -140,7 +140,7 @@ do ->
         6: 'aa:1, gg:5, cc:7'
         7: 'aa:1, ii:8, cc:7'
 
-    run 'bo-repeat', '<div bo-repeat="it in list" al-test-repeat>{{r}}:{{=numerator()}}</div>',
+    run 'bo-repeat', '<div al-repeat="it in ::list" al-test-repeat>{{r}}:{{=numerator()}}</div>',
         0: 'aa:1, bb:2, cc:3, dd:4'
         1: 'aa:1, bb:2, cc:3, dd:4'
         2: 'aa:1, bb:2, cc:3, dd:4'
@@ -468,5 +468,50 @@ Test('al-repeat-transparent-assigment-0', 'al-repeat-transparent-assigment-0').r
     childS.$scan()
     $test.equal ttGetText(el), 'box=linux x86 x64 box=debian X 15'
     $test.equal childS.$root, scope
+
+    $test.close()
+
+
+Test('al-repeat-generator').run ($test, alight) ->
+    $test.start 7
+
+    el = ttDOM """
+        <div al-repeat="n in size">
+            {{n}}-{{=counter()}}
+        </div>
+    """
+
+    scope = alight.Scope()
+    scope.counter = do ->
+        index = 0
+        ->
+            index++
+
+    alight.bind scope, el
+    $test.equal ttGetText(el), ''
+
+    scope.size = 3
+    scope.$scan()
+    $test.equal ttGetText(el), '0-0 1-1 2-2'
+
+    scope.size = 5
+    scope.$scan()
+    $test.equal ttGetText(el), '0-0 1-1 2-2 3-3 4-4'
+
+    scope.size = 2
+    scope.$scan()
+    $test.equal ttGetText(el), '0-0 1-1'
+
+    scope.size = 4
+    scope.$scan()
+    $test.equal ttGetText(el), '0-0 1-1 2-5 3-6'
+
+    scope.size = 1
+    scope.$scan()
+    $test.equal ttGetText(el), '0-0'
+
+    scope.size = 3
+    scope.$scan()
+    $test.equal ttGetText(el), '0-0 1-7 2-8'
 
     $test.close()
