@@ -1,4 +1,4 @@
-
+window.Map = null
 window.ttDOM = (html) ->
     dom = document.createElement 'div'
     dom.innerHTML = html

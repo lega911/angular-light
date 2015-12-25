@@ -202,22 +202,30 @@ alight.directives.al.repeat =
                             else
                                 node_by_id = {}
                                 node_get = (item) ->
-                                    $id = item.$alite_id
-                                    if $id
-                                        return node_by_id[$id]
+                                    if typeof item is 'object'
+                                        $id = item.$alite_id
+                                        if $id
+                                            return node_by_id[$id]
+                                    else
+                                        return node_by_id[item] or null
                                     null
 
                                 node_del = (node) ->
                                     $id = node.$id
-                                    if $id
+                                    if node_by_id[$id]
+                                        node.$id = null
                                         delete node_by_id[$id]
                                     return
 
                                 node_set = (item, node) ->
-                                    $id = alight.utils.getId()
-                                    item.$alite_id = $id
-                                    node.$id = $id
-                                    node_by_id[$id] = node
+                                    if typeof item is 'object'
+                                        $id = alight.utils.getId()
+                                        item.$alite_id = $id
+                                        node.$id = $id
+                                        node_by_id[$id] = node
+                                    else
+                                        node.$id = item
+                                        node_by_id[item] = node
                                     return
 
                     generator = []
@@ -281,8 +289,6 @@ alight.directives.al.repeat =
                             elLast = self.element_list.length - 1
                             for item, index in list
                                 item_value = item
-                                item = item or {}
-
                                 node = node_get item
 
                                 if node
@@ -406,8 +412,6 @@ alight.directives.al.repeat =
                             prev_moved = false
                             for item, index in list
                                 item_value = item
-                                item = item or {}
-
                                 node = node_get item
 
                                 if node

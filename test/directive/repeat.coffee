@@ -470,3 +470,48 @@ Test('al-repeat-transparent-assigment-0', 'al-repeat-transparent-assigment-0').r
     $test.equal childS.$root, scope
 
     $test.close()
+
+
+Test('al-repeat-generator').run ($test, alight) ->
+    $test.start 7
+
+    el = ttDOM """
+        <div al-repeat="n in size">
+            {{n}}-{{=counter()}}
+        </div>
+    """
+
+    scope = alight.Scope()
+    scope.counter = do ->
+        index = 0
+        ->
+            index++
+
+    alight.bind scope, el
+    $test.equal ttGetText(el), ''
+
+    scope.size = 3
+    scope.$scan()
+    $test.equal ttGetText(el), '0-0 1-1 2-2'
+
+    scope.size = 5
+    scope.$scan()
+    $test.equal ttGetText(el), '0-0 1-1 2-2 3-3 4-4'
+
+    scope.size = 2
+    scope.$scan()
+    $test.equal ttGetText(el), '0-0 1-1'
+
+    scope.size = 4
+    scope.$scan()
+    $test.equal ttGetText(el), '0-0 1-1 2-5 3-6'
+
+    scope.size = 1
+    scope.$scan()
+    $test.equal ttGetText(el), '0-0'
+
+    scope.size = 3
+    scope.$scan()
+    $test.equal ttGetText(el), '0-0 1-7 2-8'
+
+    $test.close()
