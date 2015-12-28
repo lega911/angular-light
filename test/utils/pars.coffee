@@ -38,18 +38,18 @@ Test('parsing', 'parsing').run ($test, alight) ->
     pars 'page==5', ["$$scope.page==5"]
     pars 'page<=5', ["$$scope.page<=5"]
     pars 'page>=5', ["$$scope.page>=5"]
-    pars "path.var | toref | filter 'ref|str' ", ["(($$=$$scope.path,$$==null)?undefined:$$.var) ", " toref ", " filter 'ref|str' "]
-    pars " (function(){ return '|' })() | toref | filter", [" (function(){ return '|' })() ", " toref ", " filter"]
+    #pars "path.var | toref | filter 'ref|str' ", ["(($$=$$scope.path,$$==null)?undefined:$$.var) ", " toref ", " filter 'ref|str' "]
+    #pars " (function(){ return '|' })() | toref | filter", [" (function(){ return '|' })() ", " toref ", " filter"]
     pars " (a || b) ", [" ($$scope.a || $$scope.b) "]
     pars " (a | b) | filter ", [" ($$scope.a | $$scope.b) ", " filter "]
     pars " { red:true, blue:false }[color] ", [" { red:true, blue:false }[$$scope.color] "]
-    pars "x + function(){ return num + 5 }()", ['$$scope.x + function(){ return $$scope.num + 5 }()']
+    #pars "x + function(){ return num + 5 }()", ['$$scope.x + function(){ return $$scope.num + 5 }()']
     pars "this.title='linux'; click()", ["$$scope.title='linux'; $$scope.click()"]
     pars "[1,2,3,4,5,6,7,8,9]", ["[1,2,3,4,5,6,7,8,9]"]
     pars "$index===0", ["$$scope.$index===0"]
-    pars "list[key].value", ['$$scope.list[$$scope.key].value']
+    pars "list[key].value", ['(($$=$$scope.list,$$==null)?undefined:($$=$$[$$scope.key],$$==null)?undefined:$$.value)']
     pars "list[key].value = test", ['$$scope.list[$$scope.key].value = test'], { input:['test'] }
-    pars '((obj || {}).ext || {}).visible', ['(($$scope.obj || {}).ext || {}).visible']
+    pars 'obj.ext.visible', ['(($$=$$scope.obj,$$==null)?undefined:($$=$$.ext,$$==null)?undefined:$$.visible)']
     pars 'a || b | filter', ['$$scope.a || $$scope.b ', ' filter']
     pars "value = $event.keyCode", ['($$scope.$root || $$scope).value = $event.keyCode'], { input:['$event'] }
     pars "'('+a+')'", ["'('+$$scope.a+')'"]
@@ -65,11 +65,16 @@ Test('parsing', 'parsing').run ($test, alight) ->
     pars 'a=1', ["($$scope.$root || $$scope).a=1"]
     pars 'a.b=1', ["$$scope.a.b=1"]
     pars 'a.b.c=1', ["$$scope.a.b.c=1"]
-    pars 'data[$index]', ['$$scope.data[$$scope.$index]']  # TODO: convert to $$
-    pars 'path.data[$index]', ['(($$=$$scope.path,$$==null)?undefined:$$.data)[$$scope.$index]']
+    pars 'data[$index]', ['(($$=$$scope.data,$$==null)?undefined:$$[$$scope.$index])']
+    pars 'path.data[$index]', ['(($$=$$scope.path,$$==null)?undefined:($$=$$.data,$$==null)?undefined:$$[$$scope.$index])']
     pars 'data[$index]=$value', ['$$scope.data[$$scope.$index]=$value'], { input:['$value'] }
     pars 'path.data[$index]=$value', ['$$scope.path.data[$$scope.$index]=$value'], { input:['$value'] }
     pars 'data[$index]++', ['$$scope.data[$$scope.$index]++']
+    pars 'test = "string\\"x"', ['($$scope.$root || $$scope).test = "string\\"x"']
+
+#newParsExpression 'data.user[some.data[kk] + someKey].key[kk] + "xx\\"x" + suffix'
+#newParsExpression 'data.user[some.data[kk] + someKey].key[kk] = suffix'
+#newParsExpression 'data.user[k1](some.data[k2] + someKey)'
 
     $test.close()
 

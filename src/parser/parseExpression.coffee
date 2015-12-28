@@ -1,204 +1,282 @@
 
-# http://es5.github.io/#A.1
-#reserved = ['break', 'do', 'instanceof', 'typeof', 'case', 'else', 'new', 'var', 'catch', 'finally', 'return', 'void', 'continue', 'for', 'switch', 'while', 'debugger', 'function', 'this', 'with', 'default', 'if', 'throw', 'delete', 'in', 'try', 'class', 'enum', 'extends', 'super', 'const', 'export', 'import', 'null', 'true', 'false', 'undefined']
-reserved =
-    'instanceof': true
-    'typeof': true
-    'in': true
-    'null': true
-    'true': true
-    'false': true
-    'undefined': true
-    'function': true
-    'return': true
+do ->
+    toDict = ->
+        result = {}
+        for k in arguments
+            result[k] = true
+        result
 
-###
+    reserved = toDict 'instanceof', 'typeof', 'in', 'null', 'true', 'false', 'undefined', 'return'
 
-return:
-    result
-    expression
-    filters
-    isSimple
-    simpleVariables
+    isChar = do ->
+        rx = /[a-zA-Z\u0410-\u044F\u0401\u0451_\.\$]/
+        (x) ->
+            x.match rx
 
-###
+    isDigit = (x) ->
+        x.charCodeAt() >= 48 and x.charCodeAt() <= 57
 
-alight.utils.parsExpression = (line, cfg) ->
-    cfg = cfg or {}
-    input = cfg.input or []
-    index = 0
-    result = []
-    prev = 0
-    variables = []
-    variable_names = []
-    variable_assignment = []
-    variable_fn = []
-    simpleVariables = []
-    isSimple = not input.length
-    pars = (lvl, stop, convert, is_string) ->
-        variable = ''
-        variable_index = -1
-        assignIndex = null
-        var_before = false
+    isSign = do ->
+        chars = toDict '+', '-', '>', '<', '=', '&', '|', '^', '!', '~'
+        (x) ->
+            chars[x] or false
 
-        check_variabe = ->
-            if not variable
-                return
-            if reserved[variable]
-                return
-            var_main = variable.split('.')[0]
-            if input.indexOf(var_main) >= 0
-                return
-            if variable[0].match /[\d\.]/
-                return
-            variables.push variable_index
-            variable_names.push variable
-            variable_assignment.push false
-            variable_fn.push false
-            true
+    assignmentOperator = toDict '=', '+=', '-=', '++', '--', '|=', '^=', '&=', '!=', '<<=', '>>='
 
-        while index < line.length
-            ap = line[index-1]
-            a = line[index]
-            index += 1
-            an = line[index]  # next
+    alight.utils.parsExpression = (expression, option) ->
+        option = option or {}
+        inputKeywords = option.input or []
+        uniq = 1
+        pars = (option) ->
+            line = option.line
+            result = option.result or []
+            index = option.index or 0
+            level = option.level or 0
+            stopKey = option.stopKey or null
 
-            if convert
-                #if a.match /[\d\wа-яА-ЯёЁ_\.\$]/
-                if a.match /[\d\w\u0410-\u044F\u0401\u0451_\.\$]/
-                    if not variable
-                        variable_index = index - 1
-                    variable += a
-                else
-                    if stop is '}'  # is dict?
-                        if line.substring(index-1).trim()[0] is ':'
-                            variable = ''
-                    if check_variabe()
-                        var_before = index
-                        if a is '['
-                            assignIndex = variable_assignment.length
+            variable = ''
+            leftVariable = null
+            variableChildren = []
+            sign = ''
+            status = false
+            original = ''
+            stringKey = ''
+            stringValue = ''
+            freeText = ''
+            bracket = 0
+            filters = null
+
+            commitText = ->
+                if freeText
+                    result.push
+                        type: 'free'
+                        value: freeText
+                freeText = ''
+
+            while index <= line.length
+                ap = line[index-1]
+                a = line[index++] or ''
+                an = line[index]
+
+                if (status and freeText) or (not a)
+                    commitText()
+
+                if status is 'string'
+                    if a is stringKey and ap isnt '\\'
+                        stringValue += a
+                        result.push
+                            type: 'string'
+                            value: stringValue
+                        stringValue = ''
+                        stringKey = ''
+                        status = ''
+                        continue
+                    stringValue += a
+                    continue
+                else if status is 'key'
+                    if isChar(a) or isDigit(a)
+                        variable += a
+                        continue
+                    if a is '['
+                        variable += a
+                        child = pars
+                            line: line
+                            index: index
+                            level: level + 1
+                            stopKey: ']'
+
+                        if not child.stopKeyOk
+                            throw 'Error expression'
+
+                        index = child.index
+                        variable += '###' + child.uniq + '###]'
+                        variableChildren.push child
+                        continue
+                    # new variable
+                    leftVariable =
+                        type: 'key'
+                        value: variable
+                        start: index - variable.length - 1
+                        finish: index-1
+                        children: variableChildren
+                    result.push leftVariable
+                    status = ''
                     variable = ''
+                    variableChildren = []
+                else if status is 'sign'
+                    if isSign a
+                        sign += a
+                        continue
+                    if sign is '|' and level is 0 and bracket is 0
+                        # filters
+                        filters = line.substring index-1
+                        index = line.length + 1
+                        continue
 
-            if a is stop
-                return
+                    if assignmentOperator[sign]
+                        leftVariable.assignment = true
+                    result.push
+                        type: 'sign'
+                        value: sign
+                    status = ''
+                    sign = ''
 
-            if var_before
-                if a isnt ' ' and var_before isnt index
-                    var_before = false
+                # no status
+                if isChar a
+                    status = 'key'
+                    variable += a
+                    continue
 
-            if a is '='
-                # assignment in prev variable
-                if (not (ap is '=' or an is '=')) and (ap isnt '<') and (ap isnt '>')
-                    if assignIndex
-                        variable_assignment[assignIndex-1] = 2
-                        assignIndex = null
-                    else
-                        variable_assignment[variable_assignment.length-1] = true
+                if isSign a
+                    status = 'sign'
+                    sign += a
+                    continue
 
-            if a is '+'
-                if an is '+' or an is '='
-                    if assignIndex
-                        variable_assignment[assignIndex-1] = 2
-                        assignIndex = null
-                    else
-                        variable_assignment[variable_assignment.length-1] = true
+                if a is '"' or a is "'"
+                    stringKey = a
+                    status = 'string'
+                    stringValue += a
+                    continue
 
-            if a is '-'
-                if an is '-' or an is '='
-                    if assignIndex
-                        variable_assignment[assignIndex-1] = 2
-                        assignIndex = null
-                    else
-                        variable_assignment[variable_assignment.length-1] = true
+                if a is stopKey
+                    commitText()
+                    return {
+                        result: result
+                        index: index
+                        stopKeyOk: true
+                        uniq: uniq++
+                    }
 
-            if a is '(' and not is_string
-                if var_before
-                    variable_fn[variable_fn.length-1] = true  # it's function
-                pars lvl+1, ')', convert
-            else if a is '[' and not is_string
-                pars lvl+1, ']', convert
-            else if a is '{' and not is_string
-                pars lvl+1, '}', true
-            else if a is '"'
-                pars lvl+1, '"', false, true
-            else if a is "'"
-                pars lvl+1, "'", false, true
-            else if a is '|'
-                if lvl is 0
-                    if an is '|'  # operator ||
-                        index += 1
-                    else
-                        convert = false
-                        result.push line.substring prev, index-1
-                        prev = index
-        if lvl is 0
-            result.push line.substring prev
-        check_variabe()
+                if a is '('
+                    if leftVariable
+                        leftVariable.function = true
+                    bracket++
+                if a is ')'
+                    bracket--
+                if a is '{'
+                    commitText()
+                    child = pars
+                        line: line
+                        index: index
+                        level: level + 1
+                        stopKey: '}'
+                    result.push
+                        type: '{}'
+                        child: child
+                    index = child.index
+                    continue
 
-    pars(0, null, true)
-    expression = result[0]
-    if variables.length
-        exp = result[0]
-        for n, i in variables by -1
-            variable = variable_names[i]
-            assignment = variable_assignment[i]
-            is_function = variable_fn[i]
+                if a is ':' and stopKey is '}'
+                    leftVariable.type = 'free'
 
-            if not is_function and not assignment
-                simpleVariables.push variable
-            if is_function or assignment
-                isSimple = false
+                freeText += a
+            commitText()
 
-            d = variable.split '.'
-            conv = false
-            if d.length > 1 and not assignment
-                if is_function
-                    conv = d.length > 2
-                else
-                    conv = true
-            if conv
-                newName = null
-                if d[0] is 'this'
-                    d[0] = '$$scope'
-                    if d.length is 2
-                        newName = '$$scope.' + d[1]
-                if not newName
-                    l = []
-                    l.push "($$=$$scope.#{d[0]},$$==null)?undefined:"
-                    if is_function
-                        for i in d[1..d.length-3]
-                            l.push "($$=$$.#{i},$$==null)?undefined:"
-                        l.push "$$.#{d[d.length-2]}"
-                        newName = '(' + l.join('') + ').' + d[d.length-1]
-                    else
-                        for i in d[1..d.length-2]
-                            l.push "($$=$$.#{i},$$==null)?undefined:"
-                        l.push "$$.#{d[d.length-1]}"
-                        newName = '(' + l.join('') + ')'
+            result: result
+            index: index
+            filters: filters
+
+        data = pars
+            line: expression
+
+        ret =
+            isSimple: not data.filters
+            simpleVariables: []
+            #filters
+            #expression
+            #result
+
+        if data.filters
+            ret.expression = expression.substring 0, expression.length - data.filters.length
+            ret.filters = data.filters.split '|'
+        else
+            ret.expression = expression
+
+        # build
+        splitVariable = (variable) ->
+            if variable.indexOf('.') < 0 and variable.indexOf('[') < 0
+                return [variable]
+            result = []
+            i = 0
+            name = ''
+            commit = ->
+                if name
+                    result.push name
+                    name = ''
+            while i < variable.length
+                a = variable[i++]
+                if a is '.'
+                    commit()
+                    continue
+                if a is '['
+                    commit()
+                if a is ']'
+                    name += a
+                    commit()
+                    continue
+                name += a
+            commit()
+            result
+
+        toKey = (name) ->
+            if name[0] isnt '['
+                '.' + name
             else
-                if variable is 'this'
-                    newName = '$$scope'
-                else if d[0] is 'this'
-                    newName = '$$scope.' + d[1..].join '.'
-                else
-                    if assignment is true and d.length is 1
-                        newName = '($$scope.$root || $$scope).' + variable
+                name
+
+        build = (part) ->
+            result = ''
+            for d in part.result
+                if d.type is 'key'
+                    if d.assignment
+                        v = splitVariable d.value
+                        if v[0] is 'this'
+                            name = '$$scope' + d.value.substring 4
+                        else if v.length < 2
+                            name = '($$scope.$root || $$scope).' + d.value
+                        else
+                            name = '$$scope.' + d.value
+                        ret.isSimple = false
                     else
-                        newName = '$$scope.' + variable
-            exp = exp.slice(0, n) + newName + exp.slice(n + variable.length)
-        result[0] = exp
-    if alight.debug.parser
-        console.log 'parser', result
-
-    ret =
-        result: result[0]
-        expression: expression
-        filters: null
-        isSimple: isSimple
-        simpleVariables: simpleVariables
-
-    if result.length > 1
-        ret.isSimple = false
-        ret.filters = result.slice(1)
-
-    ret
+                        v = splitVariable d.value
+                        if reserved[v[0]]
+                            name = d.value
+                        else if inputKeywords.indexOf(v[0]) >= 0
+                            name = d.value
+                            ret.simpleVariables.push name
+                        else
+                            if v[0] is 'this'
+                                name = '$$scope' + d.value.substring 4
+                                ret.simpleVariables.push name
+                            else if d.function
+                                ret.isSimple = false
+                                if v.length < 3
+                                    name = '$$scope.' + d.value
+                                else
+                                    name = '($$=$$scope.' + v[0] + ',$$==null)?undefined:'
+                                    for k in v.slice 1, -2
+                                        name += '($$=$$.' + k + ',$$==null)?undefined:'
+                                    name = '(' + name + '$$.' + v[v.length-2] + ').' + v[v.length-1]
+                            else
+                                if v.length < 2
+                                    name = '$$scope.' + d.value
+                                else
+                                    name = '($$=$$scope' + toKey(v[0]) + ',$$==null)?undefined:'
+                                    for k in v.slice 1, -1
+                                        name += '($$=$$' + toKey(k) + ',$$==null)?undefined:'
+                                    name = '(' + name + '$$' + toKey(v[v.length-1]) + ')'
+                                ret.simpleVariables.push name
+                    if d.children.length
+                        for c in d.children
+                            key = "####{c.uniq}###"
+                            childName = build c
+                            name = name.split(key).join childName
+                    result += name
+                    continue
+                if d.type is '{}'
+                    result += '{' + build(d.child) + '}'
+                    continue
+                result += d.value
+            result
+        ret.result = build data
+        ret

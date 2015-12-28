@@ -71,7 +71,7 @@ Test('watch-text-static', 'watch-text-static').run ($test, alight) ->
     $test.close()
 
 
-Test('$watchText #3').run ($test, alight) ->
+Test('watch-text-3').run ($test, alight) ->
     $test.start 2
     scope =
         data:
@@ -196,8 +196,8 @@ Test('watch-text-5', 'watch-text-5').run ($test, alight) ->
 
 Test('watch-text-6').run ($test, alight) ->
     $test.start 9
-    
-    scope = 
+
+    scope =
         data:
             name: 'linux'
 
