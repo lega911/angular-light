@@ -279,4 +279,6 @@ do ->
                 result += d.value
             result
         ret.result = build data
+        if alight.debug.parser
+            console.log expression, ret
         ret

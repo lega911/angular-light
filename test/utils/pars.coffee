@@ -71,10 +71,9 @@ Test('parsing', 'parsing').run ($test, alight) ->
     pars 'path.data[$index]=$value', ['$$scope.path.data[$$scope.$index]=$value'], { input:['$value'] }
     pars 'data[$index]++', ['$$scope.data[$$scope.$index]++']
     pars 'test = "string\\"x"', ['($$scope.$root || $$scope).test = "string\\"x"']
-
-#newParsExpression 'data.user[some.data[kk] + someKey].key[kk] + "xx\\"x" + suffix'
-#newParsExpression 'data.user[some.data[kk] + someKey].key[kk] = suffix'
-#newParsExpression 'data.user[k1](some.data[k2] + someKey)'
+    pars 'data.user[some.data[kk] + someKey].key[kk] + "xx\\"x" + suffix', ['(($$=$$scope.data,$$==null)?undefined:($$=$$.user,$$==null)?undefined:($$=$$[(($$=$$scope.some,$$==null)?undefined:($$=$$.data,$$==null)?undefined:$$[$$scope.kk]) + $$scope.someKey],$$==null)?undefined:($$=$$.key,$$==null)?undefined:$$[$$scope.kk]) + "xx\\"x" + $$scope.suffix']
+    pars 'data.user[some.data[kk] + someKey].key[kk]= suffix', ['$$scope.data.user[(($$=$$scope.some,$$==null)?undefined:($$=$$.data,$$==null)?undefined:$$[$$scope.kk]) + $$scope.someKey].key[$$scope.kk]= $$scope.suffix']
+    pars 'data.user[k1](some.data[k2] + someKey)', ['(($$=$$scope.data,$$==null)?undefined:$$.user).[$$scope.k1]((($$=$$scope.some,$$==null)?undefined:($$=$$.data,$$==null)?undefined:$$[$$scope.k2]) + $$scope.someKey)']
 
     $test.close()
 
