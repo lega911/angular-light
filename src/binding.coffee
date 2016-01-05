@@ -18,6 +18,8 @@ alight.directivePreprocessor = (attrName, args) ->
 
     j = name.indexOf '-'
     if j < 0
+        j = name.indexOf ':'
+    if j < 0
         return { noNs: true }
 
     ns = name.substring 0, j
@@ -536,10 +538,12 @@ alight.bind = alight.applyBindings = (scope, element, option) ->
 
 alight.bootstrap = (input, data) ->
     if not input
-        input = document.querySelectorAll '[al-app]'
-    if typeof(input) is 'string'
+        alight.bootstrap '[al-app]'
+        alight.bootstrap '[al\\:app]'
+        return
+    else if typeof(input) is 'string'
         input = document.querySelectorAll input
-    if f$.isElement input
+    else if f$.isElement input
         input = [input]
     if Array.isArray(input) or typeof(input.length) is 'number'
         lastScope = null
@@ -555,9 +559,9 @@ alight.bootstrap = (input, data) ->
             else
                 scope = alight.Scope()
             option =
-                skip_attr: 'al-app'
+                skip_attr: ['al-app', 'al:app']
 
-            ctrlName = element.getAttribute 'al-app'
+            ctrlName = element.getAttribute('al-app') or element.getAttribute 'al:app'
             if ctrlName
                 option.attachDirective =
                     'al-ctrl': ctrlName
@@ -567,4 +571,4 @@ alight.bootstrap = (input, data) ->
         return lastScope
     alight.exceptionHandler 'Error in bootstrap', 'Error input arguments',
         input: input
-    null
+    return
