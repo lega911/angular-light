@@ -88,7 +88,7 @@ do ->
 
                 # check for a text directive
                 exp = d.list.join ' | '
-                lname = exp.match /^([^\w\d\s\$"']+)/
+                lname = exp.match /^([^\w\d\s\$"'\(\u0410-\u044F\u0401\u0451]+)/
                 if lname
                     name = lname[1]
                     if name is '#'
