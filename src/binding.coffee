@@ -16,9 +16,9 @@ alight.directivePreprocessor = (attrName, args) ->
     else
         name = attrName
 
-    j = name.indexOf '-'
+    j = name.indexOf ':'
     if j < 0
-        j = name.indexOf ':'
+        j = name.indexOf '-'
     if j < 0
         return { noNs: true }
 
@@ -109,7 +109,7 @@ do ->
         fn: ->
             if @.directive.init
                 if alight.debug.directive
-                    if @.directive.scope or @.directive.ChangeDetector
+                    if @.directive.scope
                         console.warn "#{@.ns}-#{@.name} uses scope and init together, probably you need use link instead of init"
                 @.env.changeDetector = @.cd
                 @.cd.scope.$changeDetector = @.cd
