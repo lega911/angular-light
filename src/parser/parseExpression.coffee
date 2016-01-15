@@ -25,7 +25,7 @@ do ->
 
     alight.utils.parsExpression = (expression, option) ->
         option = option or {}
-        inputKeywords = option.input or []
+        inputKeywords = toDict.apply null, option.input or []
         uniq = 1
         pars = (option) ->
             line = option.line
@@ -92,6 +92,25 @@ do ->
                         variable += '###' + child.uniq + '###]'
                         variableChildren.push child
                         continue
+                    else if a is '?' and (an is '.' or an is '(' or an is '[')  # Elvis
+                        variable += a
+                        continue
+                    else if a is '('  # function
+                        variable += a
+                        child = pars
+                            line: line
+                            index: index
+                            level: level + 1
+                            stopKey: ')'
+
+                        if not child.stopKeyOk
+                            throw 'Error expression'
+
+                        index = child.index
+                        variable += '###' + child.uniq + '###)'
+                        variableChildren.push child
+                        continue
+
                     # new variable
                     leftVariable =
                         type: 'key'
@@ -148,8 +167,6 @@ do ->
                     }
 
                 if a is '('
-                    if leftVariable
-                        leftVariable.function = true
                     bracket++
                 if a is ')'
                     bracket--
@@ -195,16 +212,42 @@ do ->
         # build
         splitVariable = (variable) ->
             if variable.indexOf('.') < 0 and variable.indexOf('[') < 0
-                return [variable]
+                return {
+                    result: [variable]
+                    elvis: [variable]
+                    name: variable
+                }
             result = []
+            elvisResult = []
+            full = ''
             i = 0
             name = ''
-            commit = ->
+            elvisName = ''
+            commit = (end) ->
+                if name[name.length-1] is '?'
+                    name = name.substring 0, name.length-1
+                    isElvis = true
                 if name
+                    if name[0] is '['
+                        elvisName += name
+                    else
+                        if elvisName
+                            elvisName += '.' + name
+                        else
+                            elvisName = name
                     result.push name
                     name = ''
+                if elvisName
+                    if isElvis
+                        elvisResult.push elvisName
+                        elvisName = ''
+                    else if end
+                        elvisResult.push elvisName
+
             while i < variable.length
                 a = variable[i++]
+                if a isnt '?'
+                    full += a
                 if a is '.'
                     commit()
                     continue
@@ -215,57 +258,76 @@ do ->
                     commit()
                     continue
                 name += a
-            commit()
-            result
+            commit true
 
-        toKey = (name) ->
-            if name[0] isnt '['
-                '.' + name
+            result: result
+            elvis: elvisResult
+            name: full
+
+        toElvis = (name, isReserved) ->
+            if isReserved
+                '($$=' + name + ',$$==null)?undefined:'
             else
-                name
+                '($$=$$' + name + ',$$==null)?undefined:'
+
+        getFirstPart = (name) ->
+            name.split(/[\.\[\(\?]/)[0]
+
+        convert = (variable) ->
+            if variable is 'this'
+                return '$$scope'
+
+            firstPart = getFirstPart variable
+            isReserved = reserved[firstPart] or inputKeywords[firstPart]
+
+            parts = variable.split '?'
+            if parts.length is 1
+                if isReserved
+                    return variable
+                return '$$scope.' + variable
+
+            if isReserved
+                result = toElvis parts[0], true
+                full = parts[0]
+            else
+                result = toElvis 'scope.' + parts[0]
+                full = 'scope.' + parts[0]
+            for p in parts.slice 1, parts.length-1
+                if p[0] is '('
+                    result += toElvis full + p, isReserved
+                else
+                    result += toElvis p
+                    full += p
+            last = parts[parts.length-1]
+            if last[0] is '('
+                if not isReserved
+                    result += '$$'
+                result += full + last
+            else
+                result += '$$' + last
+
+            '(' + result + ')'
 
         build = (part) ->
             result = ''
             for d in part.result
                 if d.type is 'key'
                     if d.assignment
-                        v = splitVariable d.value
-                        if v[0] is 'this'
+                        sv = splitVariable d.value
+                        if sv.result[0] is 'this'
                             name = '$$scope' + d.value.substring 4
-                        else if v.length < 2
+                        else if sv.result.length < 2
                             name = '($$scope.$root || $$scope).' + d.value
                         else
                             name = '$$scope.' + d.value
                         ret.isSimple = false
                     else
-                        v = splitVariable d.value
-                        if reserved[v[0]]
-                            name = d.value
-                        else if inputKeywords.indexOf(v[0]) >= 0
-                            name = d.value
+                        name = convert d.value
+                        firstPart = getFirstPart d.value
+                        if not reserved[firstPart]
                             ret.simpleVariables.push name
-                        else
-                            if v[0] is 'this'
-                                name = '$$scope' + d.value.substring 4
-                                ret.simpleVariables.push name
-                            else if d.function
-                                ret.isSimple = false
-                                if v.length < 3
-                                    name = '$$scope.' + d.value
-                                else
-                                    name = '($$=$$scope.' + v[0] + ',$$==null)?undefined:'
-                                    for k in v.slice 1, -2
-                                        name += '($$=$$.' + k + ',$$==null)?undefined:'
-                                    name = '(' + name + '$$.' + v[v.length-2] + ').' + v[v.length-1]
-                            else
-                                if v.length < 2
-                                    name = '$$scope.' + d.value
-                                else
-                                    name = '($$=$$scope' + toKey(v[0]) + ',$$==null)?undefined:'
-                                    for k in v.slice 1, -1
-                                        name += '($$=$$' + toKey(k) + ',$$==null)?undefined:'
-                                    name = '(' + name + '$$' + toKey(v[v.length-1]) + ')'
-                                ret.simpleVariables.push name
+                        if d.function
+                            ret.isSimple = false
                     if d.children.length
                         for c in d.children
                             key = "####{c.uniq}###"

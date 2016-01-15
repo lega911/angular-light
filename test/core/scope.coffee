@@ -177,7 +177,7 @@ Test 'al-repeat-child-cd-0'
         $test.start 1
 
         el = ttDOM '''
-            r{{it.name}}#
+            r{{it?.name}}#
             <div al-repeat="it in list">
                 {{$index}}={{it.name}}
                 <span al-test></span>
