@@ -32,11 +32,14 @@ alight.d.al.ctrl =
                 fn
 
             start: ->
-                fn = self.getController name
-                if not fn
-                    return
+                if name
+                    fn = self.getController name
+                    if not fn
+                        return
+                else
+                    fn = null
 
-                if Object.keys(fn::).length  # class
+                if fn and Object.keys(fn::).length  # class
                     Controller = ->
 
                     for k, v of Scope::
@@ -54,7 +57,8 @@ alight.d.al.ctrl =
                 childScope.$rootChangeDetector = childCD
                 childScope.$parent = scope
                 try
-                    fn.call childScope, childScope, element, name, env
+                    if fn
+                        fn.call childScope, childScope, element, name, env
                 catch e
                     error e, 'Error in controller: ' + name
                 alight.bind childCD, element,

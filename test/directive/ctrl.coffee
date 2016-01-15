@@ -45,6 +45,30 @@ Test('al-ctrl').run ($test, alight) ->
     $test.close()
 
 
+Test('al-ctrl-1').run ($test, alight) ->
+    $test.start 1
+
+    el = ttDOM """
+        <div al-ctrl>
+            A{{value}}A
+            <span al-set="1"></span>
+        </div>
+        <div al-ctrl>
+            B{{value}}B
+            <span al-set="2"></span>
+        </div>
+    """
+
+    alight.d.al.set = (scope, _, value) ->
+        scope.value = value
+
+    alight.bootstrap el
+
+    $test.equal ttGetText(el), 'A1A B2B'
+
+    $test.close()
+
+
 Test('al-app-0').run ($test, alight) ->
     $test.start 2
 
