@@ -211,58 +211,10 @@ do ->
 
         # build
         splitVariable = (variable) ->
-            if variable.indexOf('.') < 0 and variable.indexOf('[') < 0
-                return {
-                    result: [variable]
-                    elvis: [variable]
-                    name: variable
-                }
-            result = []
-            elvisResult = []
-            full = ''
-            i = 0
-            name = ''
-            elvisName = ''
-            commit = (end) ->
-                if name[name.length-1] is '?'
-                    name = name.substring 0, name.length-1
-                    isElvis = true
-                if name
-                    if name[0] is '['
-                        elvisName += name
-                    else
-                        if elvisName
-                            elvisName += '.' + name
-                        else
-                            elvisName = name
-                    result.push name
-                    name = ''
-                if elvisName
-                    if isElvis
-                        elvisResult.push elvisName
-                        elvisName = ''
-                    else if end
-                        elvisResult.push elvisName
+            parts = variable.split(/[\.\[\(\?]/)
 
-            while i < variable.length
-                a = variable[i++]
-                if a isnt '?'
-                    full += a
-                if a is '.'
-                    commit()
-                    continue
-                if a is '['
-                    commit()
-                if a is ']'
-                    name += a
-                    commit()
-                    continue
-                name += a
-            commit true
-
-            result: result
-            elvis: elvisResult
-            name: full
+            count: parts.length
+            firstPart: parts[0]
 
         toElvis = (name, isReserved) ->
             if isReserved
@@ -314,20 +266,19 @@ do ->
                 if d.type is 'key'
                     if d.assignment
                         sv = splitVariable d.value
-                        if sv.result[0] is 'this'
+                        if sv.firstPart is 'this'
                             name = '$$scope' + d.value.substring 4
-                        else if sv.result.length < 2
+                        else if sv.count < 2
                             name = '($$scope.$root || $$scope).' + d.value
                         else
                             name = '$$scope.' + d.value
                         ret.isSimple = false
                     else
-                        name = convert d.value
-                        firstPart = getFirstPart d.value
-                        if not reserved[firstPart]
+                        if reserved[d.value]
+                            name = d.value
+                        else
+                            name = convert d.value
                             ret.simpleVariables.push name
-                        if d.function
-                            ret.isSimple = false
                     if d.children.length
                         for c in d.children
                             key = "####{c.uniq}###"
