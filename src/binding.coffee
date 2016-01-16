@@ -9,96 +9,140 @@ alight.debug =
     parser: false
 
 
-alight.directivePreprocessor = (attrName, args) ->
-    # html prefix data
-    if attrName[0..4] is 'data-'
-        name = attrName[5..]
-    else
-        name = attrName
+do ->
+    alight.hooks.attribute = ext = []
 
-    j = name.indexOf ':'
-    if j < 0
-        j = name.indexOf '-'
-    if j < 0
-        return { noNs: true }
+    ext.push
+        code: 'dataPrefix'
+        fn: ->
+            if @.attrName[0..4] is 'data-'
+                @.attrName = @.attrName[5..]
+            return
 
-    ns = name.substring 0, j
-    name = name.substring(j+1).replace /(-\w)/g, (m) ->
-        m.substring(1).toUpperCase()
+    ext.push
+        code: 'colonNameSpace'
+        fn: ->
+            if @.directive
+                return
 
-    raw = null
-    $ns = args.cd.scope.$ns
-    if $ns and $ns.directives
-        path = $ns.directives[ns]
-        if path
-            raw = path[name]
-            if not raw
-                if not $ns.inheritGlobal
-                    return { noDirective: true }
-        else
-            if not $ns.inheritGlobal
-                return { noNs: true }
+            j = @.attrName.indexOf ':'
+            if j < 0
+                j = @.attrName.indexOf '-'
+            if j < 0
+                @.result = 'noNS'
+                @.stop = true
+                return
+            else
+                @.ns = @.attrName.substring 0, j
+                @.name = @.attrName.substring(j+1).replace /(-\w)/g, (m) ->
+                    m.substring(1).toUpperCase()
+            return
 
-    if not raw
-        path = alight.d[ns]
-        if not path
-            return { noNs: true }
+    ext.push
+        code: 'getScopeDirective'
+        fn: ->
+            if @.directive
+                return
 
-        raw = path[name]
-        if not raw
-            return { noDirective: true }
+            $ns = @.cd.scope.$ns
+            if $ns and $ns.directives
+                path = $ns.directives[@.ns]
+                if path
+                    @.directive = path[@.name]
+                    if not @.directive
+                        if not $ns.inheritGlobal
+                            @.result = 'noDirective'
+                            @.stop = true
+                            return
+                else
+                    if not $ns.inheritGlobal
+                        @.result = 'noNS'
+                        @.stop = true
+            return
 
-    dir = {}
-    if f$.isFunction raw
-        dir.init = raw
-    else if f$.isObject raw
-        for k, v of raw
-            dir[k] = v
-    else throw 'Wrong directive: ' + ns + '.' + name
-    dir.priority = raw.priority or 0
-    dir.restrict = raw.restrict or 'A'
+    ext.push
+        code: 'getGlobalDirective'
+        fn: ->
+            if @.directive
+                return
 
-    if dir.restrict.indexOf(args.attr_type) < 0
-        throw 'Directive has wrong binding (attribute/element): ' + name
+            path = alight.d[@.ns]
+            if not path
+                @.result = 'noNS'
+                @.stop = true
+                return
 
-    dir.$init = (cd, element, value, env) ->
+            @.directive = path[@.name]
+            if not @.directive
+                @.result = 'noDirective'
+                @.stop = true
+            return
 
-        doProcess = ->
-            l = dscope.procLine
-            for dp, i in l
-                dp.fn.call dscope
-                if dscope.isDeferred
-                    dscope.procLine = l[i+1..]
-                    break
-            null
+    ext.push
+        code: 'cloneDirective'
+        fn: ->
+            r = @.directive
+            dir = {}
+            if f$.isFunction r
+                dir.init = r
+            else if f$.isObject r
+                for k, v of r
+                    dir[k] = v
+            else
+                throw 'Wrong directive: ' + ns + '.' + name
+            dir.priority = r.priority or 0
+            dir.restrict = r.restrict or 'A'
 
-        dscope =
-            element: element
-            value: value
-            cd: cd
-            env: env
-            ns: ns
-            name: name
-            args: args
-            directive: dir
+            if dir.restrict.indexOf(@.attrType) < 0
+                throw 'Directive has wrong binding (attribute/element): ' + name
 
-            isDeferred: false
-            procLine: alight.hooks.directive
-            makeDeferred: ->
-                dscope.isDeferred = true
-                dscope.env.stopBinding = true   # stop binding
-                dscope.doBinding = true         # continue binding
+            @.directive = dir
+            return
 
-                ->
-                    dscope.isDeferred = false
-                    doProcess()
+    ext.push
+        code: 'preprocessor'
+        fn: ->
+            ns = @.ns
+            name = @.name
+            directive = @.directive
+            directive.$init = (cd, element, value, env) ->
 
-        if dir.stopBinding
-            dscope.env.stopBinding = true
+                doProcess = ->
+                    l = dscope.procLine
+                    for dp, i in l
+                        dp.fn.call dscope
+                        if dscope.isDeferred
+                            dscope.procLine = l[i+1..]
+                            break
+                    null
 
-        doProcess()
-        return
-    dir
+                dscope =
+                    element: element
+                    value: value
+                    cd: cd
+                    env: env
+                    ns: ns
+                    name: name
+                    # doBinding
+                    # args: args
+                    directive: directive
+                    isDeferred: false
+                    procLine: alight.hooks.directive
+                    makeDeferred: ->
+                        dscope.isDeferred = true
+                        dscope.env.stopBinding = true   # stop binding
+                        dscope.doBinding = true         # continue binding
+
+                        ->
+                            dscope.isDeferred = false
+                            doProcess()
+
+                if directive.stopBinding
+                    dscope.env.stopBinding = true
+
+                doProcess()
+                return
+            return
 
 
 do ->
@@ -217,20 +261,35 @@ testDirective = do ->
 
     (attrName, args) ->
         if args.skip_attr.indexOf(attrName) >= 0
-            return addAttr attrName, args, { skip:true }
+            return addAttr attrName, args,
+                skip: true
 
-        directive = alight.directivePreprocessor attrName, args
-        if directive.noNs
+        attrSelf =
+            attrName: attrName
+            attrType: args.attr_type
+            element: args.element
+            cd: args.cd
+            result: null
+            # result, stop, ns, name, directive
+
+        for attrHook in alight.hooks.attribute
+            attrHook.fn.call attrSelf
+            if attrSelf.stop
+                break
+
+        if attrSelf.result is 'noNS'
             addAttr attrName, args
             return
-        if directive.noDirective
-            addAttr attrName, args, { noDirective:true }
+
+        if attrSelf.result is 'noDirective'
+            addAttr attrName, args,
+                noDirective: true
             return
 
         args.list.push
             name: attrName
-            directive: directive
-            priority: directive.priority
+            directive: attrSelf.directive
+            priority: attrSelf.directive.priority
             attrName: attrName
         return
 
