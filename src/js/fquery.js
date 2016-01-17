@@ -23,7 +23,7 @@
     };
     f$.off = function(element, event, callback) {
         element.removeEventListener(event, callback, false)
-    };        
+    };
 
     f$.isFunction = function(fn) {
         return (fn && Object.prototype.toString.call(fn) === '[object Function]')
@@ -97,7 +97,7 @@
     */
     f$.ajaxCache = {};
     f$.ajax = function(args) {
-        if(args.username || args.password || args.headers || args.data || !args.cache) return rawAjax(args);
+        if(args.username || args.password || args.headers || args.data || !args.cache) return f$.rawAjax(args);
 
         // cache
         var queryType = args.type || 'GET';
