@@ -446,6 +446,10 @@ ChangeDetector::digest = ->
     root = @.root
     mainLoop = 10
     totalChanges = 0
+
+    if alight.debug.scan
+        start = get_time()
+
     try
         result =
             total: 0
@@ -504,9 +508,6 @@ ChangeDetector::scan = (cfg) ->
         return
     root.lateScan = false
     root.status = 'scaning'
-
-    if alight.debug.scan
-        start = get_time()
 
     if root.topCD
         result = root.topCD.digest()
