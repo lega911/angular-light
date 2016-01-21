@@ -79,7 +79,7 @@ Test('parsing', 'parsing').run ($test, alight) ->
 
 
 Test('parsing2').run ($test, alight) ->
-    $test.start 12
+    $test.start 13
 
     pe = alight.utils.parsExpression 'ab.cd.ef'
     $test.equal pe.result, '$$scope.ab.cd.ef'
@@ -118,6 +118,9 @@ Test('parsing2').run ($test, alight) ->
     pe = alight.utils.parsExpression 'foo?()',
         input: ['foo']
     $test.equal pe.result, '(($$=foo,$$==null)?undefined:foo())'
+
+    pe = alight.utils.parsExpression "list | orderBy:'name',direct"
+    $test.equal pe.expression.trim(), 'list'
 
     $test.close()
 

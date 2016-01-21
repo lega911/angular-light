@@ -204,7 +204,7 @@ do ->
             #result
 
         if data.filters
-            ret.expression = expression.substring 0, expression.length - data.filters.length
+            ret.expression = expression.substring 0, expression.length - data.filters.length - 1
             ret.filters = data.filters.split '|'
         else
             ret.expression = expression
