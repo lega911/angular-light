@@ -74,7 +74,7 @@ do ->
 
     makeDefaultHandler = (code, args) ->
         event = args[0]
-        makeEvent event
+        makeEvent(event)(code, args)
 
     dirs =
         click: makeEvent 'click',
