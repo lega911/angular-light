@@ -59,6 +59,7 @@ var allFiles = [
   './tmp/parser/parseText.js',
   './tmp/compile.js',
   './tmp/fastBinding.js',
+  './tmp/event.js',
 
   './tmp/directive/click.js',
   './tmp/directive/value.js',
