@@ -1,4 +1,6 @@
 
+alight.hooks.scope = []
+
 alight.Scope = (option) ->
     option = option or {}
     # customScope, childFromChangeDetector, $parent
@@ -21,6 +23,14 @@ alight.Scope = (option) ->
         scope.$parent = option.$parent
 
     scope.$changeDetector = null
+
+    if alight.hooks.scope.length
+        self =
+            scope: scope
+            changeDetector: scope.$rootChangeDetector
+        for d in alight.hooks.scope
+            d.fn.call self
+        scope = self.scope
     scope
 
 Scope = ->
