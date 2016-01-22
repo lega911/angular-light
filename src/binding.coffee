@@ -600,6 +600,7 @@ alight.bootstrap = (input, data) ->
     if not input
         alight.bootstrap '[al-app]'
         alight.bootstrap '[al\\:app]'
+        alight.bootstrap '[data-al-app]'
         return
     else if typeof(input) is 'string'
         input = document.querySelectorAll input
