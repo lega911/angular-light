@@ -269,7 +269,7 @@ do ->
                         if sv.firstPart is 'this'
                             name = '$$scope' + d.value.substring 4
                         else if sv.count < 2
-                            name = '($$scope.$root || $$scope).' + d.value
+                            name = '($$scope.$$root || $$scope).' + d.value
                         else
                             name = '$$scope.' + d.value
                         ret.isSimple = false

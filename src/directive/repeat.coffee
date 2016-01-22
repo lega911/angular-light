@@ -101,7 +101,7 @@ alight.directives.al.repeat =
 
             makeChildConstructor: ->
                 ChildScope = ->
-                    @.$root = CD.scope.$root or CD.scope
+                    @.$$root = CD.scope.$$root or CD.scope
                     @
                 ChildScope:: = CD.scope
                 self.ChildScope = ChildScope

@@ -467,7 +467,7 @@ Test('al-repeat-transparent-assigment-0', 'al-repeat-transparent-assigment-0').r
     childS.box.name = 'debian'
     childS.$scan()
     $test.equal ttGetText(el), 'box=linux x86 x64 box=debian X 15'
-    $test.equal childS.$root, scope
+    $test.equal childS.$$root, scope
 
     $test.close()
 

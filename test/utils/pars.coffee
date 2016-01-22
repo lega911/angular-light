@@ -35,7 +35,7 @@ Test('parsing', 'parsing').run ($test, alight) ->
     pars 'foo.baz=one?.two?.three', ["$$scope.foo.baz=(($$=$$scope.one,$$==null)?undefined:($$=$$.two,$$==null)?undefined:$$.three)"]
     pars 'foo.baz=one.two.three', ["$$scope.foo.baz=$$scope.one.two.three"]
     pars 'foo?.baz==one?.two?.three', ["(($$=$$scope.foo,$$==null)?undefined:$$.baz)==(($$=$$scope.one,$$==null)?undefined:($$=$$.two,$$==null)?undefined:$$.three)"]
-    pars 'a=5; b=6;', ["($$scope.$root || $$scope).a=5; ($$scope.$root || $$scope).b=6;"]
+    pars 'a=5; b=6;', ["($$scope.$$root || $$scope).a=5; ($$scope.$$root || $$scope).b=6;"]
     pars 'do(item)', ["$$scope.do($$scope.item)"]
     pars "a+'/'+b", ["$$scope.a+'/'+$$scope.b"]
     pars 'page==5', ["$$scope.page==5"]
@@ -52,18 +52,18 @@ Test('parsing', 'parsing').run ($test, alight) ->
     pars "list[key].value = test", ['$$scope.list[$$scope.key].value = test'], { input:['test'] }
     pars 'obj?.ext?.visible', ['(($$=$$scope.obj,$$==null)?undefined:($$=$$.ext,$$==null)?undefined:$$.visible)']
     pars 'a || b | filter', ['$$scope.a || $$scope.b ', ' filter']
-    pars "value = $event.keyCode", ['($$scope.$root || $$scope).value = $event.keyCode'], { input:['$event'] }
+    pars "value = $event.keyCode", ['($$scope.$$root || $$scope).value = $event.keyCode'], { input:['$event'] }
     pars "'('+a+')'", ["'('+$$scope.a+')'"]
     pars "{ key:value, key2:value2 }", ["{ key:$$scope.value, key2:$$scope.value2 }"]
     pars 'a?.b?.c?.d?.e?.f?.g', ["(($$=$$scope.a,$$==null)?undefined:($$=$$.b,$$==null)?undefined:($$=$$.c,$$==null)?undefined:($$=$$.d,$$==null)?undefined:($$=$$.e,$$==null)?undefined:($$=$$.f,$$==null)?undefined:$$.g)"]
-    pars "scope=this", ["($$scope.$root || $$scope).scope=$$scope"]
+    pars "scope=this", ["($$scope.$$root || $$scope).scope=$$scope"]
     pars "info?.user.acl('write', 're_type:546a1d07bb05aa73a632807d')", ["(($$=$$scope.info,$$==null)?undefined:$$.user.acl('write', 're_type:546a1d07bb05aa73a632807d'))"]
     cyWord = "\u041f\u0440\u043e\u0432\u0435\u0440\u043a\u0430\u041a\u0438\u0440\u0438\u043b\u0438\u0446\u044b\u0401\u0451\u0419\u0439"
     pars "Form?.#{cyWord}", ["(($$=$$scope.Form,$$==null)?undefined:$$.#{cyWord})"]
-    pars 'a++', ["($$scope.$root || $$scope).a++"]
+    pars 'a++', ["($$scope.$$root || $$scope).a++"]
     pars 'a.b--', ["$$scope.a.b--"]
     pars 'a.b.c+=5', ["$$scope.a.b.c+=5"]
-    pars 'a=1', ["($$scope.$root || $$scope).a=1"]
+    pars 'a=1', ["($$scope.$$root || $$scope).a=1"]
     pars 'a.b=1', ["$$scope.a.b=1"]
     pars 'a.b.c=1', ["$$scope.a.b.c=1"]
     pars 'data?[$index]', ['(($$=$$scope.data,$$==null)?undefined:$$[$$scope.$index])']
@@ -71,7 +71,7 @@ Test('parsing', 'parsing').run ($test, alight) ->
     pars 'data[$index]=$value', ['$$scope.data[$$scope.$index]=$value'], { input:['$value'] }
     pars 'path.data[$index]=$value', ['$$scope.path.data[$$scope.$index]=$value'], { input:['$value'] }
     pars 'data[$index]++', ['$$scope.data[$$scope.$index]++']
-    pars 'test = "string\\"x"', ['($$scope.$root || $$scope).test = "string\\"x"']
+    pars 'test = "string\\"x"', ['($$scope.$$root || $$scope).test = "string\\"x"']
     pars 'data?.user[k1](some?.data?[k2] + someKey)', ['(($$=$$scope.data,$$==null)?undefined:$$.user[$$scope.k1]((($$=$$scope.some,$$==null)?undefined:($$=$$.data,$$==null)?undefined:$$[$$scope.k2]) + $$scope.someKey))']
     pars 'data.user[some?.data?[kk] + someKey].key[kk]= suffix', ['$$scope.data.user[(($$=$$scope.some,$$==null)?undefined:($$=$$.data,$$==null)?undefined:$$[$$scope.kk]) + $$scope.someKey].key[$$scope.kk]= $$scope.suffix']
 
