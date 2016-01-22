@@ -48,19 +48,19 @@ alight.d.al.ctrl =
                     for k, v of fn::
                         Controller::[k] = v
 
-                    childScope = new Controller
+                    childScope = alight.Scope
+                        $parent: scope
+                        customScope: new Controller
                 else
                     childScope = alight.Scope
-                        changeDetector: null
+                        $parent: scope
+                        childFromChangeDetector: env.changeDetector
 
-                childCD = env.changeDetector.new childScope
-                childScope.$rootChangeDetector = childCD
-                childScope.$parent = scope
                 try
                     if fn
                         fn.call childScope, childScope, element, name, env
                 catch e
                     error e, 'Error in controller: ' + name
-                alight.bind childCD, element,
+                alight.bind childScope, element,
                     skip_attr: env.skippedAttr()
                 return

@@ -201,23 +201,24 @@ do ->
                 return
 
             parentCD = @.cd
-            scope = alight.Scope
-                changeDetector: null
 
             switch @.directive.scope
                 when true
-                    childCD = parentCD.new scope
+                    scope = alight.Scope
+                        $parent: parentCD.scope
+                        childFromChangeDetector: parentCD
+                    childCD = scope.$rootChangeDetector
                 when 'root'
-                    childCD = alight.ChangeDetector scope
+                    scope = alight.Scope
+                        $parent: parentCD.scope
 
+                    childCD = scope.$rootChangeDetector
                     parentCD.watch '$destroy', ->
                         childCD.destroy()
                 else
                     throw 'Wrong scope value: ' + @.directive.scope
 
             @.env.parentChangeDetector = parentCD
-            scope.$parent = parentCD.scope
-            scope.$rootChangeDetector = childCD
             @.cd = childCD
 
             @.env.stopBinding = true
@@ -608,7 +609,7 @@ alight.bootstrap = (input, data) ->
         lastScope = null
         if data
             oneScope = alight.Scope
-                data: data
+                customScope: data
         for element in input
             if element.ma_bootstrapped  # TODO change to getData/setData
                 continue

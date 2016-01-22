@@ -332,10 +332,10 @@ Test('bind-complete-0').run ($test, alight) ->
         cd = env.changeDetector
 
         childScope = alight.Scope
-            changeDetector: null
+            childFromChangeDetector: cd
         childScope.name = 'one'
 
-        childCD = cd.new childScope
+        childCD = childScope.$rootChangeDetector
 
         $test.equal index++, 1
         $test.equal ttGetText(el), '1:{{name}} 2:{{name}} 3:{{name}} 4:{{name}} 5:{{name}}'
@@ -352,10 +352,10 @@ Test('bind-complete-0').run ($test, alight) ->
         scope.$watch 'name', ->
             cd = env.changeDetector
             childScope = alight.Scope
-                changeDetector: null
+                childFromChangeDetector: cd
             childScope.name = 'two'
 
-            childCD = cd.new childScope
+            childCD = childScope.$rootChangeDetector
 
             $test.equal index++, 2
             $test.equal ttGetText(el), '2:{{name}} 3:{{name}} 4:{{name}}', 2
@@ -373,10 +373,10 @@ Test('bind-complete-0').run ($test, alight) ->
             cd = env.changeDetector
 
             childScope = alight.Scope
-                changeDetector: null
+                childFromChangeDetector: cd
             childScope.name = 'three'
 
-            childCD = cd.new childScope
+            childCD = childScope.$rootChangeDetector
 
             $test.equal index++, 3
             $test.equal ttGetText(el), '3:{{name}}', 3

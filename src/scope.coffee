@@ -1,28 +1,29 @@
 
-Scope = (option) ->
-    if @ instanceof Scope
-        return @
-
+alight.Scope = (option) ->
     option = option or {}
+    # customScope, childFromChangeDetector, $parent
 
-    if option.data
-        scope = option.data
-        if Object.setPrototypeOf
-            Object.setPrototypeOf scope, Scope.prototype
-        else
+    if option.customScope
+        scope = option.customScope
+        if not scope.$scan
             for name of Scope::
                 scope[name] = Scope::[name]
     else
         scope = new Scope
 
-    if option.changeDetector isnt undefined
-        scope.$rootChangeDetector = option.changeDetector
+    if option.childFromChangeDetector
+        childCD = option.childFromChangeDetector.new scope
+        scope.$rootChangeDetector = childCD
     else
         scope.$rootChangeDetector = alight.ChangeDetector scope
+
+    if option.$parent
+        scope.$parent = option.$parent
+
     scope.$changeDetector = null
     scope
 
-alight.Scope = Scope
+Scope = ->
 
 alight.core.Scope = Scope
 
@@ -69,8 +70,8 @@ Scope::$destroy = ->
     return
 
 Scope::$new = () ->
-    scope = new Scope
-        changeDetector: null
-    scope.$rootChangeDetector = @.$changeDetector.new scope
-    scope.$parent = @
-    scope
+    if not @.$changeDetector
+        throw 'No change detector'
+    alight.Scope
+        $parent: @
+        childFromChangeDetector: @.$changeDetector
