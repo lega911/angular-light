@@ -600,6 +600,7 @@ alight.bootstrap = (input, data) ->
     if not input
         alight.bootstrap '[al-app]'
         alight.bootstrap '[al\\:app]'
+        alight.bootstrap '[data-al-app]'
         return
     else if typeof(input) is 'string'
         input = document.querySelectorAll input
@@ -621,7 +622,7 @@ alight.bootstrap = (input, data) ->
             option =
                 skip_attr: ['al-app', 'al:app']
 
-            ctrlName = element.getAttribute('al-app') or element.getAttribute 'al:app'
+            ctrlName = element.getAttribute('al-app') or element.getAttribute 'al:app' or element.getAttribute 'data-al-app'
             if ctrlName
                 option.attachDirective =
                     'al-ctrl': ctrlName
