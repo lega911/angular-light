@@ -385,6 +385,7 @@ scanCore = (topCD, result) ->
         total += cd.watchList.length
         for w in cd.watchList.slice()
             result.src = w.src
+            result.element = w.el
             last = w.value
             value = w.exp scope
             if last isnt value
@@ -439,7 +440,10 @@ scanCore = (topCD, result) ->
     result.total = total
     result.changes = changes
     result.extraLoop = extraLoop
+
     result.scope = null
+    result.src = ''
+    result.element = null
     return
 
 
@@ -458,6 +462,7 @@ ChangeDetector::digest = ->
             extraLoop: false
             src: ''
             scope: null
+            element: null
 
         while mainLoop
             mainLoop--
@@ -482,6 +487,7 @@ ChangeDetector::digest = ->
         alight.exceptionHandler e, '$scan, error in expression: ' + result.src,
             src: result.src
             scope: result.scope
+            element: result.element
             result: result
     result.mainLoop = mainLoop
     result.totalChanges = totalChanges
