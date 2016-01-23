@@ -379,7 +379,7 @@ scanCore = (topCD, result) ->
     index = 0
     cd = topCD
     while cd
-        scope = cd.scope
+        scope = result.scope = cd.scope
 
         # default watchers
         total += cd.watchList.length
@@ -439,6 +439,7 @@ scanCore = (topCD, result) ->
     result.total = total
     result.changes = changes
     result.extraLoop = extraLoop
+    result.scope = null
     return
 
 
@@ -456,6 +457,7 @@ ChangeDetector::digest = ->
             changes: 0
             extraLoop: false
             src: ''
+            scope: null
 
         while mainLoop
             mainLoop--
@@ -479,6 +481,7 @@ ChangeDetector::digest = ->
     catch e
         alight.exceptionHandler e, '$scan, error in expression: ' + result.src,
             src: result.src
+            scope: result.scope
             result: result
     result.mainLoop = mainLoop
     result.totalChanges = totalChanges
