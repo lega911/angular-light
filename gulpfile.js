@@ -4,47 +4,31 @@ var uglify = require('gulp-uglify');
 var concat = require('gulp-concat');
 var rename = require('gulp-rename');
 var header = require('gulp-header');
-var clean = require('gulp-clean');
 var replace = require('gulp-replace');
 var version = require('./src/js/version.js');
+var typescript = require('gulp-typescript');
+var del = require('del');
 
 gulp.task('default', ['compress'], function(){});
 
 gulp.task('clean', function () {
-  return gulp.src(['tmp'], {read: false})
-    .pipe(clean());
+  return del.sync(['tmp']);
 });
 
-gulp.task('compile', ['compile_core', 'compile_parser', 'compile_filter', 'compile_directive', 'compile_text'], function() {});
+gulp.task('compile', ['compile_coffeescript', 'compile_typescript'], function() {});
 
-gulp.task('compile_core', ['clean'], function() {
-  return gulp.src('./src/*.coffee')
+gulp.task('compile_coffeescript', ['clean'], function() {
+  return gulp.src('./src/**/*.coffee')
     .pipe(coffee({bare: true}).on('error', console.log))
     .pipe(gulp.dest('tmp'))
 });
 
-gulp.task('compile_parser', ['clean'], function() {
-  return gulp.src('./src/parser/*.coffee')
-    .pipe(coffee({bare: true}).on('error', console.log))
-    .pipe(gulp.dest('tmp/parser'))
-});
-
-gulp.task('compile_filter', ['clean'], function() {
-  return gulp.src('./src/filter/*.coffee')
-    .pipe(coffee({bare: true}).on('error', console.log))
-    .pipe(gulp.dest('tmp/filter'))
-});
-
-gulp.task('compile_directive', ['clean'], function() {
-  return gulp.src('./src/directive/*.coffee')
-    .pipe(coffee({bare: true}).on('error', console.log))
-    .pipe(gulp.dest('tmp/directive'))
-});
-
-gulp.task('compile_text', ['clean'], function() {
-  return gulp.src('./src/text/*.coffee')
-    .pipe(coffee({bare: true}).on('error', console.log))
-    .pipe(gulp.dest('tmp/text'))
+gulp.task('compile_typescript', function () {
+    return gulp.src('./src/**/*.ts')
+        .pipe(typescript({
+            noImplicitAny: true
+        }))
+        .pipe(gulp.dest('tmp'))
 });
 
 var allFiles = [
@@ -146,38 +130,13 @@ gulp.task('ie', ['assembleIE8'], function() {
 // test
 
 gulp.task('build_test', function() {
-  return gulp.src('./test/*.coffee')
+  return gulp.src('./test/**/*.coffee')
     //.pipe(coffee({bare: true}).on('error', console.log))
     .pipe(coffee({}).on('error', console.log))
     .pipe(gulp.dest('test'))
 });
 
-gulp.task('build_test_core', function() {
-  return gulp.src('./test/core/*.coffee')
-    //.pipe(coffee({bare: true}).on('error', console.log))
-    .pipe(coffee({}).on('error', console.log))
-    .pipe(gulp.dest('test/core'))
-});
-
-gulp.task('build_test_directive', function() {
-  return gulp.src('./test/directive/*.coffee')
-    .pipe(coffee({}).on('error', console.log))
-    .pipe(gulp.dest('test/directive'))
-});
-
-gulp.task('build_test_filter', function() {
-  return gulp.src('./test/filter/*.coffee')
-    .pipe(coffee({}).on('error', console.log))
-    .pipe(gulp.dest('test/filter'))
-});
-
-gulp.task('build_test_utils', function() {
-  return gulp.src('./test/utils/*.coffee')
-    .pipe(coffee({}).on('error', console.log))
-    .pipe(gulp.dest('test/utils'))
-});
-
-gulp.task('test', ['build_test', 'build_test_core', 'build_test_other', 'build_test_utils', 'build_test_directive', 'build_test_filter'], function(){
+gulp.task('test', ['build_test'], function(){
   var path = require('path');
   var childProcess = require('child_process');
   var phantomjs = require('phantomjs');
