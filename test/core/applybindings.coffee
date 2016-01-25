@@ -56,3 +56,47 @@ Test('bootstrap-el').run ($test, alight) ->
         $test.equal scope.name, 'Hello'
         $test.equal ttGetText(el), 'Hello'
         $test.close()
+
+
+Test('stop-binding-2').run ($test, alight) ->
+    $test.start 6
+
+    run = ->
+        el = ttDOM '''
+            <div al-test>
+                name={{$parent.name}}
+            </div>
+        '''
+
+        root = alight.Scope()
+        root.name = 'root'
+
+        alight.bind root, el
+
+        ttGetText el
+
+    count = 0
+    alight.d.al.test =
+        scope: true
+        link: ->
+            count++
+    $test.equal run(), 'name=root'
+    $test.equal count, 1
+
+    alight.d.al.test =
+        stopBinding: true
+        scope: true
+        link: ->
+            count++
+    $test.equal run(), 'name={{$parent.name}}'
+    $test.equal count, 2
+
+    alight.d.al.test =
+        scope: true
+        link: (scope, el, val, env) ->
+            env.stopBinding = true
+            count++
+    $test.equal run(), 'name={{$parent.name}}'
+    $test.equal count, 3
+
+    $test.close()

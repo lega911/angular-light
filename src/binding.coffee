@@ -123,22 +123,22 @@ do ->
                     env: env
                     ns: ns
                     name: name
-                    # doBinding
+                    doBinding: false
                     # args: args
                     directive: directive
                     isDeferred: false
                     procLine: alight.hooks.directive
                     makeDeferred: ->
                         dscope.isDeferred = true
-                        dscope.env.stopBinding = true   # stop binding
                         dscope.doBinding = true         # continue binding
+                        dscope.retStopBinding = true    # stop binding for child elements
 
                         ->
                             dscope.isDeferred = false
                             doProcess()
 
                 if directive.stopBinding
-                    dscope.env.stopBinding = true
+                    env.stopBinding = true
 
                 doProcess()
                 return
@@ -221,8 +221,8 @@ do ->
             @.env.parentChangeDetector = parentCD
             @.cd = childCD
 
-            @.env.stopBinding = true
             @.doBinding = true
+            @.retStopBinding = true
             return
 
     ext.push
@@ -240,9 +240,11 @@ do ->
     ext.push
         code: 'scopeBinding'
         fn: ->
-            if @.doBinding
+            if @.doBinding and not @.env.stopBinding
                 alight.bind @.cd, @.element,
                     skip_attr: @.env.skippedAttr()
+            if @.retStopBinding
+                @.env.stopBinding = true
             return
 
 
