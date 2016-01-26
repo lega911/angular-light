@@ -421,7 +421,7 @@ bindElement = do ->
 
             attrName = element.nodeName.toLowerCase()
             testDirective attrName, args
-            if attrName is 'script'  # don't process scripts
+            if attrName is 'script' or attrName is 'style'  # don't process script and style tags
                 skipChildren = true
 
             args.attr_type = 'A'
