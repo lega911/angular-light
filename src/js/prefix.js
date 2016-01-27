@@ -1,4 +1,5 @@
 (function() {
+    "use strict";
     function buildAlight() {
         var alight = {
             filters: {},
