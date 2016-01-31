@@ -62,9 +62,9 @@ Scope::$setValue = (name, value) ->
     cd.setValue name, value
     return
 
-Scope::$getValue = (name, value) ->
+Scope::$getValue = (name) ->
     cd = @.$rootChangeDetector
-    cd.getValue name, value
+    cd.getValue name
 
 Scope::$eval = (exp) ->
     cd = @.$rootChangeDetector
