@@ -393,3 +393,25 @@ Test('bind-complete-0').run ($test, alight) ->
     $test.equal ttGetText(dom), '1:one 2:two 3:three 4:two 5:one'
 
     $test.close()
+
+
+Test('attr-argument-0').run ($test, alight) ->
+    $test.start 4
+
+    alight.d.al.test = (scope, element, expression, env) ->
+        $test.equal expression, 'exp'
+        $test.equal env.attrArgument, 'one.two'
+
+    alight.d.al.test2 = (scope, element, expression, env) ->
+        $test.equal expression, '123'
+        $test.equal env.attrArgument, null
+
+    el = ttDOM '''
+            <div al-test:one.two="exp">
+                <div al-test2="123">
+                </div>
+            </div>
+        '''
+
+    alight.bootstrap el
+    $test.close()

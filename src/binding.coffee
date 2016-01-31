@@ -22,20 +22,24 @@ do ->
     ext.push
         code: 'colonNameSpace'
         fn: ->
-            if @.directive
+            if @.directive or @.name
                 return
 
-            j = @.attrName.indexOf ':'
-            if j < 0
-                j = @.attrName.indexOf '-'
-            if j < 0
+            parts = @.attrName.match /^(\w+)[\-\:](.+)$/
+            if not parts
                 @.result = 'noNS'
                 @.stop = true
                 return
-            else
-                @.ns = @.attrName.substring 0, j
-                @.name = @.attrName.substring(j+1).replace /(-\w)/g, (m) ->
-                    m.substring(1).toUpperCase()
+
+            @.ns = parts[1]
+            name = parts[2]
+            parts = name.match /^([^\:]+)\:(.*)$/
+            if parts
+                name = parts[1]
+                @.attrArgument = parts[2]
+
+            @.name = name.replace /(-\w)/g, (m) ->
+                m.substring(1).toUpperCase()
             return
 
     ext.push
@@ -104,6 +108,7 @@ do ->
         fn: ->
             ns = @.ns
             name = @.name
+            attrArgument = @.attrArgument or null
             directive = @.directive
             directive.$init = (cd, element, value, env) ->
 
@@ -139,6 +144,7 @@ do ->
 
                 if directive.stopBinding
                     env.stopBinding = true
+                env.attrArgument = attrArgument
 
                 doProcess()
                 return
