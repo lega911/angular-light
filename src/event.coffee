@@ -1,4 +1,29 @@
 do ->
+    alight.hooks.attribute.unshift
+        code: 'events'
+        fn: ->
+            d = @.attrName.match /^\(([\w\.]+)\)$/
+            if not d
+                return
+
+            @.ns = 'al'
+            @.name = 'on'
+            @.attrArgument = d[1]
+            return
+
+    alight.d.al.on =
+        priority: 10
+        init: (scope, element, expression, env) ->
+            if not env.attrArgument
+                return
+            parts = env.attrArgument.split '.'
+            event = parts[0]
+
+            handler = directives[event]
+            if not handler
+                handler = makeEvent event
+            handler(env.attrArgument, parts)(scope, element, expression, env)
+
     keyCodes =
         enter: 13
         tab: 9
@@ -72,11 +97,7 @@ do ->
                     element.removeEventListener event, handler
                 return
 
-    makeDefaultHandler = (code, args) ->
-        event = args[0]
-        makeEvent(event)(code, args)
-
-    dirs =
+    directives =
         click: makeEvent 'click',
             stop: true
             prevent: true
@@ -92,20 +113,3 @@ do ->
             filtered: true
         keydown: makeEvent 'keydown',
             filtered: true
-
-    alight.hooks.attribute.unshift
-        code: 'events'
-        fn: ->
-            d = @.attrName.match /^\(([\w\.]+)\)$/
-            if not d
-                return
-            code = d[1]
-
-            args = code.split '.'
-            event = args[0]
-            makeHandler = if dirs[event] then dirs[event] else makeDefaultHandler
-
-            @.directive =
-                priority: 10
-                link: makeHandler code, args
-            return
