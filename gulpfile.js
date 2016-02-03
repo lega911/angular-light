@@ -66,6 +66,7 @@ var allFiles = [
   './tmp/directive/submit.js',
   './tmp/directive/event.js',
   './tmp/directive/html.js',
+  './tmp/directive/htmlbyid.js',
   './tmp/directive/radio.js',
   './tmp/directive/showHide.js',
   './tmp/directive/style.js',
