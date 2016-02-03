@@ -36,6 +36,12 @@ do ->
         left: 37
         right: 39
 
+    keyModifiers =
+        alt: (event) -> event.altKey
+        control: (event) -> event.ctrlKey
+        meta: (event) -> event.metaKey
+        shift: (event) -> event.shiftKey
+
     makeEvent = (event, option) ->
         option = option or {}
         (code, args) ->
@@ -44,6 +50,7 @@ do ->
             filtered = false
             scan = true
             filter = {}
+            filterExt = []
             for k in args.slice(1)
                 if k is 'stop'
                     stop = true
@@ -62,7 +69,12 @@ do ->
                     continue
                 if not option.filtered
                     continue
+
                 filtered = true
+                if keyModifiers[k]
+                    filterExt.push k
+                    continue
+
                 if keyCodes[k]
                     k = keyCodes[k]
                 filter[k] = true
@@ -76,6 +88,11 @@ do ->
                     if filtered
                         if not filter[e.keyCode]
                             return
+                        if filterExt.length
+                            for extraKey in filterExt
+                                if not keyModifiers[extraKey](e)
+                                    return
+
                     if prevent
                         e.preventDefault()
                     if stop
