@@ -23,6 +23,8 @@ do ->
         disabled: 'disabled'
 
     alight.d.al.attr = (scope, element, key, env) ->
+        if not env.attrArgument
+            return
         d = env.attrArgument.split '.'
         attrName = d[0]
         prop = props[attrName]
