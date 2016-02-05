@@ -72,6 +72,7 @@ var allFiles = [
   './tmp/directive/style.js',
   './tmp/directive/select.js',
   './tmp/directive/ctrl.js',
+  './tmp/directive/attr.js',
 
   './tmp/filter/slice.js',
   './tmp/filter/date.js',
