@@ -32,7 +32,10 @@ do ->
 
         setter = (value) ->
             if prop
-                element[prop] = if value? then value else ''
+                if value is undefined
+                    value = null
+                if element[prop] isnt value
+                    element[prop] = value
             else
                 if value?
                     element.setAttribute attrName, value
