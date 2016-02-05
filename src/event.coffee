@@ -55,12 +55,13 @@ do ->
         alias = alight.d.al.on.alias[eventName]
         if alias
             if typeof(alias) is 'string'
-                alias =
-                    event: alias.split /\s+/
+                eventList = alias.split /\s+/
             else if Array.isArray alias
-                alias =
-                    event: alias
-            eventList = alias.event
+                eventList = alias
+            else
+                eventList = alias.event
+            if typeof(eventList) is 'string'
+                eventList = eventList.split /\s+/
             eventCondition = alias.condition
 
         filter = {}
