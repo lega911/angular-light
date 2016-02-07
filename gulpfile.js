@@ -88,7 +88,7 @@ gulp.task('assemble', ['compile'], function() {
   return gulp.src(resultList)
     .pipe(concat(resultFile))
     .pipe(replace('{{{version}}}', version.version))
-    .pipe(header("/**\n * Angular Light " + version.version + "\n * (c) 2015 Oleg Nechaev\n * Released under the MIT License.\n * " + version.date + ", http://angularlight.org/ \n */"))
+    .pipe(header("/**\n * Angular Light " + version.version + "\n * (c) 2016 Oleg Nechaev\n * Released under the MIT License.\n * " + version.date + ", http://angularlight.org/ \n */"))
     .pipe(gulp.dest('bin'));
 });
 
@@ -98,7 +98,7 @@ gulp.task('compress', ['assemble'], function() {
     .pipe(rename({
        extname: '.min.js'
      }))
-    .pipe(header("/**\n * Angular Light " + version.version + "\n * (c) 2015 Oleg Nechaev\n * Released under the MIT License.\n * " + version.date + ", http://angularlight.org/ \n */"))
+    .pipe(header("/**\n * Angular Light " + version.version + "\n * (c) 2016 Oleg Nechaev\n * Released under the MIT License.\n * " + version.date + ", http://angularlight.org/ \n */"))
     .pipe(gulp.dest('bin'))
 });
 

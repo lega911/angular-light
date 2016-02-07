@@ -3,7 +3,7 @@
 
 do ->
     alight.hooks.attribute.unshift
-        code: 'events'
+        code: 'attribute'
         fn: ->
             d = @.attrName.match /^\:([\w\.]+)$/
             if not d
