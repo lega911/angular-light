@@ -9,9 +9,14 @@ do ->
             if not d
                 return
 
+            value = d[1]
+            if value.split('.')[0] is 'html'
+                @.name = 'html'
+                value = value.substring 5
+            else
+                @.name = 'attr'
             @.ns = 'al'
-            @.name = 'attr'
-            @.attrArgument = d[1]
+            @.attrArgument = value
             return
 
     props =
