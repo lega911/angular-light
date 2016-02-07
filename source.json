@@ -1,0 +1,157 @@
+[{
+    "file": "js/prefix.js",
+    "tag": ["core"]
+}, {
+    "file": "js/fquery.js",
+    "tag": ["core"]
+}, {
+    "file": "js/fqueryIE8.js",
+    "tag": ["compatibility"]
+}, {
+    "file": "changeDetector.coffee",
+    "tag": ["core"]
+}, {
+    "file": "scope.coffee",
+    "tag": ["core"]
+}, {
+    "file": "watchText.coffee",
+    "tag": ["core"]
+}, {
+    "file": "binding.coffee",
+    "tag": ["core"]
+}, {
+    "file": "utils.coffee",
+    "tag": ["core"]
+}, {
+    "file": "parser/parseExpression.coffee",
+    "tag": ["core"]
+}, {
+    "file": "parser/parseText.coffee",
+    "tag": ["core"]
+}, {
+    "file": "compile.coffee",
+    "tag": ["core"]
+}, {
+    "file": "fastBinding.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "event.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "directive/click.coffee",
+    "tag": ["compatibility"]
+}, {
+    "file": "directive/value.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "directive/checked.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "directive/if.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "directive/repeat.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "directive/init.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "directive/class.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "directive/src.coffee",
+    "tag": ["compatibility"]
+}, {
+    "file": "directive/text.coffee",
+    "tag": ["compatibility"]
+}, {
+    "file": "directive/app.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "directive/bindonce.coffee",
+    "tag": ["full"]
+}, {
+    "file": "directive/stop.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "directive/include.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "directive/cloak.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "directive/enable.coffee",
+    "tag": ["compatibility"]
+}, {
+    "file": "directive/focused.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "directive/readonly.coffee",
+    "tag": ["compatibility"]
+}, {
+    "file": "directive/submit.coffee",
+    "tag": ["compatibility"]
+}, {
+    "file": "directive/event.coffee",
+    "tag": ["compatibility"]
+}, {
+    "file": "directive/html.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "directive/htmlbyid.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "directive/radio.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "directive/showHide.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "directive/style.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "directive/select.coffee",
+    "tag": ["full"]
+}, {
+    "file": "directive/ctrl.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "directive/attr.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "filter/slice.coffee",
+    "tag": ["full"]
+}, {
+    "file": "filter/date.coffee",
+    "tag": ["full"]
+}, {
+    "file": "filter/json.coffee",
+    "tag": ["full"]
+}, {
+    "file": "filter/filter.coffee",
+    "tag": ["full"]
+}, {
+    "file": "filter/orderby.coffee",
+    "tag": ["full"]
+}, {
+    "file": "filter/throttle.coffee",
+    "tag": ["full"]
+}, {
+    "file": "filter/toarray.coffee",
+    "tag": ["full"]
+}, {
+    "file": "filter/storeto.coffee",
+    "tag": ["full"]
+}, {
+    "file": "text/bindOnce.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "text/oneTimeBinding.coffee",
+    "tag": ["basis"]
+}, {
+    "file": "text/textWatch.coffee",
+    "tag": ["full"]
+}, {
+    "file": "js/postfix.js",
+    "tag": ["core"]
+}]
