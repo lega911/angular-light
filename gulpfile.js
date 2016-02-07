@@ -25,18 +25,18 @@ gulp.task('config_basis', [], function(){
 });
 
 gulp.task('config_full', [], function(){
-    resultFile = 'alight.js';
+    resultFile = 'alight_full.js';
     resultTag = ['core', 'basis', 'full'];
 });
 
 gulp.task('config_compatibility', [], function(){
-    resultFile = 'alight_compatibility.js';
+    resultFile = 'alight.js';
     resultTag = ['core', 'basis', 'full', 'compatibility'];
 });
 
-gulp.task('default', ['config_full', 'prepare', 'compress'], function(){});
+gulp.task('full', ['config_full', 'prepare', 'compress'], function(){});
 gulp.task('basis', ['config_basis', 'prepare', 'compress'], function(){});
-gulp.task('compat', ['config_compatibility', 'prepare', 'compress'], function(){});
+gulp.task('default', ['config_compatibility', 'prepare', 'compress'], function(){});
 gulp.task('core', ['config_core', 'prepare', 'compress'], function(){});
 
 gulp.task('prepare', [], function(){
@@ -61,7 +61,6 @@ gulp.task('prepare', [], function(){
         else name = './tmp/' + name
         resultList.push(name);
     }
-    console.log(resultList);
 });
 
 gulp.task('clean', function () {

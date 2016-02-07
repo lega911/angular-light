@@ -99,10 +99,10 @@
     "tag": ["basis"]
 }, {
     "file": "directive/htmlbyid.coffee",
-    "tag": ["basis"]
+    "tag": ["full"]
 }, {
     "file": "directive/radio.coffee",
-    "tag": ["basis"]
+    "tag": ["full"]
 }, {
     "file": "directive/showHide.coffee",
     "tag": ["basis"]
