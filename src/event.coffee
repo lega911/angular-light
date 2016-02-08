@@ -13,8 +13,60 @@ do ->
             @.attrArgument = d[1]
             return
 
+    ###
+    eventModifier
+        = 'keydown blur'
+        = ['keydown', 'blur']
+        =
+            event: string or list
+            fn: (event, env) ->
+    ###
+
+    alight.hooks.eventModifier = {}
+
+    setKeyModifier = (name, key) ->
+        alight.hooks.eventModifier[name] =
+            event: ['keydown', 'keypress', 'keyup']
+            fn: (event, env) ->
+                if not event[key]
+                    env.stop = true
+                return
+
+    setKeyModifier 'alt', 'altKey'
+    setKeyModifier 'control', 'ctrlKey'
+    setKeyModifier 'meta', 'metaKey'
+    setKeyModifier 'shift', 'shiftKey'
+
+    formatModifier = (modifier, filterByEvents) ->
+        result = {}
+        if typeof(modifier) is 'string'
+            result.event = modifier
+        else if modifier.event
+            result.event = modifier.event
+
+        if typeof(result.event) is 'string'
+            result.event = result.event.split /\s+/
+
+        if filterByEvents
+            if not result.event or not result.event.length
+                return null
+
+            inuse = false
+            for e in result.event
+                if filterByEvents.indexOf(e) >= 0
+                    inuse = true
+                    break
+            if not inuse
+                return null
+
+        if f$.isFunction modifier
+            result.fn = modifier
+        else if modifier.fn
+            result.fn = modifier.fn
+
+        result
+
     alight.d.al.on =
-        alias: {}
         priority: 10
         init: (scope, element, expression, env) ->
             if not env.attrArgument
@@ -35,37 +87,27 @@ do ->
         left: 37
         right: 39
 
-    keyModifiers =
-        alt: (event) -> event.altKey
-        control: (event) -> event.ctrlKey
-        meta: (event) -> event.metaKey
-        shift: (event) -> event.shiftKey
-
     makeEvent = (attrArgument, option) ->
         option = option or {}
         args = attrArgument.split '.'
         eventName = args[0]
+        eventList = null
         stop = option.stop or false
         prevent = option.prevent or false
-        filtered = false
         scan = true
-        eventList = null
-        eventCondition = null
+        modifiers = []
+        filterByKey = null
 
-        alias = alight.d.al.on.alias[eventName]
-        if alias
-            if typeof(alias) is 'string'
-                eventList = alias.split /\s+/
-            else if Array.isArray alias
-                eventList = alias
-            else
-                eventList = alias.event
-            if typeof(eventList) is 'string'
-                eventList = eventList.split /\s+/
-            eventCondition = alias.condition
+        modifier = alight.hooks.eventModifier[eventName]
+        if modifier
+            modifier = formatModifier modifier
+            if modifier.event
+                eventList = modifier.event
+                if modifier.fn
+                    modifiers.push modifier
+        if not eventList
+            eventList = [eventName]
 
-        filter = {}
-        filterExt = []
         for k in args.slice(1)
             if k is 'stop'
                 stop = true
@@ -82,17 +124,23 @@ do ->
             if k is 'noscan'
                 scan = false
                 continue
-            if not option.filtered
+
+            modifier = alight.hooks.eventModifier[k]
+            if modifier
+                modifier = formatModifier modifier, eventList
+                if modifier
+                    modifiers.push modifier
                 continue
 
-            filtered = true
-            if keyModifiers[k]
-                filterExt.push k
+            if not option.filterByKey
                 continue
+
+            if filterByKey is null
+                filterByKey = {}
 
             if keyCodes[k]
                 k = keyCodes[k]
-            filter[k] = true
+            filterByKey[k] = true
 
         (scope, element, expression, env) ->
             fn = scope.$compile expression,
@@ -100,16 +148,17 @@ do ->
                 input: ['$event']
 
             handler = (event) ->
-                if filtered
-                    if not filter[event.keyCode]
+                if filterByKey
+                    if not filterByKey[event.keyCode]
                         return
-                    if filterExt.length
-                        for extraKey in filterExt
-                            if not keyModifiers[extraKey](event)
-                                return
-                if eventCondition
-                    if not eventCondition scope, event
-                        return
+
+                if modifiers.length
+                    env =
+                        stop: false
+                    for modifier in modifiers
+                        modifier.fn event, env
+                        if env.stop
+                            return
 
                 if prevent
                     event.preventDefault()
@@ -128,17 +177,11 @@ do ->
                     scope.$scan()
                 return
 
-            if eventList
-                for e in eventList
-                    element.addEventListener e, handler
-            else
-                element.addEventListener eventName, handler
+            for e in eventList
+                element.addEventListener e, handler
             scope.$watch '$destroy', ->
-                if eventList
-                    for e in eventList
-                        element.removeEventListener e, handler
-                else
-                    element.removeEventListener eventName, handler
+                for e in eventList
+                    element.removeEventListener e, handler
             return
 
     directiveOption =
@@ -152,8 +195,8 @@ do ->
             stop: true
             prevent: true
         keyup:
-            filtered: true
+            filterByKey: true
         keypress:
-            filtered: true
+            filterByKey: true
         keydown:
-            filtered: true
+            filterByKey: true
