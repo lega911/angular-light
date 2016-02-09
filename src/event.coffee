@@ -143,7 +143,7 @@ do ->
         (scope, element, expression, env) ->
             fn = scope.$compile expression,
                 no_return: true
-                input: ['$event']
+                input: ['$event', '$element']
 
             handler = (event) ->
                 if filterByKey
@@ -163,7 +163,7 @@ do ->
                 if stop
                     event.stopPropagation()
                 try
-                    fn scope, event
+                    fn scope, event, element
                 catch error
                     alight.exceptionHandler error, "Error in event: #{attrArgument} = #{expression}",
                         attr: attrArgument

@@ -75,7 +75,7 @@
     "tag": ["basis"]
 }, {
     "file": "directive/include.coffee",
-    "tag": ["basis"]
+    "tag": ["compatibility"]
 }, {
     "file": "directive/cloak.coffee",
     "tag": ["basis"]
