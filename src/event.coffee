@@ -41,23 +41,21 @@ do ->
         result = {}
         if typeof(modifier) is 'string'
             result.event = modifier
-        else if modifier.event
+        else if typeof(modifier) is 'object' and modifier.event
             result.event = modifier.event
 
         if typeof(result.event) is 'string'
             result.event = result.event.split /\s+/
 
         if filterByEvents
-            if not result.event or not result.event.length
-                return null
-
-            inuse = false
-            for e in result.event
-                if filterByEvents.indexOf(e) >= 0
-                    inuse = true
-                    break
-            if not inuse
-                return null
+            if result.event
+                inuse = false
+                for e in result.event
+                    if filterByEvents.indexOf(e) >= 0
+                        inuse = true
+                        break
+                if not inuse
+                    return null
 
         if f$.isFunction modifier
             result.fn = modifier
