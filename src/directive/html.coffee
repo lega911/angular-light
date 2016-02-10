@@ -10,16 +10,16 @@
 alight.d.al.html =
     priority: 100
     stopBinding: true
+    modifier: {}
     link: (scope, element, inputName, env) ->
-        childCD = null
-        baseElement = null
-        topElement = null
-        activeElement = null
         self =
+            baseElement: null
+            topElement: null
+            activeElement: null
+            childCD: null
+
             name: inputName
-            updateDom: null
             watchMode: null  # model, literal, tpl
-            #outerName: null
             start: ->
                 self.parsing()
                 self.prepare()
@@ -28,67 +28,50 @@ alight.d.al.html =
             parsing: ->
                 self.updateDom = self.updateByHtml  # default
                 if env.attrArgument
-                    for k in env.attrArgument.split '.'
-                        switch k
-                            when 'id' then self.updateDom = self.updateById
-                            when 'url' then self.updateDom = self.updateByUrl
-                            when 'literal' then self.watchMode = 'literal'
-                            when 'tpl' then self.watchMode = 'tpl'
-                #d = self.name.match /^(.+)[^\:]\:\s*(\w+)$/
-                #if d
-                #    self.name = d[1]
-                #    self.outerName = d[2]
+                    for modifierName in env.attrArgument.split '.'
+                        if modifierName is 'literal'
+                            self.watchMode = 'literal'
+                            continue
+                        if modifierName is 'tpl'
+                            self.watchMode = 'tpl'
+                            continue
+                        if not alight.d.al.html.modifier[modifierName]
+                            continue
+                        alight.d.al.html.modifier[modifierName] self,
+                            scope: scope
+                            element: element
+                            inputName: inputName
+                            env: env
                 return
             prepare: ->
-                baseElement = element
-                topElement = document.createComment " #{env.attrName}: #{inputName} "
-                f$.before element, topElement
+                self.baseElement = element
+                self.topElement = document.createComment " #{env.attrName}: #{inputName} "
+                f$.before element, self.topElement
                 f$.remove element
                 return
             loadHtml: (cfg) ->
                 f$.ajax cfg
                 return
             removeBlock: ->
-                if childCD
-                    childCD.destroy()
-                    childCD = null
-                if activeElement
-                    self.removeDom activeElement
-                    activeElement = null
+                if self.childCD
+                    self.childCD.destroy()
+                    self.childCD = null
+                if self.activeElement
+                    self.removeDom self.activeElement
+                    self.activeElement = null
                 return
             insertBlock: (html) ->
-                activeElement = baseElement.cloneNode false
-                activeElement.innerHTML = html
-                self.insertDom topElement, activeElement
-                childCD = env.changeDetector.new()
-                alight.bind childCD, activeElement,
+                self.activeElement = self.baseElement.cloneNode false
+                self.activeElement.innerHTML = html
+                self.insertDom self.topElement, self.activeElement
+                self.childCD = env.changeDetector.new()
+                alight.bind self.childCD, self.activeElement,
                     skip_attr: env.skippedAttr()
                 return
-            updateByHtml: (html) ->
+            updateDom: (html) ->
                 self.removeBlock()
                 if html
                     self.insertBlock html
-                return
-            updateById: (id) ->
-                self.removeBlock()
-                tpl = document.getElementById id
-                if tpl
-                    html = tpl.innerHTML
-                    if html
-                        self.insertBlock html
-                return
-            updateByUrl: (url) ->
-                if not url
-                    self.removeBlock()
-                    return
-                self.loadHtml
-                    cache: true
-                    url: url
-                    success: (html) ->
-                        self.removeBlock()
-                        self.insertBlock html
-                        return
-                    error: self.removeBlock
                 return
             removeDom: (element) ->
                 f$.remove element
@@ -104,3 +87,30 @@ alight.d.al.html =
                 else
                     scope.$watch self.name, self.updateDom
                 return
+
+
+alight.d.al.html.modifier.id = (self) ->
+    self.updateDom = (id) ->
+        self.removeBlock()
+        tpl = document.getElementById id
+        if tpl
+            html = tpl.innerHTML
+            if html
+                self.insertBlock html
+        return
+
+
+alight.d.al.html.modifier.url = (self) ->
+    self.updateDom = (url) ->
+        if not url
+            self.removeBlock()
+            return
+        self.loadHtml
+            cache: true
+            url: url
+            success: (html) ->
+                self.removeBlock()
+                self.insertBlock html
+                return
+            error: self.removeBlock
+        return

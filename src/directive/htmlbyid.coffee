@@ -1,58 +1,38 @@
 
-alight.d.al.htmlById =
-    priority: 100
-    stopBinding: true
-    link: (parentScope, element, name, env) ->
-        parentCD = env.changeDetector
-        childCD = null
-        outerName = null
+alight.d.al.html.modifier.scope = (self, option) ->
+    d = self.name.match /(.+)\:\s*\:\:(\w+)$/
+    if d
+        oneTime = true
+    else
+        oneTime = false
+        d = self.name.match /(.+)\:\s*(\w+)$/
+        if not d
+            throw 'Wrong expression ' + self.name
+    self.name = d[1]
+    outerName = d[2]
+    innerName = 'outer'
 
-        j = name.indexOf ':'
-        if j > 0
-            outerName = name.slice(j+1).trim()
-            name = name.slice 0, j
+    self.insertBlock = (html) ->
+        self.activeElement = self.baseElement.cloneNode false
+        self.activeElement.innerHTML = html
+        self.insertDom self.topElement, self.activeElement
 
-        setter = (templateId) ->
-            if childCD
-                childCD.destroy()
-                childCD = null
-            if not templateId
-                element.innerHTML = ''
-                return
+        # transparent scope
+        parentScope = option.scope
+        ChildScope = ->
+        ChildScope:: = parentScope
 
-            templateElement = document.getElementById templateId
-            if not templateElement
-                element.innerHTML = ''
-                return
-            element.innerHTML = templateElement.innerHTML
-            innerName = templateElement.getAttribute('name') or templateId
+        scope = new ChildScope
+        scope.$$root = parentScope.$$root or parentScope
+        scope.$rootChangeDetector = self.childCD = option.env.changeDetector.new scope
+        scope.$changeDetector = null
+        scope.$parent = parentScope
 
-            if outerName
-                # transparent scope
-                ChildScope = ->
-                ChildScope:: = parentScope
+        self.childCD.watch '$parent.' + outerName, (outerValue) ->
+            scope[innerName] = outerValue
+        ,
+            oneTime: oneTime
 
-                scope = new ChildScope
-                scope.$$root = parentScope.$$root or parentScope
-                scope.$rootChangeDetector = childCD = parentCD.new scope
-                scope.$changeDetector = null
-                scope.$parent = parentScope
-
-                if outerName.slice(0, 2) is '::'
-                    oneTime = true
-                    outerName = outerName.slice 2
-
-                childCD.watch '$parent.' + outerName, (outerValue) ->
-                    scope[innerName] = outerValue
-                ,
-                    oneTime: oneTime
-            else
-                # no scope
-                childCD = parentCD.new()
-
-            alight.bind childCD, element,
-                skip_attr: env.skippedAttr()
-            return
-
-        parentCD.watch name, setter
+        alight.bind self.childCD, self.activeElement,
+            skip_attr: option.env.skippedAttr()
         return
