@@ -143,7 +143,17 @@ do ->
         (scope, element, expression, env) ->
             fn = scope.$compile expression,
                 no_return: true
-                input: ['$event', '$element']
+                input: ['$event', '$element', '$value']
+
+            if element.type is 'checkbox'
+                getValue = ->
+                    element.checked
+            else if element.type is 'radio'
+                getValue = ->
+                    element.value or element.checked
+            else
+                getValue = ->
+                    element.value
 
             handler = (event) ->
                 if filterByKey
@@ -163,7 +173,7 @@ do ->
                 if stop
                     event.stopPropagation()
                 try
-                    fn scope, event, element
+                    fn scope, event, element, getValue()
                 catch error
                     alight.exceptionHandler error, "Error in event: #{attrArgument} = #{expression}",
                         attr: attrArgument
