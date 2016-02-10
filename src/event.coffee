@@ -95,6 +95,10 @@ do ->
         scan = true
         modifiers = []
         filterByKey = null
+        throttle = null
+        throttleId = null
+        debounce = null
+        debounceTime = 0
 
         modifier = alight.hooks.eventModifier[eventName]
         if modifier
@@ -121,6 +125,12 @@ do ->
                 continue
             if k is 'noscan'
                 scan = false
+                continue
+            if k.substring(0, 8) is 'throttle'
+                throttle = Number k.substring 8
+                continue
+            if k.substring(0, 8) is 'debounce'
+                debounce = Number k.substring 8
                 continue
 
             modifier = alight.hooks.eventModifier[k]
@@ -155,19 +165,7 @@ do ->
                 getValue = ->
                     element.value
 
-            handler = (event) ->
-                if filterByKey
-                    if not filterByKey[event.keyCode]
-                        return
-
-                if modifiers.length
-                    env =
-                        stop: false
-                    for modifier in modifiers
-                        modifier.fn event, env
-                        if env.stop
-                            return
-
+            execute = (event) ->
                 if prevent
                     event.preventDefault()
                 if stop
@@ -183,6 +181,34 @@ do ->
                         event: event
                 if scan
                     scope.$scan()
+                return
+
+            handler = (event) ->
+                if filterByKey
+                    if not filterByKey[event.keyCode]
+                        return
+
+                if modifiers.length
+                    env =
+                        stop: false
+                    for modifier in modifiers
+                        modifier.fn event, env
+                        if env.stop
+                            return
+
+                if throttle
+                    if throttleId
+                        clearTimeout throttleId
+                    throttleId = setTimeout ->
+                        throttleId = null
+                        execute event
+                    , throttle
+                else if debounce
+                    if debounceTime < Date.now()
+                        debounceTime = Date.now() + debounce
+                        execute event
+                else
+                    execute event
                 return
 
             for e in eventList
