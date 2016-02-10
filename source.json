@@ -95,11 +95,27 @@
     "file": "directive/event.coffee",
     "tag": ["compatibility"]
 }, {
-    "file": "directive/html.coffee",
-    "tag": ["basis"]
+    "file": "html/base.coffee",
+    "tag": ["basis"],
+    "description": "al-html (:html) directive"
+}, {
+    "file": "html/id.coffee",
+    "tag": ["basis"],
+    "require": "html/base.coffee",
+    "description": "modificator 'id' for al-html"
+}, {
+    "file": "html/url.coffee",
+    "tag": ["basis"],
+    "require": "html/base.coffee",
+    "description": "modificator 'url' for al-html"
+}, {
+    "file": "html/scope.coffee",
+    "tag": ["basis"],
+    "require": "html/base.coffee",
+    "description": "modificator 'scope' for al-html"
 }, {
     "file": "directive/htmlbyid.coffee",
-    "tag": ["full"]
+    "tag": ["ext"]
 }, {
     "file": "directive/radio.coffee",
     "tag": ["full"]

@@ -87,30 +87,3 @@ alight.d.al.html =
                 else
                     scope.$watch self.name, self.updateDom
                 return
-
-
-alight.d.al.html.modifier.id = (self) ->
-    self.updateDom = (id) ->
-        self.removeBlock()
-        tpl = document.getElementById id
-        if tpl
-            html = tpl.innerHTML
-            if html
-                self.insertBlock html
-        return
-
-
-alight.d.al.html.modifier.url = (self) ->
-    self.updateDom = (url) ->
-        if not url
-            self.removeBlock()
-            return
-        self.loadHtml
-            cache: true
-            url: url
-            success: (html) ->
-                self.removeBlock()
-                self.insertBlock html
-                return
-            error: self.removeBlock
-        return
