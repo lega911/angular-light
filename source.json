@@ -122,10 +122,10 @@
     "tag": ["full"]
 }, {
     "file": "directive/showHide.coffee",
-    "tag": ["basis"]
+    "tag": ["compatibility"]
 }, {
     "file": "directive/style.coffee",
-    "tag": ["basis"]
+    "tag": ["compatibility"]
 }, {
     "file": "directive/select.coffee",
     "tag": ["full"]

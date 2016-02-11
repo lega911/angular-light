@@ -126,11 +126,11 @@ do ->
             if k is 'noscan'
                 scan = false
                 continue
-            if k.substring(0, 8) is 'throttle'
-                throttle = Number k.substring 8
+            if k.substring(0, 9) is 'throttle-'
+                throttle = Number k.substring 9
                 continue
-            if k.substring(0, 8) is 'debounce'
-                debounce = Number k.substring 8
+            if k.substring(0, 9) is 'debounce-'
+                debounce = Number k.substring 9
                 continue
 
             modifier = alight.hooks.eventModifier[k]
