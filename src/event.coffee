@@ -2,9 +2,9 @@ do ->
     alight.hooks.attribute.unshift
         code: 'events'
         fn: ->
-            d = @.attrName.match /^\@([\w\.]+)$/
+            d = @.attrName.match /^\@([\w\.\-]+)$/
             if not d
-                d = @.attrName.match /^\(([\w\.]+)\)$/
+                d = @.attrName.match /^\(([\w\.\-]+)\)$/
                 if not d
                     return
 
