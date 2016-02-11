@@ -132,7 +132,7 @@
 
     // append classes
     (function(){
-        var css = '@charset "UTF-8";[al-cloak],.al-hide{display:none !important;}';
+        var css = '@charset "UTF-8";[al-cloak],[hidden],.al-hide{display:none !important;}';
         var head = document.querySelectorAll('head')[0];
 
         var s = document.createElement('style');

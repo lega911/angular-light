@@ -5,7 +5,7 @@ do ->
     alight.hooks.attribute.unshift
         code: 'attribute'
         fn: ->
-            d = @.attrName.match /^\:([\w\.]+)$/
+            d = @.attrName.match /^\:([\w\.\-]+)$/
             if not d
                 return
 
@@ -26,6 +26,7 @@ do ->
         selected: 'selected'
         muted: 'muted'
         disabled: 'disabled'
+        hidden: 'hidden'
 
     alight.d.al.attr = (scope, element, key, env) ->
         if not env.attrArgument
@@ -35,17 +36,27 @@ do ->
         prop = props[attrName]
         isTemplate = d.indexOf('tpl') > 0
 
-        setter = (value) ->
-            if prop
-                if value is undefined
-                    value = null
-                if element[prop] isnt value
-                    element[prop] = value
-            else
-                if value?
-                    element.setAttribute attrName, value
+        if attrName is 'style'
+            if not d[1]
+                throw 'Need to define a style attribute'
+            styleName = d[1].replace /(-\w)/g, (m) ->
+                m.substring(1).toUpperCase()
+            setter = (value) ->
+                if not value?
+                    value = ''
+                element.style[styleName] = value
+        else
+            setter = (value) ->
+                if prop
+                    if value is undefined
+                        value = null
+                    if element[prop] isnt value
+                        element[prop] = value
                 else
-                    element.removeAttribute attrName
+                    if value?
+                        element.setAttribute attrName, value
+                    else
+                        element.removeAttribute attrName
 
         if isTemplate
             scope.$watchText key, setter

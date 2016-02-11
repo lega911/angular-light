@@ -51,7 +51,8 @@
     "tag": ["basis"]
 }, {
     "file": "directive/repeat.coffee",
-    "tag": ["basis"]
+    "tag": ["basis"],
+    "require": "fastBinding.coffee"
 }, {
     "file": "directive/init.coffee",
     "tag": ["basis"]
