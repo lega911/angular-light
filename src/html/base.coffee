@@ -26,7 +26,6 @@ alight.d.al.html =
                 self.watchModel()
                 return
             parsing: ->
-                self.updateDom = self.updateByHtml  # default
                 if env.attrArgument
                     for modifierName in env.attrArgument.split '.'
                         if modifierName is 'literal'

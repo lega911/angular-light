@@ -115,6 +115,11 @@
     "require": "html/base.coffee",
     "description": "modificator 'scope' for al-html"
 }, {
+    "file": "html/inline.coffee",
+    "tag": ["basis"],
+    "require": "html/base.coffee",
+    "description": "modificator 'inline' for al-html"
+}, {
     "file": "directive/htmlbyid.coffee",
     "tag": ["ext"]
 }, {
