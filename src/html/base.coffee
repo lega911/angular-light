@@ -48,9 +48,6 @@ alight.d.al.html =
                 f$.before element, self.topElement
                 f$.remove element
                 return
-            loadHtml: (cfg) ->
-                f$.ajax cfg
-                return
             removeBlock: ->
                 if self.childCD
                     self.childCD.destroy()

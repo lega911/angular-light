@@ -1,5 +1,8 @@
 
 alight.d.al.html.modifier.url = (self) ->
+    self.loadHtml = (cfg) ->
+        f$.ajax cfg
+        return
     self.updateDom = (url) ->
         if not url
             self.removeBlock()
