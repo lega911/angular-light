@@ -9,7 +9,8 @@
             utils: {},
             d: {
                 al: {},
-                bo: {}
+                bo: {},
+                $global: {}
             },
             hooks: {
                 directive: [],

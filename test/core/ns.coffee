@@ -76,3 +76,39 @@ Test('ns-1', 'ns-1').run ($test, alight) ->
 
     $test.equal ttGetText(tag), 'title:title'
     $test.close()
+
+
+Test('$global-0').run ($test, alight) ->
+    $test.start 2
+
+    el = ttDOM """
+        <div>
+            <top>
+                top={{value0}}
+                <middle>
+                    <inner>inner={{value1}}</inner>
+                </middle>
+            </top>
+        </div>
+    """
+
+    result = ''
+
+    alight.d.$global.top =
+        restrict: 'E'
+        init: (scope, element) ->
+            scope.value0 = 'TOP'
+            result += 'top'
+
+    alight.d.$global.inner =
+        restrict: 'E'
+        init: (scope, element) ->
+            scope.value1 = 'INNER'
+            result += 'inner'
+
+    alight.bootstrap el
+
+    $test.equal result, 'topinner'
+    $test.equal ttGetText(el), 'top=TOP inner=INNER'
+
+    $test.close()

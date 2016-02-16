@@ -26,13 +26,13 @@ do ->
                 return
 
             parts = @.attrName.match /^(\w+)[\-\:](.+)$/
-            if not parts
-                @.result = 'noNS'
-                @.stop = true
-                return
+            if parts
+                @.ns = parts[1]
+                name = parts[2]
+            else
+                @.ns = '$global'
+                name = @.attrName
 
-            @.ns = parts[1]
-            name = parts[2]
             parts = name.match /^([^\:]+)\:(.*)$/
             if parts
                 name = parts[1]
@@ -55,7 +55,10 @@ do ->
                     @.directive = path[@.name]
                     if not @.directive
                         if not $ns.inheritGlobal
-                            @.result = 'noDirective'
+                            if @.ns is '$global'
+                                @.result = 'noNS'
+                            else
+                                @.result = 'noDirective'
                             @.stop = true
                             return
                 else
@@ -78,7 +81,10 @@ do ->
 
             @.directive = path[@.name]
             if not @.directive
-                @.result = 'noDirective'
+                if @.ns is '$global'
+                    @.result = 'noNS'
+                else
+                    @.result = 'noDirective'
                 @.stop = true
             return
 
