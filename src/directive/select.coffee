@@ -134,8 +134,6 @@ do ->
             return
 
         mapper = select.mapper
-        select.change()
-
         id = null
         cd.watch key, (item) ->
             if id
@@ -143,11 +141,13 @@ do ->
                     mapper.release id
                     id = mapper.acquire item
                     element.value = id
+                    select.change()
                 else
                     mapper.replace id, item
             else
                 id = mapper.acquire item
                 element.value = id
+                select.change()
             return
 
         cd.watch '$destroy', ->
