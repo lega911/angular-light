@@ -84,22 +84,31 @@ do ->
         cd = env.changeDetector.new()  # child CD
         env.stopBinding = true
 
-        cd.$select = mapper = new Mapper
+        cd.$select =
+            mapper: mapper = new Mapper
 
-        alight.bind cd, element,
-            skip_attr: env.skippedAttr()
+        # child-options were changed
+        lastValue = null
+        cd.$select.change = ->
+            setValueOfElement lastValue
 
-        watch = cd.watch key, (value) ->
+        setValueOfElement = (value) ->
             id = mapper.getId value
             if id
                 element.value = id
             else
                 element.selectedIndex = -1
-        cd.scan()
+
+        watch = cd.watch key, (value) ->
+            lastValue = value
+            setValueOfElement value
+
+        alight.bind cd, element,
+            skip_attr: env.skippedAttr()
 
         onChangeDOM = (event) ->
-            item = mapper.getItem event.target.value
-            cd.setValue key, item
+            lastValue = mapper.getItem event.target.value
+            cd.setValue key, lastValue
             cd.scan
                 skipWatch: watch
 
@@ -112,17 +121,20 @@ do ->
     alight.d.al.option = (scope, element, key, env) ->
         cd = step = env.changeDetector
         for i in [0..4]
-            mapper = step.$select
-            if mapper
+            select = step.$select
+            if select
                 break
             step = step.parent or {}
-        if not mapper
+        if not select
             alight.exceptionHandler '', 'Error in al-option - al-select is not found',
                 cd: cd
                 scope: cd.scope
                 element: element
                 value: key
             return
+
+        mapper = select.mapper
+        select.change()
 
         id = null
         cd.watch key, (item) ->
@@ -140,4 +152,5 @@ do ->
 
         cd.watch '$destroy', ->
             mapper.release id
+            select.change()
         return
