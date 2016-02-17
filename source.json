@@ -38,6 +38,10 @@
     "file": "event.coffee",
     "tag": ["basis"]
 }, {
+    "file": "a2style.coffee",
+    "tag": ["ext"],
+    "description": "Angular 2 style for attributes and events"
+}, {
     "file": "directive/click.coffee",
     "tag": ["compatibility"]
 }, {

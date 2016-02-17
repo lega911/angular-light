@@ -4,9 +4,7 @@ do ->
         fn: ->
             d = @.attrName.match /^\@([\w\.\-]+)$/
             if not d
-                d = @.attrName.match /^\(([\w\.\-]+)\)$/
-                if not d
-                    return
+                return
 
             @.ns = 'al'
             @.name = 'on'
