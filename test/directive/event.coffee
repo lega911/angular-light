@@ -3,7 +3,7 @@ Test('event-0').run ($test, alight, timeout) ->
     $test.start 2
 
     el = ttDOM '''
-        <div id="click" al-on:click="onClick($event)"></div>
+        <div id="click" al-on.click="onClick($event)"></div>
     '''
 
     count = 0
@@ -25,7 +25,7 @@ Test('event-1').run ($test, alight, timeout) ->
     $test.start 10
 
     el = ttDOM '''
-        <input id="input" al-on:keydown.13="onEnter($event)"  al-on:keydown="onKey($event)" />
+        <input id="input" al-on.keydown.13="onEnter($event)"  al-on.keydown="onKey($event)" />
     '''
 
     enterCount = 0

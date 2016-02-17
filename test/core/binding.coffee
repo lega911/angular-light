@@ -407,7 +407,7 @@ Test('attr-argument-0').run ($test, alight) ->
         $test.equal env.attrArgument, null
 
     el = ttDOM '''
-            <div al-test:one.two="exp">
+            <div al-test.one.two="exp">
                 <div al-test2="123">
                 </div>
             </div>

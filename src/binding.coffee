@@ -33,7 +33,7 @@ do ->
                 @.ns = '$global'
                 name = @.attrName
 
-            parts = name.match /^([^\:]+)\:(.*)$/
+            parts = name.match /^([^\.]+)\.(.*)$/
             if parts
                 name = parts[1]
                 @.attrArgument = parts[2]
