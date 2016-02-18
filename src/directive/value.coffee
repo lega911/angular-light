@@ -1,7 +1,7 @@
 
 alight.d.al.value =
     priority: 20
-    init: (scope, element, variable) ->
+    link: (scope, element, variable) ->
         self =
             onDom: ->
                 f$.on element, 'input', self.updateModel

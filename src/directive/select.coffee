@@ -82,7 +82,7 @@ do ->
 
     alight.d.al.select =
         priority: 20
-        init: (scope, element, key, env) ->
+        link: (scope, element, key, env) ->
             cd = env.changeDetector.new()  # child CD
             env.stopBinding = true
 
