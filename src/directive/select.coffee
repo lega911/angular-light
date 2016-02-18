@@ -80,43 +80,45 @@ do ->
             @.itemById[id] or null
 
 
-    alight.d.al.select = (scope, element, key, env) ->
-        cd = env.changeDetector.new()  # child CD
-        env.stopBinding = true
+    alight.d.al.select =
+        priority: 20
+        init: (scope, element, key, env) ->
+            cd = env.changeDetector.new()  # child CD
+            env.stopBinding = true
 
-        cd.$select =
-            mapper: mapper = new Mapper
+            cd.$select =
+                mapper: mapper = new Mapper
 
-        # child-options were changed
-        lastValue = null
-        cd.$select.change = ->
-            setValueOfElement lastValue
+            # child-options were changed
+            lastValue = null
+            cd.$select.change = ->
+                setValueOfElement lastValue
 
-        setValueOfElement = (value) ->
-            id = mapper.getId value
-            if id
-                element.value = id
-            else
-                element.selectedIndex = -1
+            setValueOfElement = (value) ->
+                id = mapper.getId value
+                if id
+                    element.value = id
+                else
+                    element.selectedIndex = -1
 
-        watch = cd.watch key, (value) ->
-            lastValue = value
-            setValueOfElement value
+            watch = cd.watch key, (value) ->
+                lastValue = value
+                setValueOfElement value
 
-        alight.bind cd, element,
-            skip_attr: env.skippedAttr()
+            onChangeDOM = (event) ->
+                lastValue = mapper.getItem event.target.value
+                cd.setValue key, lastValue
+                cd.scan
+                    skipWatch: watch
 
-        onChangeDOM = (event) ->
-            lastValue = mapper.getItem event.target.value
-            cd.setValue key, lastValue
-            cd.scan
-                skipWatch: watch
+            f$.on element, 'input', onChangeDOM
+            f$.on element, 'change', onChangeDOM
+            cd.watch '$destroy', ->
+                f$.off element, 'input', onChangeDOM
+                f$.off element, 'change', onChangeDOM
 
-        f$.on element, 'input', onChangeDOM
-        f$.on element, 'change', onChangeDOM
-        cd.watch '$destroy', ->
-            f$.off element, 'input', onChangeDOM
-            f$.off element, 'change', onChangeDOM
+            alight.bind cd, element,
+                skip_attr: env.skippedAttr()
 
     alight.d.al.option = (scope, element, key, env) ->
         cd = step = env.changeDetector

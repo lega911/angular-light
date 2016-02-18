@@ -1,6 +1,6 @@
 
 alight.d.al.checked =
-    priority: 100
+    priority: 20
     link: (scope, element, name) ->
         self =
             start: ->

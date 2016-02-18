@@ -1,6 +1,6 @@
 
 alight.d.al.radio =
-    priority: 10
+    priority: 20
     link: (scope, element, name, env) ->
         self =
             start: ->
