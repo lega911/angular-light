@@ -51,6 +51,7 @@ alight.d.al.ctrl =
                     childScope = alight.Scope
                         $parent: scope
                         customScope: new Controller
+                        childFromChangeDetector: env.changeDetector
                 else
                     childScope = alight.Scope
                         $parent: scope

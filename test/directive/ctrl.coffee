@@ -112,3 +112,40 @@ Test('al-app-1').run ($test, alight) ->
     alight.bootstrap el.childNodes[0]
 
     $test.close()
+
+
+Test('al-ctrl-2').run ($test, alight) ->
+    $test.start 3
+
+    el = ttDOM """
+        root={{value}}
+        <div al-ctrl="mainCtrl">
+            child={{value}}
+        </div>
+    """
+
+    scope = alight.Scope()
+    scope.value = 'ROOT'
+    child = null
+
+    alight.ctrl.mainCtrl = class
+        constructor: ->
+            @.value = 'CHILD'
+            child = @
+        method: ->
+
+    alight.bind scope, el
+
+    $test.equal ttGetText(el), 'root=ROOT child=CHILD'
+
+    scope.value = 'top'
+    child.value = 'bot'
+    scope.$scan()
+    $test.equal ttGetText(el), 'root=top child=bot'
+
+    scope.value = 'up'
+    child.value = 'down'
+    child.$scan()
+    $test.equal ttGetText(el), 'root=up child=down'
+
+    $test.close()
