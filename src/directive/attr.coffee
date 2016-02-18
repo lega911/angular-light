@@ -45,6 +45,12 @@ do ->
                 if not value?
                     value = ''
                 element.style[styleName] = value
+        else if attrName is 'focus'
+            setter = (value) ->
+                if value
+                    element.focus()
+                else
+                    element.blur()
         else
             setter = (value) ->
                 if prop
@@ -59,6 +65,8 @@ do ->
                         element.removeAttribute attrName
 
         if isTemplate
-            scope.$watchText key, setter
+            scope.$watchText key, setter,
+                readOnly: true
         else
-            scope.$watch key, setter
+            scope.$watch key, setter,
+                readOnly: true
