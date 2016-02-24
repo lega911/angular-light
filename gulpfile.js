@@ -75,10 +75,11 @@ gulp.task('compile_coffeescript', ['clean'], function() {
     .pipe(gulp.dest('tmp'))
 });
 
-gulp.task('compile_typescript', function () {
-    return gulp.src('./src/**/*.ts')
+
+gulp.task('compile_typescript', function() {
+    return gulp.src('./src/**/*.es.js')
         .pipe(typescript({
-            noImplicitAny: true
+            allowJs: true
         }))
         .pipe(gulp.dest('tmp'))
 });
