@@ -298,7 +298,7 @@ ChangeDetector::watch = (name, callback, option) ->
         isStatic: isStatic
         isArray: Boolean option.isArray
         extraLoop: not option.readOnly
-        deep: option.deep
+        deep: if option.deep is true then 10 else option.deep
         value: watchInitValue
         callback: callback
         exp: exp
@@ -408,9 +408,9 @@ scanCore = (topCD, result) ->
                         else
                             w.value = value
                 else if w.deep
-                    if not alight.utils.equal last, value
+                    if not alight.utils.equal last, value, w.deep
                         mutated = true
-                        w.value = alight.utils.clone value
+                        w.value = alight.utils.clone value, w.deep
                 else
                     mutated = true
                     w.value = value

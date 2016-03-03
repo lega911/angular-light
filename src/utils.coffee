@@ -17,7 +17,10 @@ alight.utils.getId = do ->
         return prefix + '#' + index++
 
 
-alight.utils.clone = clone = (d) ->
+alight.utils.clone = clone = (d, lvl=128) ->
+    if lvl < 1
+        return null
+
     # null, undefined
     if not d
         return d
@@ -26,7 +29,7 @@ alight.utils.clone = clone = (d) ->
         # Array
         if d instanceof Array
             r = for i in d
-                clone i
+                clone i, lvl-1
             return r
 
         # Date
@@ -42,12 +45,15 @@ alight.utils.clone = clone = (d) ->
         for k, v of d
             if k[0] is '$'  # specific attribute
                 continue
-            r[k] = clone v
+            r[k] = clone v, lvl-1
         return r
     return d
 
 
-alight.utils.equal = equal = (a, b) ->
+alight.utils.equal = equal = (a, b, lvl=128) ->
+    if lvl < 1
+        return true
+
     # null, undefined
     if not a or not b
         return a is b
@@ -62,7 +68,7 @@ alight.utils.equal = equal = (a, b) ->
             if a.length isnt b.length
                 return false
             for v, i in a
-                if not equal(v, b[i])
+                if not equal(v, b[i], lvl-1)
                     return false
             return true
 
@@ -80,7 +86,7 @@ alight.utils.equal = equal = (a, b) ->
             if k[0] is '$'
                 continue
             set[k] = true
-            if not equal v, b[k]
+            if not equal v, b[k], lvl-1
                 return false
 
         for k, v of b
@@ -88,7 +94,7 @@ alight.utils.equal = equal = (a, b) ->
                 continue
             if set[k]
                 continue
-            if not equal v, a[k]
+            if not equal v, a[k], lvl-1
                 return false
         return true
 
