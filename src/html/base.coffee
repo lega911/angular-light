@@ -8,6 +8,7 @@
 ###
 
 alight.d.al.html =
+    restrict: 'AM'
     priority: 100
     stopBinding: true
     modifier: {}
@@ -43,10 +44,14 @@ alight.d.al.html =
                             env: env
                 return
             prepare: ->
-                self.baseElement = element
-                self.topElement = document.createComment " #{env.attrName}: #{inputName} "
-                f$.before element, self.topElement
-                f$.remove element
+                if element.nodeType is 8
+                    self.baseElement = document.createElement 'div'
+                    self.topElement = element
+                else
+                    self.baseElement = element
+                    self.topElement = document.createComment " #{env.attrName}: #{inputName} "
+                    f$.before element, self.topElement
+                    f$.remove element
                 return
             removeBlock: ->
                 if self.childCD
