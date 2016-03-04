@@ -45,7 +45,7 @@ alight.d.al.html =
                 return
             prepare: ->
                 if element.nodeType is 8
-                    self.baseElement = document.createElement 'div'
+                    self.baseElement = null
                     self.topElement = element
                 else
                     self.baseElement = element
@@ -58,16 +58,34 @@ alight.d.al.html =
                     self.childCD.destroy()
                     self.childCD = null
                 if self.activeElement
-                    self.removeDom self.activeElement
+                    if Array.isArray self.activeElement
+                        for el in self.activeElement
+                            self.removeDom el
+                    else
+                        self.removeDom self.activeElement
                     self.activeElement = null
                 return
             insertBlock: (html) ->
-                self.activeElement = self.baseElement.cloneNode false
-                self.activeElement.innerHTML = html
-                self.insertDom self.topElement, self.activeElement
-                self.childCD = env.changeDetector.new()
-                alight.bind self.childCD, self.activeElement,
-                    skip_attr: env.skippedAttr()
+                if self.baseElement
+                    self.activeElement = self.baseElement.cloneNode false
+                    self.activeElement.innerHTML = html
+                    self.insertDom self.topElement, self.activeElement
+                    self.childCD = env.changeDetector.new()
+                    alight.bind self.childCD, self.activeElement,
+                        skip_attr: env.skippedAttr()
+                else
+                    t = document.createElement 'body'
+                    t.innerHTML = html
+                    current = self.topElement
+                    self.activeElement = []
+                    self.childCD = env.changeDetector.new()
+                    while el=t.firstChild
+                        self.insertDom current, el
+                        current = el
+                        self.activeElement.push el
+
+                        alight.bind self.childCD, current,
+                            skip_attr: env.skippedAttr()
                 return
             updateDom: (html) ->
                 self.removeBlock()
