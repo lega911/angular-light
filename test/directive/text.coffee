@@ -361,6 +361,7 @@ Test('oneTime binding #4', 'one-time-binding-4').run ($test, alight) ->
 
 
 Test('text-dir-no-watch-0').run ($test, alight) ->
+    alight.debug.domOptimization = false
     $test.start 13
 
     el = ttDOM '<div> a-{{#dir text}}-b-{{value}}</div>'
@@ -523,6 +524,7 @@ Test('text-dir-no-watch-3').run ($test, alight) ->
 
 
 Test('text-dir-no-watch-4').run ($test, alight) ->
+    alight.debug.domOptimization = false
     $test.start 5
 
     el = ttDOM '<div> a-{{#dir text}}-{{value}}-b</div>'

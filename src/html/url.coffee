@@ -1,5 +1,6 @@
 
 alight.d.al.html.modifier.url = (self) ->
+    self.domOptimization = alight.debug.domOptimization
     self.loadHtml = (cfg) ->
         f$.ajax cfg
         return
