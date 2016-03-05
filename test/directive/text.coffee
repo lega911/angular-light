@@ -198,7 +198,7 @@ Test('onetime-binding-2', 'onetime-binding-2').run ($test, alight, timeout) ->
 
     steps = [
         ->
-            $test.equal scope.$scan().total, 8
+            $test.equal scope.$scan().total, 6
             $test.equal result(), 'a-b-c!::a-b-c!'
             scope.a = 3
             ->
@@ -309,14 +309,14 @@ Test('text-directive-finally').run ($test, alight) ->
 
     $test.equal dom.text(), 'Text init'
 
-    $test.equal scope.$scan().total, 1
+    $test.equal scope.$scan().total, 0
 
     env.setter 'two'
     scope.$scan
         late: true
         callback: ->
             $test.equal scanCount, 2
-            $test.equal anyCount, 1
+            $test.equal anyCount, 0
             $test.equal dom.text(), 'Text two'
 
             env.setter 'three'
@@ -324,13 +324,13 @@ Test('text-directive-finally').run ($test, alight) ->
                 late: true
                 callback: ->
                     $test.equal scanCount, 3
-                    $test.equal anyCount, 2
+                    $test.equal anyCount, 0
                     $test.equal dom.text(), 'Text three'
 
                     env.finally 'four'
                     setTimeout ->
                         $test.equal scanCount, 3
-                        $test.equal anyCount, 2
+                        $test.equal anyCount, 0
                         $test.equal dom.text(), 'Text three'
 
                         scope.$scan
@@ -357,4 +357,140 @@ Test('oneTime binding #4', 'one-time-binding-4').run ($test, alight) ->
 
     $test.equal value, 'Hello world!'
     $test.equal scope.$scan().total, 0
+    $test.close()
+
+
+Test('text-dir-no-watch-0').run ($test, alight) ->
+    $test.start 13
+
+    el = ttDOM '<div> a-{{#dir text}}-b-{{value}}</div>'
+
+    setter = null
+    finallyFn = null
+    alight.text.dir = (callback, expression, scope, env) ->
+        setter = callback
+        finallyFn = env.finally
+
+        setter 'first'
+
+    scope = alight.Scope()
+    scope.value = 'watch'
+    alight.bind scope, el
+
+    r = scope.$scan()
+
+    $test.equal ttGetText(el), 'a-first-b-watch'
+    $test.equal r.total, 1
+
+    setter 'second'
+    $test.equal ttGetText(el), 'a-first-b-watch'
+    $test.equal r.total, 1
+
+    r = scope.$scan()
+    $test.equal ttGetText(el), 'a-second-b-watch'
+    $test.equal r.total, 1
+
+    # finally
+    finallyFn 'third'
+    $test.equal ttGetText(el), 'a-second-b-watch'
+    $test.equal r.total, 1
+
+    r = scope.$scan()
+    $test.equal ttGetText(el), 'a-third-b-watch'
+    $test.equal r.total, 1  # last time call for watch
+
+    r = scope.$scan()
+    $test.equal r.total, 1
+
+    # test
+    setter 'four'
+    r = scope.$scan()
+    $test.equal ttGetText(el), 'a-third-b-watch'
+    $test.equal r.total, 1
+
+    $test.close()
+
+
+Test('text-dir-no-watch-1').run ($test, alight) ->
+    $test.start 13
+
+    el = ttDOM '<div> a-{{#dir text}}-b</div>'
+
+    setter = null
+    finallyFn = null
+    alight.text.dir = (callback, expression, scope, env) ->
+        setter = callback
+        finallyFn = env.finally
+
+        setter 'first'
+
+    scope = alight.Scope()
+    alight.bind scope, el
+
+    r = scope.$scan()
+
+    $test.equal ttGetText(el), 'a-first-b'
+    $test.equal r.total, 0
+
+    setter 'second'
+    $test.equal ttGetText(el), 'a-first-b'
+    $test.equal r.total, 0
+
+    r = scope.$scan()
+    $test.equal ttGetText(el), 'a-second-b'
+    $test.equal r.total, 0
+
+    # finally
+    finallyFn 'third'
+    $test.equal ttGetText(el), 'a-second-b'
+    $test.equal r.total, 0
+
+    r = scope.$scan()
+    $test.equal ttGetText(el), 'a-third-b'
+    $test.equal r.total, 0  # last time call for watch
+
+    r = scope.$scan()
+    $test.equal r.total, 0
+
+    # test
+    setter 'four'
+    r = scope.$scan()
+    $test.equal ttGetText(el), 'a-third-b'
+    $test.equal r.total, 0
+
+    $test.close()
+
+
+Test('text-dir-no-watch-2').run ($test, alight) ->
+    $test.start 4
+
+    setter0 = null
+    setter1 = null
+    alight.text.dir0 = (callback, expression, scope, env) ->
+        setter0 = callback
+
+    alight.text.dir1 = (callback, expression, scope, env) ->
+        setter1 = callback
+
+    scope = alight.Scope()
+
+    count = 0
+    result = null
+    scope.$watchText 'a-{{#dir0}}-{{#dir1}}-b', (value) ->
+        result = value
+        count++
+
+    scope.$scan()
+
+    $test.equal result, 'a---b'
+    $test.equal count, 1
+
+    setter0 'first'
+    setter1 'second'
+    setter0 'third'
+
+    scope.$scan()
+    $test.equal result, 'a-third-second-b'
+    $test.equal count, 2
+
     $test.close()

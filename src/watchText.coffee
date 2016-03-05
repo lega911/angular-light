@@ -42,12 +42,18 @@ do ->
         env =
             changeDetector: cd
             setter: (value) ->
+                if not option.update
+                    return
+
                 if value == null
                     point.value = ''
                 else
                     point.value = '' + value
                 option.update()
             finally: (value) ->  # prebuild finally
+                if not option.finally
+                    return
+
                 if value == null
                     point.value = ''
                 else
@@ -55,10 +61,12 @@ do ->
                 point.type = 'text'
                 option.finally()
 
+                option.update = null
+                option.finally = null
+
         scope.$changeDetector = cd
         dir env.setter, option.exp, scope, env
         scope.$changeDetector = null
-
 
     watchText = (expression, callback, config) ->
         config = config or {}
@@ -114,7 +122,6 @@ do ->
                             doFinally()
                     noCache = true
                     if d.type isnt 'text'
-                        watchCount++
                         canUseSimpleBuilder = false
                 else
                     ce = alight.utils.compile.expression exp,
@@ -139,20 +146,20 @@ do ->
                                 d.value = value
                                 doUpdate()
 
-        if not watchCount
-            # static text
-            value = ''
-            for d in data
-                value += d.value
-            cd.watch '$onScanOnce', ->
-                execWatchObject cd.scope,
-                    callback: callback
-                    el: config.element
-                    ea: config.elementAttr
-                , value
-            return
-
         if canUseSimpleBuilder
+            if not watchCount
+                # static text
+                value = ''
+                for d in data
+                    value += d.value
+                cd.watch '$onScanOnce', ->
+                    execWatchObject cd.scope,
+                        callback: callback
+                        el: config.element
+                        ea: config.elementAttr
+                    , value
+                return
+
             if noCache
                 st = alight.utils.compile.buildSimpleText null, data
             else
@@ -164,30 +171,52 @@ do ->
                 elementAttr: config.elementAttr
             return
 
-        w = null
-        resultValue = ''
-        data.scope = cd.scope
-        fn = alight.utils.compile.buildText expression, data
-        doUpdate = ->
-            resultValue = fn()
-        doFinally = ->
-            i = true
-            for d in data
-                if d.type is 'expression'
-                    i = false
-                    break
-            if not i
-                return
-            cd.watch '$finishScanOnce', ->
-                w.stop()
-            if config.onStatic
-                config.onStatic()
-        privateValue = ->
-            resultValue
-        doUpdate()
-        w = cd.watch privateValue, callback,
-            element: config.element
-            elementAttr: config.elementAttr
+        if watchCount
+            w = null
+            resultValue = ''
+            data.scope = cd.scope
+            fn = alight.utils.compile.buildText expression, data
+            doUpdate = ->
+                resultValue = fn()
+            doFinally = ->
+                i = true
+                for d in data
+                    if d.type is 'expression'
+                        i = false
+                        break
+                if not i
+                    return
+                cd.watch '$finishScanOnce', ->
+                    w.stop()
+                if config.onStatic
+                    config.onStatic()
+            privateValue = ->
+                resultValue
+            doUpdate()
+            w = cd.watch privateValue, callback,
+                element: config.element
+                elementAttr: config.elementAttr
+        else
+            # clear text directive
+            data.scope = cd.scope
+            fn = alight.utils.compile.buildText expression, data
+
+            watchObject =
+                callback: callback
+                el: config.element
+                ea: config.elementAttr
+
+            updatePlanned = false
+            fireCallback = ->
+                updatePlanned = false
+                execWatchObject cd.scope, watchObject, fn()
+
+            doUpdate = ->
+                if updatePlanned
+                    return
+                updatePlanned = true
+                cd.watch '$onScanOnce', fireCallback
+            doUpdate()
         return
 
     ChangeDetector::watchText = watchText
