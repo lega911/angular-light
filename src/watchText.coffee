@@ -50,6 +50,15 @@ do ->
                 else
                     point.value = '' + value
                 option.update()
+            setterRaw: (value) ->
+                if not option.updateRaw
+                    return
+
+                if value == null
+                    point.value = ''
+                else
+                    point.value = '' + value
+                option.updateRaw()
             finally: (value) ->  # prebuild finally
                 if not option.finally
                     return
@@ -89,7 +98,7 @@ do ->
         canUseSimpleBuilder = true
         noCache = false
 
-        doUpdate = doFinally = ->
+        doUpdate = doUpdateRaw = doFinally = ->
 
         for d in data # { type list value }
             if d.type is 'expression'
@@ -117,6 +126,8 @@ do ->
                         point: d
                         update: ->
                             doUpdate()
+                        updateRaw: ->
+                            doUpdateRaw()
                         finally: ->
                             doUpdate()
                             doFinally()
@@ -171,11 +182,20 @@ do ->
                 elementAttr: config.elementAttr
             return
 
+        watchObject =
+            callback: callback
+            el: config.element
+            ea: config.elementAttr
+
+        data.scope = cd.scope
+        fn = alight.utils.compile.buildText expression, data
+
+        doUpdateRaw = ->
+            execWatchObject cd.scope, watchObject, fn()                
+
         if watchCount
             w = null
             resultValue = ''
-            data.scope = cd.scope
-            fn = alight.utils.compile.buildText expression, data
             doUpdate = ->
                 resultValue = fn()
             doFinally = ->
@@ -197,25 +217,18 @@ do ->
                 element: config.element
                 elementAttr: config.elementAttr
         else
-            # clear text directive
-            data.scope = cd.scope
-            fn = alight.utils.compile.buildText expression, data
-
-            watchObject =
-                callback: callback
-                el: config.element
-                ea: config.elementAttr
-
+            # pure text directive
             updatePlanned = false
             fireCallback = ->
                 updatePlanned = false
-                execWatchObject cd.scope, watchObject, fn()
+                doUpdateRaw()
 
             doUpdate = ->
                 if updatePlanned
                     return
                 updatePlanned = true
                 cd.watch '$onScanOnce', fireCallback
+
             doUpdate()
         return
 

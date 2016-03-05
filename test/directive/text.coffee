@@ -494,3 +494,60 @@ Test('text-dir-no-watch-2').run ($test, alight) ->
     $test.equal count, 2
 
     $test.close()
+
+
+Test('text-dir-no-watch-3').run ($test, alight) ->
+    $test.start 4
+
+    el = ttDOM '<div> a-{{#dir text}}-b</div>'
+
+    setter = null
+    alight.text.dir = (callback, expression, scope, env) ->
+        setter = env.setterRaw
+
+    scope = alight.Scope()
+    alight.bind scope, el
+
+    r = scope.$scan()
+    $test.equal r.total, 0
+
+    $test.equal ttGetText(el), 'a--b'
+
+    setter 'first'
+    $test.equal ttGetText(el), 'a-first-b'
+
+    setter 'second'
+    $test.equal ttGetText(el), 'a-second-b'
+
+    $test.close()
+
+
+Test('text-dir-no-watch-4').run ($test, alight) ->
+    $test.start 5
+
+    el = ttDOM '<div> a-{{#dir text}}-{{value}}-b</div>'
+
+    setter = null
+    alight.text.dir = (callback, expression, scope, env) ->
+        setter = env.setterRaw
+
+    scope = alight.Scope()
+    scope.value = 'watch'
+    alight.bind scope, el
+
+    r = scope.$scan()
+    $test.equal r.total, 1
+
+    $test.equal ttGetText(el), 'a--watch-b'
+
+    setter 'first'
+    $test.equal ttGetText(el), 'a-first-watch-b'
+
+    setter 'second'
+    $test.equal ttGetText(el), 'a-second-watch-b'
+
+    scope.value = 'new'
+    setter 'third'
+    $test.equal ttGetText(el), 'a-third-new-b'
+
+    $test.close()
