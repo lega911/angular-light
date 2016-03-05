@@ -107,6 +107,7 @@ do ->
                 exp = d.list.join ' | '
                 lname = exp.match /^([^\w\d\s\$"'\(\u0410-\u044F\u0401\u0451]+)/
                 if lname
+                    d.isDir = true
                     name = lname[1]
                     if name is '#'
                         i = exp.indexOf ' '
@@ -151,9 +152,10 @@ do ->
                     else
                         watchCount++
                         canUseSimpleBuilder = false
+                        d.watched = true
                         do (d) ->
                             cd.watch exp, (value) ->
-                                `if(value == null) value = ''`
+                                value ?= ''
                                 d.value = value
                                 doUpdate()
 
@@ -198,6 +200,7 @@ do ->
             resultValue = ''
             doUpdate = ->
                 resultValue = fn()
+                return
             doFinally = ->
                 i = true
                 for d in data
@@ -210,8 +213,20 @@ do ->
                     w.stop()
                 if config.onStatic
                     config.onStatic()
+                return
             privateValue = ->
                 resultValue
+            # watch for expressions
+            for d in data
+                if d.type is 'expression'
+                    if d.isDir or d.watched
+                        continue
+                    d.watched = true
+                    do (d, exp=d.list.join ' | ') ->
+                        cd.watch exp, (value) ->
+                            value ?= ''
+                            d.value = value
+                            doUpdate()
             doUpdate()
             w = cd.watch privateValue, callback,
                 element: config.element

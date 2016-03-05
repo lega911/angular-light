@@ -380,33 +380,33 @@ Test('text-dir-no-watch-0').run ($test, alight) ->
     r = scope.$scan()
 
     $test.equal ttGetText(el), 'a-first-b-watch'
-    $test.equal r.total, 1
+    $test.equal r.total, 2
 
     setter 'second'
     $test.equal ttGetText(el), 'a-first-b-watch'
-    $test.equal r.total, 1
+    $test.equal r.total, 2
 
     r = scope.$scan()
     $test.equal ttGetText(el), 'a-second-b-watch'
-    $test.equal r.total, 1
+    $test.equal r.total, 2
 
     # finally
     finallyFn 'third'
     $test.equal ttGetText(el), 'a-second-b-watch'
-    $test.equal r.total, 1
+    $test.equal r.total, 2
 
     r = scope.$scan()
     $test.equal ttGetText(el), 'a-third-b-watch'
-    $test.equal r.total, 1  # last time call for watch
+    $test.equal r.total, 2  # last time call for watch
 
     r = scope.$scan()
-    $test.equal r.total, 1
+    $test.equal r.total, 2
 
     # test
     setter 'four'
     r = scope.$scan()
     $test.equal ttGetText(el), 'a-third-b-watch'
-    $test.equal r.total, 1
+    $test.equal r.total, 2
 
     $test.close()
 
@@ -536,7 +536,7 @@ Test('text-dir-no-watch-4').run ($test, alight) ->
     alight.bind scope, el
 
     r = scope.$scan()
-    $test.equal r.total, 1
+    $test.equal r.total, 2
 
     $test.equal ttGetText(el), 'a--watch-b'
 
@@ -547,7 +547,7 @@ Test('text-dir-no-watch-4').run ($test, alight) ->
     $test.equal ttGetText(el), 'a-second-watch-b'
 
     scope.value = 'new'
-    setter 'third'
-    $test.equal ttGetText(el), 'a-third-new-b'
+    scope.$scan()
+    $test.equal ttGetText(el), 'a-second-new-b'
 
     $test.close()
