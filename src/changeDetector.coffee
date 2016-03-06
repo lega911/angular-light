@@ -331,6 +331,26 @@ ChangeDetector::watch = (name, callback, option) ->
     r
 
 
+ChangeDetector::watchGroup = (keys, callback) ->
+    cd = @
+    if not callback and f$.isFunction keys
+        callback = keys
+        keys = null
+
+    planned = false
+    group = ->
+        if planned
+            return
+        planned = true
+        cd.watch '$onScanOnce', ->
+            planned = false
+            callback()
+    if keys
+        for key in keys
+            cd.watch key, group
+    group
+
+
 get_time = do ->
     if window.performance
         return ->

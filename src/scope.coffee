@@ -37,21 +37,30 @@ Scope = ->
 
 alight.core.Scope = Scope
 
-Scope::$watch = (name, callback, option) ->
+getCDFromScope = (scope, name, option) ->
     if option and option.changeDetector
-        cd = option.changeDetector
+        return option.changeDetector
     else
-        cd = @.$changeDetector
-    if not cd and not @.$rootChangeDetector.children.length  # no child scopes
-        cd = @.$rootChangeDetector
+        cd = scope.$changeDetector
+    if not cd and not scope.$rootChangeDetector.children.length  # no child scopes
+        cd = scope.$rootChangeDetector
+    if cd
+        return cd
+    alight.exceptionHandler '', 'You can do $watch during binding only: ' + name,
+        name: name
+        option: option
+        scope: scope
+    return
+
+Scope::$watch = (name, callback, option) ->
+    cd = getCDFromScope @, name, option
     if cd
         return cd.watch name, callback, option
-    else
-        alight.exceptionHandler '', 'You can do $watch during binding only: ' + name,
-            name: name
-            option: option
-            scope: @
-    return
+
+Scope::$watchGroup = (keys, callback) ->
+    cd = getCDFromScope @, ''+keys
+    if cd
+        cd.watchGroup keys, callback
 
 Scope::$scan = (option) ->
     cd = @.$rootChangeDetector

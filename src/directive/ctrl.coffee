@@ -59,7 +59,9 @@ alight.d.al.ctrl =
 
                 try
                     if fn
+                        childScope.$changeDetector = childScope.$rootChangeDetector
                         fn.call childScope, childScope, element, name, env
+                        childScope.$changeDetector = null
                 catch e
                     error e, 'Error in controller: ' + name
                 alight.bind childScope, element,
