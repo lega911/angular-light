@@ -1,15 +1,20 @@
 
 alight.d.al.html.modifier.scope = (self, option) ->
-    d = self.name.match /(.+)\:\s*\:\:(\w+)$/
-    if d
-        oneTime = true
+    d = self.name.split ':'
+    if d.length is 2
+        self.name = d[0]
+        outerName = d[1]
     else
-        oneTime = false
-        d = self.name.match /(.+)\:\s*(\w+)$/
-        if not d
-            throw 'Wrong expression ' + self.name
-    self.name = d[1]
-    outerName = d[2]
+        d = self.name.match /(.+)\:\s*\:\:([\d\w]+)$/
+        if d
+            oneTime = true
+        else
+            oneTime = false
+            d = self.name.match /(.+)\:\s*([\.\w]+)$/
+            if not d
+                throw 'Wrong expression ' + self.name
+        self.name = d[1]
+        outerName = d[2]
     innerName = 'outer'
 
     self.insertBlock = (html) ->

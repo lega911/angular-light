@@ -74,6 +74,7 @@ Test('parsing', 'parsing').run ($test, alight) ->
     pars 'test = "string\\"x"', ['($$scope.$$root || $$scope).test = "string\\"x"']
     pars 'data?.user[k1](some?.data?[k2] + someKey)', ['(($$=$$scope.data,$$==null)?undefined:$$.user[$$scope.k1]((($$=$$scope.some,$$==null)?undefined:($$=$$.data,$$==null)?undefined:$$[$$scope.k2]) + $$scope.someKey))']
     pars 'data.user[some?.data?[kk] + someKey].key[kk]= suffix', ['$$scope.data.user[(($$=$$scope.some,$$==null)?undefined:($$=$$.data,$$==null)?undefined:$$[$$scope.kk]) + $$scope.someKey].key[$$scope.kk]= $$scope.suffix']
+    pars 'this.active=!active', ["$$scope.active=!$$scope.active"]
 
     $test.close()
 
