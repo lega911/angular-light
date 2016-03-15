@@ -351,8 +351,8 @@ Test('scan-skip-watch', 'scan-skip-watch').run ($test, alight) ->
     $test.equal count, 2
 
     cd.scope.name = 'debian'
-    cd.scan
-        skipWatch: w
+    w.refresh()
+    cd.scan()
     $test.equal count, 2
 
     cd.scan()

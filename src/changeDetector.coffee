@@ -7,33 +7,6 @@ alight.ChangeDetector = (scope) ->
     cd
 
 
-makeSkipWatchObject = ->
-    if f$.isFunction window.Map
-        map = new Map
-        set: (w) ->
-            map.set w, true
-            return
-        get: (w) ->
-            if not map.size
-                return false
-            map.get w
-        clear: ->
-            map.clear()
-            return
-    else
-        list = []
-        set: (w) ->
-            list.push w
-            return
-        get: (w) ->
-            if not list.length
-                return false
-            list.indexOf(w) >= 0
-        clear: ->
-            list.length = 0
-            return
-
-
 Root = () ->
     @.watchers =
         any: []
@@ -48,7 +21,6 @@ Root = () ->
     @.finishBinding_lock = false
     @.lateScan = false
     @.topCD = null
-    @.skippedWatches = makeSkipWatchObject()
 
     @
 
@@ -321,6 +293,14 @@ ChangeDetector::watch = (name, callback, option) ->
             removeItem cd.watchList, d
             if option.onStop
                 option.onStop()
+        refresh: ->
+            value = d.exp scope
+            if value and d.deep
+                d.value = alight.utils.clone value, d.deep
+            else if value and d.isArray
+                d.value = value.slice()
+            else
+                d.value = value
 
     if option.oneTime
         d.callback = (value) ->
@@ -446,12 +426,11 @@ scanCore = (topCD, result) ->
                         else
                             w.el.nodeValue = value
                     else
-                        if not root.skippedWatches.get w
-                            if last is watchInitValue
-                                last = undefined
-                            if w.callback.call(scope, value, last) isnt '$scanNoChanges'
-                                if w.extraLoop
-                                    extraLoop = true
+                        if last is watchInitValue
+                            last = undefined
+                        if w.callback.call(scope, value, last) isnt '$scanNoChanges'
+                            if w.extraLoop
+                                extraLoop = true
                 if alight.debug.scan > 1
                     console.log 'changed:', w.src
         queue.push.apply queue, cd.children
@@ -522,8 +501,6 @@ ChangeDetector::scan = (cfg) ->
             callback: cfg
     if cfg.callback
         root.watchers.finishScanOnce.push cfg.callback
-    if cfg.skipWatch
-        root.skippedWatches.set cfg.skipWatch.$
     if cfg.late
         if root.lateScan
             return
@@ -548,7 +525,6 @@ ChangeDetector::scan = (cfg) ->
             cb()
 
     root.status = null
-    root.skippedWatches.clear()
     for callback in root.watchers.finishScan
         callback()
 

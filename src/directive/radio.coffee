@@ -25,8 +25,8 @@ alight.d.al.radio =
                 return
             updateModel: ->
                 scope.$setValue name, self.value
-                scope.$scan
-                    skipWatch: self.watch
+                self.watch.refresh()
+                scope.$scan()
                 return
             watchModel: ->
                 self.watch = scope.$watch name, self.updateDom

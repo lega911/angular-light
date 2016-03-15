@@ -14,8 +14,8 @@ alight.d.al.value =
                 return
             updateModel: ->
                 scope.$setValue variable, element.value
-                scope.$scan
-                    skipWatch: self.watch
+                self.watch.refresh()
+                scope.$scan()
                 return
             watchModel: ->
                 self.watch = scope.$watch variable, self.updateDom

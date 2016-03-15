@@ -7,8 +7,8 @@ alight.d.al.focused =
                 if scope.$getValue(name) is value
                     return
                 scope.$setValue name, value
-                scope.$scan
-                    skipWatch: self.watch
+                self.watch.refresh()
+                scope.$scan()
                 return
 
             onDom: ->

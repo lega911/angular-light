@@ -17,8 +17,8 @@ alight.d.al.checked =
             updateModel: ->
                 value = element.checked
                 scope.$setValue name, value
-                scope.$scan
-                    skipWatch: self.watch
+                self.watch.refresh()
+                scope.$scan()
                 return
             watchModel: ->
                 self.watch = scope.$watch name, self.updateDom

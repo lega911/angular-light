@@ -108,8 +108,8 @@ do ->
             onChangeDOM = (event) ->
                 lastValue = mapper.getItem event.target.value
                 cd.setValue key, lastValue
-                cd.scan
-                    skipWatch: watch
+                watch.refresh()
+                cd.scan()
 
             f$.on element, 'input', onChangeDOM
             f$.on element, 'change', onChangeDOM
