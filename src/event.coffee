@@ -210,10 +210,10 @@ do ->
                 return
 
             for e in eventList
-                element.addEventListener e, handler
+                f$.on element, e, handler
             scope.$watch '$destroy', ->
                 for e in eventList
-                    element.removeEventListener e, handler
+                    f$.off element, e, handler
             return
 
     directiveOption =

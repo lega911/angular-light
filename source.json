@@ -8,6 +8,9 @@
     "file": "js/fqueryIE8.js",
     "tag": ["compatibility"]
 }, {
+    "file": "js/fqueryReady.js",
+    "tag": ["core"]
+}, {
     "file": "changeDetector.coffee",
     "tag": ["core"]
 }, {
