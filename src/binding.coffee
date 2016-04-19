@@ -126,6 +126,7 @@ do ->
                         if dscope.isDeferred
                             dscope.procLine = l[i+1..]
                             break
+                    dscope.async = true
                     null
 
                 dscope =
@@ -144,16 +145,21 @@ do ->
                         dscope.isDeferred = true
                         dscope.doBinding = true         # continue binding
                         dscope.retStopBinding = true    # stop binding for child elements
+                        dscope.async = false
 
                         ->
                             dscope.isDeferred = false
-                            doProcess()
+                            if dscope.async
+                                doProcess()
 
                 if directive.stopBinding
                     env.stopBinding = true
                 env.attrArgument = attrArgument
 
                 doProcess()
+
+                if dscope.retStopBinding
+                    return 'stopBinding'
                 return
             return
 
@@ -256,8 +262,6 @@ do ->
             if @.doBinding and not @.env.stopBinding
                 alight.bind @.cd, @.element,
                     skip_attr: @.env.skippedAttr()
-            if @.retStopBinding
-                @.env.stopBinding = true
             return
 
 
@@ -474,7 +478,8 @@ bindElement = do ->
                     if alight.debug.directive
                         console.log 'bind', d.attrName, value, d
                     try
-                        directive.$init cd, element, value, env
+                        if directive.$init(cd, element, value, env) is 'stopBinding'
+                            skipChildren = true
                     catch e
                         alight.exceptionHandler e, 'Error in directive: ' + d.attrName,
                             value: value

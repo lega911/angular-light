@@ -415,3 +415,38 @@ Test('attr-argument-0').run ($test, alight) ->
 
     alight.bootstrap el
     $test.close()
+
+
+Test('template-url-sync').run ($test, alight, timeout) ->
+    $test.start 2
+
+    # mock ajax
+    alight.f$.ajax = (cfg) ->
+        cfg.success "<p>X {{name}}</p>"
+        return
+
+    alight.hooks.directive.splice 3, 0,
+        code: 'delay'
+        fn: ->
+            if not this.directive.delay
+                return
+            callback = this.makeDeferred()
+            timeout.add this.directive.delay, callback
+
+    scope5 = scope3 = null
+
+    alight.directives.ut =
+        test3:
+            delay: 100
+            templateUrl: 'testDeferredProcess'
+            link: (scope, el, name) ->
+                scope.name = 'linux'
+
+    el = ttDOM '<span ut-test3="noop"></span>'
+
+    alight.bootstrap el
+
+    $test.equal ttGetText(el), 'X {{name}}'
+    timeout.add 200, ->
+        $test.equal ttGetText(el), 'X linux'
+        $test.close()
