@@ -16,8 +16,15 @@
 alight.directives.al.repeat =
     priority: 1000
     restrict: 'AM'
-    stopBinding: true
     init: (parentScope, element, exp, env) ->  # Change Detector
+        if env.elementCanBeRemoved
+            alight.exceptionHandler null, "#{env.attrName} can't control element because of #{env.elementCanBeRemoved}",
+                scope: parentScope
+                element: element
+                value: exp
+                env: env
+            return {}
+        env.stopBinding = true
         CD = parentScope.$changeDetector
         self =
             start: ->
@@ -372,6 +379,7 @@ alight.directives.al.repeat =
                             for it in applyList
                                 alight.bind it.cd, it.el,
                                     skip_attr: skippedAttrs
+                                    elementCanBeRemoved: env.attrName
                             return
                     else
                         # method update for a single element
@@ -495,6 +503,7 @@ alight.directives.al.repeat =
                                 else
                                     r = alight.bind it.cd, it.el,
                                         skip_attr: skippedAttrs
+                                        elementCanBeRemoved: env.attrName
                                     if r.directive is 0 and r.hook is 0
                                         fastBinding = new alight.core.fastBinding self.base_element
                             return

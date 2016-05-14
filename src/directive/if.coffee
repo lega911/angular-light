@@ -1,8 +1,15 @@
 
 alight.d.al.if =
     priority: 700
-    stopBinding: true
     link: (scope, element, name, env) ->
+        if env.elementCanBeRemoved
+            alight.exceptionHandler null, "#{env.attrName} can't control element because of #{env.elementCanBeRemoved}",
+                scope: scope
+                element: element
+                value: name
+                env: env
+            return {}
+        env.stopBinding = true
         self =
             item: null
             childCD: null
@@ -40,7 +47,8 @@ alight.d.al.if =
                 self.childCD = env.changeDetector.new()
 
                 alight.bind self.childCD, self.item,
-                    skip_attr: env.skippedAttr()    
+                    skip_attr: env.skippedAttr()
+                    elementCanBeRemoved: env.attrName
                 return
             watchModel: ->
                 scope.$watch name, self.updateDom
@@ -55,7 +63,6 @@ alight.d.al.if =
 
 alight.d.al.ifnot =
     priority: 700
-    stopBinding: true
     link: (scope, element, name, env) ->
         self = alight.d.al.if.link scope, element, name, env
         self.updateDom = (value) ->

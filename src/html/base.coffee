@@ -10,9 +10,16 @@
 alight.d.al.html =
     restrict: 'AM'
     priority: 100
-    stopBinding: true
     modifier: {}
     link: (scope, element, inputName, env) ->
+        if env.elementCanBeRemoved and element.nodeType isnt 8
+            alight.exceptionHandler null, "#{env.attrName} can't control element because of #{env.elementCanBeRemoved}",
+                scope: scope
+                element: element
+                value: inputName
+                env: env
+            return {}
+        env.stopBinding = true
         self =
             baseElement: null
             topElement: null
@@ -76,6 +83,7 @@ alight.d.al.html =
                     self.childCD = env.changeDetector.new()
                     alight.bind self.childCD, self.activeElement,
                         skip_attr: env.skippedAttr()
+                        elementCanBeRemoved: env.attrName
                 else
                     t = document.createElement 'body'
                     t.innerHTML = html
@@ -92,6 +100,7 @@ alight.d.al.html =
 
                         alight.bind self.childCD, current,
                             skip_attr: env.skippedAttr()
+                            elementCanBeRemoved: env.attrName
                 return
             updateDom: (html) ->
                 self.removeBlock()

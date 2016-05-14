@@ -475,6 +475,7 @@ bindElement = do ->
                         takeAttr: takeAttr
                         skippedAttr: skippedAttr
                         stopBinding: false
+                        elementCanBeRemoved: config.elementCanBeRemoved
                     if alight.debug.directive
                         console.log 'bind', d.attrName, value, d
                     try

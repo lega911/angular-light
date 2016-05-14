@@ -1,8 +1,15 @@
 
 alight.d.al.include =
     priority: 100
-    stopBinding: true
     link: (scope, element, name, env) ->
+        if env.elementCanBeRemoved
+            alight.exceptionHandler null, "#{env.attrName} can't control element because of #{env.elementCanBeRemoved}",
+                scope: scope
+                element: element
+                value: name
+                env: env
+            return {}
+        env.stopBinding = true
         child = null
         baseElement = null
         topElement = null
@@ -36,6 +43,7 @@ alight.d.al.include =
                 child = env.changeDetector.new()
                 alight.bind child, activeElement,
                     skip_attr: env.skippedAttr()
+                    elementCanBeRemoved: env.attrName
                 return
             updateDom: (url) ->
                 if not url

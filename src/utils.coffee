@@ -102,6 +102,13 @@ alight.utils.equal = equal = (a, b, lvl=128) ->
 
 
 alight.exceptionHandler = (e, title, locals) ->
-    console.warn title + '\n', (e.message || '') + '\n', locals
-    err = if typeof(e) is 'string' then e else e.stack
-    console.error err
+    output = []
+    if title
+        output.push title
+    if e and e.message
+        output.push e.message
+    if locals
+        output.push locals
+    if e
+        output.push if e.stack then e.stack else e
+    console.error.apply console, output
