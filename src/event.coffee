@@ -32,6 +32,7 @@ do ->
 
     setKeyModifier 'alt', 'altKey'
     setKeyModifier 'control', 'ctrlKey'
+    setKeyModifier 'ctrl', 'ctrlKey'
     setKeyModifier 'meta', 'metaKey'
     setKeyModifier 'shift', 'shiftKey'
 
@@ -59,6 +60,9 @@ do ->
             result.fn = modifier
         else if modifier.fn
             result.fn = modifier.fn
+
+        if modifier.init
+            result.init = modifier.init
 
         result
 
@@ -97,6 +101,7 @@ do ->
         throttleId = null
         debounce = null
         debounceTime = 0
+        initFn = null
 
         modifier = alight.hooks.eventModifier[eventName]
         if modifier
@@ -105,6 +110,8 @@ do ->
                 eventList = modifier.event
                 if modifier.fn
                     modifiers.push modifier
+                if modifier.init
+                    initFn = modifier.init
         if not eventList
             eventList = [eventName]
 
@@ -211,6 +218,8 @@ do ->
 
             for e in eventList
                 f$.on element, e, handler
+            if initFn
+                initFn scope, element, expression, env
             scope.$watch '$destroy', ->
                 for e in eventList
                     f$.off element, e, handler
