@@ -261,7 +261,7 @@ ChangeDetector::watch = (name, callback, option) ->
             ce = alight.utils.compile.expression(name)
             if ce.filters
                 return makeFilterChain cd, ce, callback, option
-            isStatic = ce.isSimple and ce.simpleVariables.length is 0 and not option.isArray
+            isStatic = ce.isSimple and ce.simpleVariables.length is 0
             exp = ce.fn
 
     if option.deep

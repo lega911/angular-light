@@ -52,7 +52,7 @@ Test('fast-binding 0', 'fast-binding-0').run ($test, alight) ->
 
 
 Test('fast-binding-1').run ($test, alight) ->
-    $test.start 2
+    $test.start 3
 
     el = ttDOM """
         <div al-repeat="it in list">
@@ -89,6 +89,12 @@ Test('fast-binding-1').run ($test, alight) ->
         value: 3
     scope.$scan()
     $test.equal ttGetText(el), 'a-l b-10 c-10 d-l e-ll ' + 'a-x b-6 c-6 d-x e-xx ' + 'a-d b-22 c-22 d-d e-dd'
+
+    scope.list.push
+        name: 'y'
+        value: 9
+    scope.$scan()
+    $test.equal ttGetText(el), 'a-l b-10 c-10 d-l e-ll ' + 'a-x b-6 c-6 d-x e-xx ' + 'a-d b-22 c-22 d-d e-dd ' + 'a-y b-18 c-18 d-y e-yy'
 
     $test.close()
 

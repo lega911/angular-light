@@ -124,5 +124,4 @@ fastBinding::wt = (expression, element, attr) ->
     @.currentCD.watchText expression, null,
         element: element
         elementAttr: attr
-    @.currentCD.scan()  # require extra-loop
     return
