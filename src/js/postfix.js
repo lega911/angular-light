@@ -4,8 +4,10 @@
 
 	var alight = buildAlight();
 	alight.makeInstance = buildAlight;
-	// requrejs/commonjs
-	if(typeof(define) === 'function') {
+
+	if(typeof(alightInitCallback) === 'function') {
+		alightInitCallback(alight)
+	} else if(typeof(define) === 'function') {  // requrejs/commonjs
 		define(function() {
 			return alight;
 		});
