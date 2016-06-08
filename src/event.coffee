@@ -171,10 +171,6 @@ do ->
                     element.value
 
             execute = (event) ->
-                if prevent
-                    event.preventDefault()
-                if stop
-                    event.stopPropagation()
                 try
                     fn scope, event, element, getValue()
                 catch error
@@ -200,6 +196,11 @@ do ->
                         modifier.fn event, env
                         if env.stop
                             return
+
+                if prevent
+                    event.preventDefault()
+                if stop
+                    event.stopPropagation()
 
                 if throttle
                     if throttleId
