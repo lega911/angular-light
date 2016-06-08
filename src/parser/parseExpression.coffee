@@ -132,7 +132,7 @@ do ->
                         index = line.length + 1
                         continue
 
-                    if (assignmentOperator[sign] or sign[0] is '=') and sign[1] isnt '='
+                    if assignmentOperator[sign] or (sign[0] is '=' and sign[1] isnt '=')
                         leftVariable.assignment = true
                     result.push
                         type: 'sign'
