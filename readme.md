@@ -7,6 +7,7 @@ Visit [angularlight.org](http://angularlight.org/)
 
 ### Download / Install
 * ```bower install alight```
+* ```npm install alight```
 * [Download any version here](https://github.com/lega911/alight/releases)
 
 ### Example 0
@@ -28,8 +29,7 @@ Visit [angularlight.org](http://angularlight.org/)
 ```
 
 ``` js
-alight.bootstrap({
-    $el: '#app',
+alight.bootstrap('#app', {
     data: {
         name: 'Some text'
     },
@@ -56,4 +56,4 @@ Sources of 0.7.15 and older ones there: https://bitbucket.org/lega911
 ### License
 [MIT](http://opensource.org/licenses/MIT)
 
-Copyright (c) 2013 - 2015 Oleg Nechaev <lega911@gmail.com>
+Copyright (c) 2013 - 2016 Oleg Nechaev <lega911@gmail.com>
