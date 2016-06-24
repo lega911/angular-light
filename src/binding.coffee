@@ -302,6 +302,14 @@ testDirective = do ->
             return
 
         if attrSelf.result is 'noDirective'
+            if args.attr_type is 'E'
+                args.list.push
+                    name: attrName
+                    priority: 0
+                    attrName: attrName
+                    noDirective: true
+                return
+
             addAttr attrName, args,
                 noDirective: true
             return

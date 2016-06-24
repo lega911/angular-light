@@ -41,11 +41,21 @@ alight.createComponent('rating', (scope, element, env) => {
   }
 
   alight.createComponent = function(attrName, constructor) {
-    let name = attrName.replace(/(-\w)/g, (m) => {
+    let parts = attrName.match(/^(\w+)[\-](.+)$/)
+    let ns, name;
+    if(parts) {
+      ns = parts[1]
+      name = parts[2]
+    } else {
+      ns = '$global'
+      name = attrName
+    }
+    name = name.replace(/(-\w)/g, (m) => {
         return m.substring(1).toUpperCase()
     })
-    
-    alight.d.$global[name] = {
+
+    if(!alight.d[ns]) alight.d[ns] = {};
+    alight.d[ns][name] = {
       restrict: 'E',
       stopBinding: true,
       priority: 5,

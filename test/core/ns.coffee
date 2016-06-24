@@ -112,3 +112,56 @@ Test('$global-0').run ($test, alight) ->
     $test.equal ttGetText(el), 'top=TOP inner=INNER'
 
     $test.close()
+
+
+Test('$global-1').run ($test, alight) ->
+    $test.start 1
+
+    el = ttDOM """
+        <aa-div>{{name}}</aa-div>
+    """
+
+    alight.bootstrap el,
+        name: 'linux'
+
+    $test.equal ttGetText(el), 'linux'
+
+    $test.close()
+
+
+Test('$global-2').run ($test, alight) ->
+    $test.start 1
+
+    el = ttDOM """
+        <aa-div>{{name}}</aa-div>
+    """
+
+    alight.d.aa = {}
+
+    try
+        alight.bootstrap el,
+            name: 'linux'
+    catch e
+        $test.equal e, 'Directive not found: aa-div'
+
+    $test.close()
+
+
+Test('$global-3').run ($test, alight) ->
+    $test.start 1
+
+    el = ttDOM """
+        <aa-div>{{name}}</aa-div>
+    """
+
+    alight.d.aa =
+        restrict: 'E'
+        init: (scope, element) ->
+            scope.name = 'Ubuntu'
+
+    try
+        alight.bootstrap el
+    catch e
+        $test.equal e, 'Directive not found: aa-div'
+
+    $test.close()
