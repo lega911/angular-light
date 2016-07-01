@@ -192,7 +192,8 @@ Test 'al-repeat-child-cd-0'
         ]
 
         alight.d.al.test = (scope) ->
-            scope.$setValue 'it.name', scope.it.name + '_rc'
+            it = scope.$getValue 'it'
+            it.name += '_rc'
 
         alight.bind scope, el
 

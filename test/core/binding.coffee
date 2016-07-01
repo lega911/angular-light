@@ -257,9 +257,10 @@ Test 'binding-order-0'
                 order.push 'p1'
 
         alight.d.al.child = (scope) ->
-            order.push 'c0-' + scope.$index
+            $index = scope.$getValue '$index'
+            order.push 'c0-' + $index
             scope.$watch '$finishBinding', ->
-                order.push 'c1-' + scope.$index
+                order.push 'c1-' + $index
 
         scope = alight.bootstrap el,
             list: [{}, {}]

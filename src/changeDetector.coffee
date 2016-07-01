@@ -37,6 +37,7 @@ Root::destroy = ->
 
 ChangeDetector = (root, scope) ->
     @.scope = scope
+    @.locals = scope
     @.root = root
     @.watchList = []
     @.destroy_callbacks = []
@@ -51,10 +52,20 @@ ChangeDetector = (root, scope) ->
     @
 
 
-ChangeDetector::new = (scope) ->
+ChangeDetector::new = (scope, option) ->
+    option = option or {}
     parent = @
-    cd = new ChangeDetector parent.root, scope or parent.scope
+    scope ?= parent.scope
+    cd = new ChangeDetector parent.root, scope
     cd.parent = parent
+    if option.locals and scope is parent.scope
+        Locals = parent._ChildLocals
+        if not Locals
+            parent._ChildLocals = Locals = ->
+                @.$$root = scope
+                @
+            Locals:: = parent.locals
+        cd.locals = new Locals()
     parent.children.push cd
 
     cd
@@ -397,6 +408,7 @@ scanCore = (topCD, result) ->
     cd = topCD
     while cd
         scope = result.scope = cd.scope
+        locals = cd.locals
 
         # default watchers
         total += cd.watchList.length
@@ -404,7 +416,7 @@ scanCore = (topCD, result) ->
             result.src = w.src
             result.element = w.el
             last = w.value
-            value = w.exp scope
+            value = w.exp locals
             if last isnt value
                 mutated = false
                 if w.isArray
@@ -594,7 +606,7 @@ ChangeDetector::setValue = (name, value) ->
 
 ChangeDetector::eval = (exp) ->
     fn = @.compile exp
-    fn @.scope
+    fn @.locals
 
 ChangeDetector::getValue = (name) ->
     @.eval name

@@ -101,7 +101,7 @@ fastBinding::fw = (text, fnIndex, element, attr) ->
     self = @
     cd = self.currentCD
     fn = self.fastWatchFn[fnIndex]
-    value = fn cd.scope
+    value = fn cd.locals
     
     w =
         isStatic: false

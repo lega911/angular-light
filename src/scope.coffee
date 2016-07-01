@@ -72,11 +72,11 @@ Scope::$setValue = (name, value) ->
     return
 
 Scope::$getValue = (name) ->
-    cd = @.$rootChangeDetector
+    cd = @.$changeDetector or @.$rootChangeDetector
     cd.getValue name
 
 Scope::$eval = (exp) ->
-    cd = @.$rootChangeDetector
+    cd = @.$changeDetector or @.$rootChangeDetector
     cd.eval exp
 
 Scope::$compile = (exp, option) ->

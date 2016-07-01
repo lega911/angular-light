@@ -32,7 +32,6 @@ alight.directives.al.repeat =
                 self.prepareDom()
                 self.buildUpdateDom()
                 self.watchModel()
-                self.makeChildConstructor()
                 return
 
             parsExpression: ->
@@ -106,30 +105,22 @@ alight.directives.al.repeat =
                     f$.remove element
                 return
 
-            makeChildConstructor: ->
-                ChildScope = ->
-                    @.$$root = CD.scope.$$root or CD.scope
-                    @
-                ChildScope:: = CD.scope
-                self.ChildScope = ChildScope
-                return
-
             makeChild: (item, index, list) ->
-                scope = new self.ChildScope()
-                scope.$rootChangeDetector = childCD = CD.new scope
-                self.updateChild childCD, item, index, list
+                childCD = CD.new null,
+                    locals: true
+                self.updateLocals childCD, item, index, list
                 childCD
 
-            updateChild: (childCD, item, index, list) ->
-                scope = childCD.scope
+            updateLocals: (childCD, item, index, list) ->
+                locals = childCD.locals
                 if self.objectMode
-                    scope[self.objectKey] = item[self.objectKey]
-                    scope[self.objectValue] = item[self.objectValue]
+                    locals[self.objectKey] = item[self.objectKey]
+                    locals[self.objectValue] = item[self.objectValue]
                 else
-                    scope[self.nameOfKey] = item
-                scope.$index = index
-                scope.$first = index is 0
-                scope.$last = index is list.length-1
+                    locals[self.nameOfKey] = item
+                locals.$index = index
+                locals.$first = index is 0
+                locals.$last = index is list.length-1
                 return
 
             rawUpdateDom: (removes, inserts) ->
@@ -299,7 +290,7 @@ alight.directives.al.repeat =
                                 node = node_get item
 
                                 if node
-                                    self.updateChild node.CD, item, index, list
+                                    self.updateLocals node.CD, item, index, list
                                     if node.prev is prev_node
                                         if prev_moved
                                             for el in node.element_list
@@ -423,7 +414,7 @@ alight.directives.al.repeat =
                                 node = node_get item
 
                                 if node
-                                    self.updateChild node.CD, item, index, list
+                                    self.updateLocals node.CD, item, index, list
                                     if node.prev is prev_node
                                         if prev_moved
                                             dom_inserts.push

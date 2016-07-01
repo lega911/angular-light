@@ -1,7 +1,8 @@
 
 setupAlight = (alight) ->
-    alight.d.al.testRepeat = (scope) ->
-        scope.r = scope.it.text + scope.it.text
+    alight.d.al.testRepeat = (scope, el, exp, env) ->
+        value = scope.$getValue 'it.text'
+        env.changeDetector.locals.r = value + value
 
 do ->
     ###
@@ -424,21 +425,12 @@ Test('al-repeat track by 5', 'al-repeat-track-by-5').run ($test, alight) ->
 
 
 Test('al-repeat-transparent-assigment-0', 'al-repeat-transparent-assigment-0').run ($test, alight) ->
-    $test.start 8
-
-    childS = null
-    alight.d.al.fire = (scope) ->
-        if scope.child isnt '14'
-            return
-        if scope.box.name isnt 'ubuntu'
-            return
-        childS = scope
-        null
+    $test.start 7
 
     el = ttDOM """
         <p al-repeat="box in list" al-init="firstLine=box.name">
             box={{box.name}}
-            <i al-repeat="child in box.children" al-init="fromChild=child">{{child}} <b al-fire></b></i>
+            <i al-repeat="child in box.children" al-init="fromChild=child">{{child}} </i>
         </p>
     """
 
@@ -463,11 +455,11 @@ Test('al-repeat-transparent-assigment-0', 'al-repeat-transparent-assigment-0').r
     $test.equal scope.firstLine, 'ubuntu'
     $test.equal scope.fromChild, '15'
 
-    childS.child = 'X'
-    childS.box.name = 'debian'
-    childS.$scan()
-    $test.equal ttGetText(el), 'box=linux x86 x64 box=debian X 15'
-    $test.equal childS.$$root, scope
+    scope.child = 'X'
+    scope.box =
+        name: 'debian'
+    scope.$scan()
+    $test.equal ttGetText(el), 'box=linux x86 x64 box=ubuntu 14 15'
 
     $test.close()
 

@@ -156,7 +156,8 @@ do ->
             filterByKey[k] = true
 
         (scope, element, expression, env) ->
-            fn = scope.$compile expression,
+            cd = env.changeDetector
+            fn = cd.compile expression,
                 no_return: true
                 input: ['$event', '$element', '$value']
 
@@ -172,16 +173,17 @@ do ->
 
             execute = (event) ->
                 try
-                    fn scope, event, element, getValue()
+                    fn cd.locals, event, element, getValue()
                 catch error
                     alight.exceptionHandler error, "Error in event: #{attrArgument} = #{expression}",
                         attr: attrArgument
                         exp: expression
                         scope: scope
+                        cd: cd
                         element: element
                         event: event
                 if scan
-                    scope.$scan()
+                    cd.scan()
                 return
 
             handler = (event) ->
@@ -221,7 +223,7 @@ do ->
                 f$.on element, e, handler
             if initFn
                 initFn scope, element, expression, env
-            scope.$watch '$destroy', ->
+            cd.watch '$destroy', ->
                 for e in eventList
                     f$.off element, e, handler
             return
