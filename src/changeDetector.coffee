@@ -58,14 +58,17 @@ ChangeDetector::new = (scope, option) ->
     scope ?= parent.scope
     cd = new ChangeDetector parent.root, scope
     cd.parent = parent
-    if option.locals and scope is parent.scope
-        Locals = parent._ChildLocals
-        if not Locals
-            parent._ChildLocals = Locals = ->
-                @.$$root = scope
-                @
-            Locals:: = parent.locals
-        cd.locals = new Locals()
+    if scope is parent.scope
+        if option.locals
+            Locals = parent._ChildLocals
+            if not Locals
+                parent._ChildLocals = Locals = ->
+                    @.$$root = scope
+                    @
+                Locals:: = parent.locals
+            cd.locals = new Locals()
+        else
+            cd.locals = parent.locals
     parent.children.push cd
 
     cd

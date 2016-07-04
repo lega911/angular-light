@@ -233,3 +233,50 @@ Test 'isolated-scope-0'
 
             $test.equal ttGetText(el), 'root=unix-- child=-linux-three'
             $test.close()
+
+
+Test('locals-0').run ($test, alight) ->
+    $test.start 20
+
+    root = alight.ChangeDetector()
+    root.scope.x = 1
+
+    cd0 = root.new null,
+        locals: true
+    cd0.locals.x = 2
+
+    cd1 = cd0.new()
+
+    cd2 = cd1.new null,
+        locals: true
+
+    cd3 = cd2.new()
+
+    $test.equal root.getValue('x'), 1
+    $test.equal cd0.getValue('x'), 2
+    $test.equal cd1.getValue('x'), 2
+    $test.equal cd2.getValue('x'), 2
+    $test.equal cd3.getValue('x'), 2
+
+    cd1.locals.x = 3
+    $test.equal root.getValue('x'), 1
+    $test.equal cd0.getValue('x'), 3
+    $test.equal cd1.getValue('x'), 3
+    $test.equal cd2.getValue('x'), 3
+    $test.equal cd3.getValue('x'), 3
+
+    cd2.locals.x = 4
+    $test.equal root.getValue('x'), 1
+    $test.equal cd0.getValue('x'), 3
+    $test.equal cd1.getValue('x'), 3
+    $test.equal cd2.getValue('x'), 4
+    $test.equal cd3.getValue('x'), 4
+
+    cd3.locals.x = 5
+    $test.equal root.getValue('x'), 1
+    $test.equal cd0.getValue('x'), 3
+    $test.equal cd1.getValue('x'), 3
+    $test.equal cd2.getValue('x'), 5
+    $test.equal cd3.getValue('x'), 5
+
+    $test.close()

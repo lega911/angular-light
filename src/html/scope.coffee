@@ -22,19 +22,11 @@ alight.d.al.html.modifier.scope = (self, option) ->
         self.activeElement.innerHTML = html
         self.insertDom self.topElement, self.activeElement
 
-        # transparent scope
-        parentScope = option.scope
-        ChildScope = ->
-        ChildScope:: = parentScope
+        childCD = self.childCD = option.env.changeDetector.new null,
+            locals: true
 
-        scope = new ChildScope
-        scope.$$root = parentScope.$$root or parentScope
-        scope.$rootChangeDetector = self.childCD = option.env.changeDetector.new scope
-        scope.$changeDetector = null
-        scope.$parent = parentScope
-
-        self.childCD.watch '$parent.' + outerName, (outerValue) ->
-            scope[innerName] = outerValue
+        childCD.watch outerName, (outerValue) ->
+            childCD.locals[innerName] = outerValue
         ,
             oneTime: oneTime
 
