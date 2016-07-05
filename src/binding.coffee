@@ -405,23 +405,91 @@ bindComment = (cd, element, option) ->
     skipToElement: null
 
 
-bindElement = do ->
-    takeAttr = (name, skip) ->
-        if arguments.length is 1
-            skip = true
-        for attr in @.attributes
-            if attr.attrName isnt name
-                continue
-            if skip
-                attr.skip = true
-            value = @.element.getAttribute name
-            return value or true
+Env = (option) ->
+    for k, v of option
+        @[k] = v
+    @
 
-    skippedAttr = ->
-        for attr in @.attributes
-            if not attr.skip
-                continue
-            attr.attrName
+Env::takeAttr = (name, skip) ->
+    if arguments.length is 1
+        skip = true
+    for attr in @.attributes
+        if attr.attrName isnt name
+            continue
+        if skip
+            attr.skip = true
+        value = @.element.getAttribute name
+        return value or true
+
+Env::skippedAttr = ->
+    for attr in @.attributes
+        if not attr.skip
+            continue
+        attr.attrName
+
+Env::scan = (option) ->
+    @.changeDetector.scan option
+
+Env::watch = (name, callback, option) ->
+    @.changeDetector.watch name, callback, option
+
+Env::watchGroup = (keys, callback) ->
+    @.changeDetector.watchGroup keys, callback
+
+Env::getValue = (name) ->
+    @.changeDetector.getValue name
+
+Env::setValue = (name, value) ->
+    @.changeDetector.setValue name, value
+
+Env::eval = (exp) ->
+    @.changeDetector.getValue exp
+
+###
+    env.new(scope, option)
+    env.new(scope, true)  - makes locals
+    env.new(true)  - makes locals
+###
+Env::new = (scope, option) ->
+    if option is true
+        option =
+            locals: true
+    else if scope is true and not option?
+        scope = null
+        option =
+            locals: true
+
+    @.changeDetector.new scope, option
+
+###
+    env.bind(cd, element, option)
+    env.bind(cd)
+    env.bind(element)
+    env.bind(element, cd)
+    env.bind(option)
+    env.bind(env.new(), option)
+###
+Env::bind = (_cd, _element, _option) ->
+    count = 0
+    for a in arguments
+        if a instanceof ChangeDetector
+            cd = a
+            count += 1
+        if f$.isElement a
+            element = a
+            count += 1
+    option = arguments[count]
+    if not option
+        option =
+            skip_attr: @.skippedAttr()
+    if not element
+        element = @.element
+    if not cd
+        cd = @.changeDetector
+    alight.bind cd, element, option
+
+
+bindElement = do ->
 
     (cd, element, config) ->
         bindResult =
@@ -476,12 +544,10 @@ bindElement = do ->
                 else
                     bindResult.directive++
                     directive = d.directive
-                    env =
+                    env = new Env
                         element: element
                         attrName: d.attrName
                         attributes: list
-                        takeAttr: takeAttr
-                        skippedAttr: skippedAttr
                         stopBinding: false
                         elementCanBeRemoved: config.elementCanBeRemoved
                     if alight.debug.directive

@@ -46,7 +46,7 @@ getCDFromScope = (scope, name, option) ->
         cd = scope.$rootChangeDetector
     if cd
         return cd
-    alight.exceptionHandler '', 'You can do $watch during binding only: ' + name,
+    alight.exceptionHandler '', 'You can do scope.$watch during binding only, use env.watch instead: ' + name,
         name: name
         option: option
         scope: scope
@@ -72,11 +72,11 @@ Scope::$setValue = (name, value) ->
     return
 
 Scope::$getValue = (name) ->
-    cd = @.$changeDetector or @.$rootChangeDetector
+    cd = @.$rootChangeDetector
     cd.getValue name
 
 Scope::$eval = (exp) ->
-    cd = @.$changeDetector or @.$rootChangeDetector
+    cd = @.$rootChangeDetector
     cd.eval exp
 
 Scope::$compile = (exp, option) ->

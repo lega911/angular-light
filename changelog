@@ -1,0 +1,17 @@
+
+0.13
+----
+
+* new way to make local variables
+* new option "locals" for ChangeDetector.new(scope, option)
+* scope.$getValue and scope.$eval don't consider locals variables
+* new functions
+ * env.takeAttr
+ * env.skippedAttr
+ * env.scan
+ * env.watch
+ * env.getValue
+ * env.setValue
+ * env.eval
+ * env.new(scope, option)
+ * env.bind(cd, element, option)

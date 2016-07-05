@@ -256,8 +256,8 @@ Test 'binding-order-0'
             scope.$watch '$finishBinding', ->
                 order.push 'p1'
 
-        alight.d.al.child = (scope) ->
-            $index = scope.$getValue '$index'
+        alight.d.al.child = (scope, el, _, env) ->
+            $index = env.getValue '$index'
             order.push 'c0-' + $index
             scope.$watch '$finishBinding', ->
                 order.push 'c1-' + $index

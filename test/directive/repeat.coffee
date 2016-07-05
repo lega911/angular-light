@@ -1,7 +1,7 @@
 
 setupAlight = (alight) ->
     alight.d.al.testRepeat = (scope, el, exp, env) ->
-        value = scope.$getValue 'it.text'
+        value = env.getValue 'it.text'
         env.changeDetector.locals.r = value + value
 
 do ->

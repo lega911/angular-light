@@ -191,8 +191,8 @@ Test 'al-repeat-child-cd-0'
             {name: 'windows'}
         ]
 
-        alight.d.al.test = (scope) ->
-            it = scope.$getValue 'it'
+        alight.d.al.test = (scope, el, val, env) ->
+            it = env.getValue 'it'
             it.name += '_rc'
 
         alight.bind scope, el
