@@ -131,9 +131,9 @@ do ->
                 option.update = null
                 option.finally = null
 
-        scope.$changeDetector = cd
+        cd_setActive scope, cd
         dir env.setter, option.exp, scope, env
-        scope.$changeDetector = null
+        cd_setActive scope, null
 
     watchText = (expression, callback, config) ->
         config = config or {}
@@ -308,14 +308,12 @@ do ->
     ChangeDetector::watchText = watchText
 
     Scope::$watchText = (expression, callback, option) ->
-        cd = @.$changeDetector
-        if not cd and not @.$rootChangeDetector.children.length  # no child scopes
-            cd = @.$rootChangeDetector
+        cd = cd_getActive @
         if cd
             cd.watchText expression, callback, option
         else
-            alight.exceptionHandler '', 'You can do $watchText during binding only: ' + expression,
+            alight.exceptionHandler '', 'You can do $watchText during binding only, use env.watchText instead: ' + expression,
                 expression: expression
                 option: option
                 scope: @
-        return
+            return

@@ -25,7 +25,7 @@ alight.directives.al.repeat =
                 env: env
             return {}
         env.stopBinding = true
-        CD = parentScope.$changeDetector
+        CD = env.changeDetector
         self =
             start: ->
                 self.parsExpression()

@@ -167,7 +167,7 @@ Test('watch-text-5', 'watch-text-5').run ($test, alight) ->
         one: 'A'
 
     count = 0
-    scope.$rootChangeDetector.watch ->
+    alight.core.cd_getRoot(scope).watch ->
         count++
         null
     , ->

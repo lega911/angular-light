@@ -59,14 +59,17 @@ alight.d.al.ctrl =
 
                 try
                     if fn
-                        childScope.$changeDetector = childScope.$rootChangeDetector
-                        fn.call childScope, childScope, element, name,
-                            changeDetector: childScope.$changeDetector
-                            attributes: env.attributes
-                            takeAttr: env.takeAttr
-                            skippedAttr: env.skippedAttr
-                            elementCanBeRemoved: env.elementCanBeRemoved
-                        childScope.$changeDetector = null
+                        childCD = cd_getRoot childScope
+                        ChildEnv = (cd) ->
+                            @
+                        ChildEnv:: = env
+                        childEnv = new ChildEnv
+                        childCD.changeDetector = childCD
+                        childCD.parentChangeDetector = env.changeDetector
+
+                        cd_setActive childScope, childCD
+                        fn.call childScope, childScope, element, name, childEnv
+                        cd_setActive childScope, null
                 catch e
                     error e, 'Error in controller: ' + name
                 alight.bind childScope, element,

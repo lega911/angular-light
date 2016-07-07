@@ -151,11 +151,11 @@ makeFilterChain = do ->
 
             filterObject = getFilter filterName, cd
             if Array.isArray(filterObject)
-                cd.scope.$changeDetector = cd
+                cd_setActive cd.scope, cd
                 filter = filterObject[0] filterArg, cd.scope,
                     setValue: prevCallback
                     changeDetector: cd
-                cd.scope.$changeDetector = null
+                cd_setActive cd.scope, null
 
                 if filter.watchMode
                     watchMode = filter.watchMode
@@ -167,11 +167,11 @@ makeFilterChain = do ->
                     prevCallback = filter.onChange
             else if Object.keys(filterObject::).length
                 # class
-                cd.scope.$changeDetector = cd
+                cd_setActive cd.scope, cd
                 filter = new filterObject filterArg, cd.scope,
                     setValue: prevCallback
                     changeDetector: cd
-                cd.scope.$changeDetector = null
+                cd_setActive cd.scope, null
                 filter.setValue = prevCallback
 
                 if filter.watchMode

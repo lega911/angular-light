@@ -175,11 +175,12 @@ do ->
                     if @.directive.scope
                         console.warn "#{@.ns}-#{@.name} uses scope and init together, probably you need use link instead of init"
                 @.env.changeDetector = @.cd
-                @.cd.scope.$changeDetector = @.cd
+
+                cd_setActive @.cd.scope, @.cd
                 result = @.directive.init @.cd.scope, @.element, @.value, @.env
                 if result and result.start
                     result.start()
-                @.cd.scope.$changeDetector = null
+                cd_setActive @.cd.scope, null
             return
 
     ext.push
@@ -226,12 +227,12 @@ do ->
                     scope = alight.Scope
                         $parent: parentCD.scope
                         childFromChangeDetector: parentCD
-                    childCD = scope.$rootChangeDetector
+                    childCD = cd_getRoot scope
                 when 'root'
                     scope = alight.Scope
                         $parent: parentCD.scope
 
-                    childCD = scope.$rootChangeDetector
+                    childCD = cd_getRoot scope
                     parentCD.watch '$destroy', ->
                         childCD.destroy()
                 else
@@ -249,11 +250,11 @@ do ->
         fn: ->
             if @.directive.link
                 @.env.changeDetector = @.cd
-                @.cd.scope.$changeDetector = @.cd
+                cd_setActive @.cd.scope, @.cd
                 result = @.directive.link @.cd.scope, @.element, @.value, @.env
                 if result and result.start
                     result.start()
-                @.cd.scope.$changeDetector = null
+                cd_setActive @.cd.scope, null
             return
 
     ext.push
@@ -435,6 +436,9 @@ Env::watch = (name, callback, option) ->
 
 Env::watchGroup = (keys, callback) ->
     @.changeDetector.watchGroup keys, callback
+
+Env::watchText = (expression, callback, option) ->
+    @.changeDetector.watchText expression, callback, option
 
 Env::getValue = (name) ->
     @.changeDetector.getValue name
@@ -661,7 +665,7 @@ alight.bind = alight.applyBindings = (scope, element, option) ->
     if scope instanceof alight.core.ChangeDetector
         cd = scope
     else
-        cd = option.changeDetector or scope.$changeDetector or scope.$rootChangeDetector
+        cd = option.changeDetector or cd_getActive(scope) or cd_getRoot(scope)
     root = cd.root
 
     finishBinding = not root.finishBinding_lock

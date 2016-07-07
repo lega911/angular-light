@@ -397,7 +397,7 @@ Test('filter-filter').run ($test, alight) ->
 
     resultList = []
 
-    cd = scope.$rootChangeDetector
+    cd = alight.core.cd_getRoot scope
     cd.watch 'list | filter:text', (value) ->
         resultList = value
     ,

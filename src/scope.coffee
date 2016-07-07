@@ -1,6 +1,45 @@
 
 alight.hooks.scope = []
 
+if window.Map
+    cd_mapRoot = new Map()
+    cd_map = new Map()
+    cd_setRoot = (scope, cd) ->
+        cd_mapRoot.set scope, cd
+    cd_getRoot = (scope) ->
+        cd_mapRoot.get scope
+    cd_getActive = (scope) ->
+        cd = cd_map.get scope
+        if cd
+            cd
+        else
+            root = cd_getRoot scope
+            if root.children.length
+                null
+            else
+                root
+    cd_setActive = (scope, cd) ->
+        cd_map.set scope, cd
+else
+    cd_setRoot = (scope, cd) ->
+        scope.$rootChangeDetector = cd
+    cd_getRoot = (scope) ->
+        scope.$rootChangeDetector
+    cd_getActive = (scope) ->
+        if scope.$changeDetector
+            scope.$changeDetector
+        else
+            if scope.$rootChangeDetector.children.length
+                return null
+            return scope.$rootChangeDetector
+    cd_setActive = (scope, cd) ->
+        scope.$changeDetector = cd
+
+alight.core.cd_setRoot = cd_setRoot
+alight.core.cd_getRoot = cd_getRoot
+alight.core.cd_getActive = cd_getActive
+alight.core.cd_setActive = cd_setActive
+
 alight.Scope = (option) ->
     option = option or {}
     # customScope, childFromChangeDetector, $parent
@@ -15,19 +54,19 @@ alight.Scope = (option) ->
 
     if option.childFromChangeDetector
         childCD = option.childFromChangeDetector.new scope
-        scope.$rootChangeDetector = childCD
     else
-        scope.$rootChangeDetector = alight.ChangeDetector scope
+        childCD = alight.ChangeDetector scope
+    cd_setRoot scope, childCD
 
     if option.$parent
         scope.$parent = option.$parent
 
-    scope.$changeDetector = null
+    cd_setActive scope, null
 
     if alight.hooks.scope.length
         self =
             scope: scope
-            changeDetector: scope.$rootChangeDetector
+            changeDetector: childCD
         for d in alight.hooks.scope
             d.fn.call self
         scope = self.scope
@@ -37,60 +76,50 @@ Scope = ->
 
 alight.core.Scope = Scope
 
-getCDFromScope = (scope, name, option) ->
-    if option and option.changeDetector
-        return option.changeDetector
-    else
-        cd = scope.$changeDetector
-    if not cd and not scope.$rootChangeDetector.children.length  # no child scopes
-        cd = scope.$rootChangeDetector
-    if cd
-        return cd
-    alight.exceptionHandler '', 'You can do scope.$watch during binding only, use env.watch instead: ' + name,
-        name: name
-        option: option
-        scope: scope
-    return
-
 Scope::$watch = (name, callback, option) ->
-    cd = getCDFromScope @, name, option
+    cd = cd_getActive @
     if cd
-        return cd.watch name, callback, option
+        cd.watch name, callback, option
+    else
+        alight.exceptionHandler '', 'You can do scope.$watch during binding only, use env.watch instead: ' + name,
+            name: name
+            option: option
+            scope: @
 
 Scope::$watchGroup = (keys, callback) ->
-    cd = getCDFromScope @, ''+keys
+    cd = cd_getActive @
     if cd
         cd.watchGroup keys, callback
+    else
+        alight.exceptionHandler '', 'You can do scope.$watchGroup during binding only, use env.watchGroup instead: ' + name,
+            keys: keys
+            option: option
+            scope: @
 
 Scope::$scan = (option) ->
-    cd = @.$rootChangeDetector
-    cd.scan option
+    cd_getRoot(@).scan option
 
 Scope::$setValue = (name, value) ->
-    cd = @.$rootChangeDetector
-    cd.setValue name, value
+    cd_getRoot(@).setValue name, value
     return
 
 Scope::$getValue = (name) ->
-    cd = @.$rootChangeDetector
-    cd.getValue name
+    cd_getRoot(@).getValue name
 
 Scope::$eval = (exp) ->
-    cd = @.$rootChangeDetector
-    cd.eval exp
+    cd_getRoot(@).eval exp
 
 Scope::$compile = (exp, option) ->
-    cd = @.$rootChangeDetector
-    cd.compile exp, option
+    cd_getRoot(@).compile exp, option
 
 Scope::$destroy = ->
-    cd = @.$rootChangeDetector
-    cd.destroy()
+    cd_getRoot(@).destroy()
     return
 
 Scope::$new = () ->
-    if not @.$changeDetector
+    cd = cd_getActive @
+    if not cd
         throw 'No change detector'
     alight.Scope
         $parent: @
-        childFromChangeDetector: @.$changeDetector
+        childFromChangeDetector: cd

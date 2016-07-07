@@ -133,14 +133,14 @@ Test('deferred-process').run ($test, alight, timeout) ->
         # 0
         $test.equal alight.directives.ut.test5.template, undefined
         $test.equal r0.scope.name, 'root'
-        $test.equal r0.scope.$rootChangeDetector.children[0].scope.name, 'linux'
+        $test.equal alight.core.cd_getRoot(r0.scope).children[0].scope.name, 'linux'
         $test.equal scope5.name, 'linux'
         $test.equal r0.html(), '<span ut-test5="noop"><p>linux</p></span>'
 
         # 1
         $test.equal scope3, r1.scope
         $test.equal r1.scope.name, 'linux'
-        $test.equal r1.scope.$rootChangeDetector.children.length, 0
+        $test.equal alight.core.cd_getRoot(r1.scope).children.length, 0
         $test.equal r1.html(), '<span ut-test3="noop"><p>linux</p></span>'
 
         $test.close()
@@ -336,7 +336,7 @@ Test('bind-complete-0').run ($test, alight) ->
             childFromChangeDetector: cd
         childScope.name = 'one'
 
-        childCD = childScope.$rootChangeDetector
+        childCD = alight.core.cd_getRoot childScope
 
         $test.equal index++, 1
         $test.equal ttGetText(el), '1:{{name}} 2:{{name}} 3:{{name}} 4:{{name}} 5:{{name}}'
@@ -356,7 +356,7 @@ Test('bind-complete-0').run ($test, alight) ->
                 childFromChangeDetector: cd
             childScope.name = 'two'
 
-            childCD = childScope.$rootChangeDetector
+            childCD = alight.core.cd_getRoot childScope
 
             $test.equal index++, 2
             $test.equal ttGetText(el), '2:{{name}} 3:{{name}} 4:{{name}}', 2
@@ -377,7 +377,7 @@ Test('bind-complete-0').run ($test, alight) ->
                 childFromChangeDetector: cd
             childScope.name = 'three'
 
-            childCD = childScope.$rootChangeDetector
+            childCD = alight.core.cd_getRoot childScope
 
             $test.equal index++, 3
             $test.equal ttGetText(el), '3:{{name}}', 3

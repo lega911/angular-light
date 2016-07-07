@@ -10,8 +10,13 @@
  * env.skippedAttr
  * env.scan
  * env.watch
+ * env.watchGroup
+ * env.watchText
  * env.getValue
  * env.setValue
  * env.eval
  * env.new(scope, option)
  * env.bind(cd, element, option)
+
+* scope.$watch, option changeDetector was removed
+* using Map instead of $changeDetector and $rootChangeDetector

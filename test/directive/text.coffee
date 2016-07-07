@@ -242,7 +242,7 @@ Test('one-time-binding-3', 'one-time-binding-3').run ($test, alight) ->
     exp = 'Hello {{::name}}!'
 
     scope = alight.Scope()
-    cd = scope.$rootChangeDetector
+    cd = alight.core.cd_getRoot scope
     v0 = null
     cd.watchText exp, (v) ->
         v0 = v
