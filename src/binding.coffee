@@ -12,38 +12,11 @@ alight.debug =
 
 
 doubleBinding = do ->
-    getNode = (element) ->
-        node = element.__dbiner
-        if node
-            return node
-        node =
-            count: 0
-            binder: []
-        element.__dbiner = node
-        node
+    if alight.core.DoubleBinding
+        return alight.core.DoubleBinding()
+    startDirective: ->
+    finishDirective: ->
 
-    startDirective: (element, dirName) ->
-        node = getNode element
-        node.activeDirective = dirName
-
-    finishDirective: (element) ->
-        node = getNode element
-        node.activeDirective = null
-
-    startBind: (element) ->
-        node = getNode element
-        name = if node.activeDirective then node.activeDirective else 'Manual'
-        node.binder.push name
-        if alight.debug.doubleBinding is 3
-            console.log 'Bind', name, element
-
-    finishLoop: (element) ->
-        node = getNode element
-        node.count += 1
-
-        if node.count > 1
-            if node.binder.length || alight.debug.doubleBinding > 1
-                console.warn 'Double binding', node.binder, element
 
 do ->
     alight.hooks.attribute = ext = []
@@ -422,6 +395,8 @@ bindComment = (cd, element, option) ->
             []
     if alight.debug.directive
         console.log 'bind', d.attrName, value, d
+    if alight.debug.doubleBinding
+        doubleBinding.startDirective element, d.attrName, value
     try
         directive.$init cd, element, value, env
     catch e
@@ -431,6 +406,8 @@ bindComment = (cd, element, option) ->
             cd: cd
             scope: cd.scope
             element: element
+    if alight.debug.doubleBinding
+        doubleBinding.finishDirective element, d.attrName
     if env.skipToElement
         return {
             directive: 1
@@ -540,7 +517,7 @@ bindElement = do ->
             skipToElement: null
         config = config || {}
         skipChildren = false
-        skip_attr = config.skip_attr or []
+        skip_attr = config.skip_attr or config.skip or []
         if not (skip_attr instanceof Array)
             skip_attr = [skip_attr]
 
@@ -579,6 +556,8 @@ bindElement = do ->
                 else
                     value = element.getAttribute d.attrName
                 if d.is_attr
+                    if alight.debug.doubleBinding
+                        doubleBinding.startDirective element, d.attrName, value, true
                     if attrBinding cd, element, value, d.attrName
                         bindResult.attr++
                 else
@@ -593,7 +572,7 @@ bindElement = do ->
                     if alight.debug.directive
                         console.log 'bind', d.attrName, value, d
                     if alight.debug.doubleBinding
-                        doubleBinding.startDirective element, d.attrName + '=' + value
+                        doubleBinding.startDirective element, d.attrName, value
                     try
                         if directive.$init(cd, element, value, env) is 'stopBinding'
                             skipChildren = true
@@ -605,7 +584,7 @@ bindElement = do ->
                             scope: cd.scope
                             element: element
                     if alight.debug.doubleBinding
-                        doubleBinding.finishDirective element
+                        doubleBinding.finishDirective element, d.attrName
 
                     if env.stopBinding
                         skipChildren = true
@@ -613,10 +592,6 @@ bindElement = do ->
 
                     if env.skipToElement
                         bindResult.skipToElement = env.skipToElement
-
-            # doubleBinding
-            if not skipChildren and alight.debug.doubleBinding
-                doubleBinding.finishLoop element
 
         if !skipChildren
             # text bindings
@@ -662,6 +637,8 @@ bindNode = (cd, element, option) ->
         result.hook += r.hook
         result.skipToElement = r.skipToElement
     else if element.nodeType is 3
+        if alight.debug.doubleBinding
+            doubleBinding.startDirective element, 'text', '', true
         if bindText cd, element, option
             result.text++
     else if element.nodeType is 8
@@ -721,8 +698,6 @@ alight.bind = alight.applyBindings = (scope, element, option) ->
             attr: 0
             hook: 0
 
-    if alight.debug.doubleBinding
-        doubleBinding.startBind element
     result = bindNode cd, element, option
 
     root.bindingResult.directive += result.directive

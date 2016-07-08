@@ -20,6 +20,9 @@
     "file": "watchText.coffee",
     "tag": ["core"]
 }, {
+    "file": "doublebinding.coffee",
+    "tag": ["full"]
+}, {
     "file": "binding.coffee",
     "tag": ["core"]
 }, {
