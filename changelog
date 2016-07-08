@@ -20,3 +20,4 @@
 
 * scope.$watch, option changeDetector was removed
 * using Map instead of $changeDetector and $rootChangeDetector
+* double binding detector: alight.debug.doubleBinding = 1, 2, 3

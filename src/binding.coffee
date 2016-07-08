@@ -43,7 +43,7 @@ doubleBinding = do ->
 
         if node.count > 1
             if node.binder.length || alight.debug.doubleBinding > 1
-                console.warn 'Double binding', element, node.binder
+                console.warn 'Double binding', node.binder, element
 
 do ->
     alight.hooks.attribute = ext = []
