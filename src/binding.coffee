@@ -8,7 +8,42 @@ alight.debug =
     watchText: false
     parser: false
     domOptimization: true
+    doubleBinding: 0
 
+
+doubleBinding = do ->
+    getNode = (element) ->
+        node = element.__dbiner
+        if node
+            return node
+        node =
+            count: 0
+            binder: []
+        element.__dbiner = node
+        node
+
+    startDirective: (element, dirName) ->
+        node = getNode element
+        node.activeDirective = dirName
+
+    finishDirective: (element) ->
+        node = getNode element
+        node.activeDirective = null
+
+    startBind: (element) ->
+        node = getNode element
+        name = if node.activeDirective then node.activeDirective else 'Manual'
+        node.binder.push name
+        if alight.debug.doubleBinding is 3
+            console.log 'Bind', name, element
+
+    finishLoop: (element) ->
+        node = getNode element
+        node.count += 1
+
+        if node.count > 1
+            if node.binder.length || alight.debug.doubleBinding > 1
+                console.warn 'Double binding', element, node.binder
 
 do ->
     alight.hooks.attribute = ext = []
@@ -474,6 +509,7 @@ Env::new = (scope, option) ->
     env.bind(env.new(), option)
 ###
 Env::bind = (_cd, _element, _option) ->
+    @.stopBinding = true
     count = 0
     for a in arguments
         if a instanceof ChangeDetector
@@ -556,6 +592,8 @@ bindElement = do ->
                         elementCanBeRemoved: config.elementCanBeRemoved
                     if alight.debug.directive
                         console.log 'bind', d.attrName, value, d
+                    if alight.debug.doubleBinding
+                        doubleBinding.startDirective element, d.attrName + '=' + value
                     try
                         if directive.$init(cd, element, value, env) is 'stopBinding'
                             skipChildren = true
@@ -566,6 +604,8 @@ bindElement = do ->
                             cd: cd
                             scope: cd.scope
                             element: element
+                    if alight.debug.doubleBinding
+                        doubleBinding.finishDirective element
 
                     if env.stopBinding
                         skipChildren = true
@@ -573,6 +613,10 @@ bindElement = do ->
 
                     if env.skipToElement
                         bindResult.skipToElement = env.skipToElement
+
+            # doubleBinding
+            if not skipChildren and alight.debug.doubleBinding
+                doubleBinding.finishLoop element
 
         if !skipChildren
             # text bindings
@@ -677,6 +721,8 @@ alight.bind = alight.applyBindings = (scope, element, option) ->
             attr: 0
             hook: 0
 
+    if alight.debug.doubleBinding
+        doubleBinding.startBind element
     result = bindNode cd, element, option
 
     root.bindingResult.directive += result.directive
