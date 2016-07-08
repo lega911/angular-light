@@ -397,6 +397,22 @@ execWatchObject = (scope, w, value) ->
     return
 
 
+displayError = (e, cd, w, option) ->
+    args =
+        src: w.src
+        scope: cd.scope
+        locals: cd.locals
+    if w.el
+        args.element = w.el
+    if option is 1
+        text = '$scan, error in callback: '
+    else
+        text = '$scan, error in expression: '
+    alight.exceptionHandler e, text + w.src, args
+
+ErrorValue = ->
+
+
 scanCore = (topCD, result) ->
     root = topCD.root
     extraLoop = false
@@ -410,16 +426,17 @@ scanCore = (topCD, result) ->
     index = 0
     cd = topCD
     while cd
-        scope = result.scope = cd.scope
+        scope = cd.scope
         locals = cd.locals
 
         # default watchers
         total += cd.watchList.length
         for w in cd.watchList.slice()
-            result.src = w.src
-            result.element = w.el
             last = w.value
-            value = w.exp locals
+            try
+                value = w.exp locals
+            catch e
+                value = ErrorValue
             if last isnt value
                 mutated = false
                 if w.isArray
@@ -449,20 +466,27 @@ scanCore = (topCD, result) ->
 
                 if mutated
                     mutated = false
-                    changes++
 
-                    # fire
-                    if w.el
-                        if w.ea
-                            w.el.setAttribute w.ea, value
-                        else
-                            w.el.nodeValue = value
+                    if value is ErrorValue
+                        displayError e, cd, w
                     else
-                        if last is watchInitValue
-                            last = undefined
-                        if w.callback.call(scope, value, last) isnt '$scanNoChanges'
-                            if w.extraLoop
-                                extraLoop = true
+                        changes++
+
+                        try
+                            if w.el
+                                if w.ea
+                                    w.el.setAttribute w.ea, value
+                                else
+                                    w.el.nodeValue = value
+                            else
+                                if last is watchInitValue
+                                    last = undefined
+                                if w.callback.call(scope, value, last) isnt '$scanNoChanges'
+                                    if w.extraLoop
+                                        extraLoop = true
+                        catch e
+                            displayError e, cd, w, 1
+
                 if alight.debug.scan > 1
                     console.log 'changed:', w.src
         queue.push.apply queue, cd.children
@@ -471,10 +495,6 @@ scanCore = (topCD, result) ->
     result.total = total
     result.changes = changes
     result.extraLoop = extraLoop
-
-    result.scope = null
-    result.src = ''
-    result.element = null
     return
 
 
@@ -486,40 +506,33 @@ ChangeDetector::digest = ->
     if alight.debug.scan
         start = get_time()
 
-    try
-        result =
-            total: 0
-            changes: 0
-            extraLoop: false
-            src: ''
-            scope: null
-            element: null
+    result =
+        total: 0
+        changes: 0
+        extraLoop: false
+        src: ''
+        scope: null
+        element: null
 
-        while mainLoop
-            mainLoop--
-            root.extraLoop = false
+    while mainLoop
+        mainLoop--
+        root.extraLoop = false
 
-            # take onScanOnce
-            if root.watchers.onScanOnce.length
-                onScanOnce = root.watchers.onScanOnce.slice()
-                root.watchers.onScanOnce.length = 0
-                for callback in onScanOnce
-                    callback.call root
+        # take onScanOnce
+        if root.watchers.onScanOnce.length
+            onScanOnce = root.watchers.onScanOnce.slice()
+            root.watchers.onScanOnce.length = 0
+            for callback in onScanOnce
+                callback.call root
 
-            scanCore @, result
-            totalChanges += result.changes
+        scanCore @, result
+        totalChanges += result.changes
 
-            if not result.extraLoop and not root.extraLoop
-                break
-        if alight.debug.scan
-            duration = get_time() - start
-            console.log "$scan: loops: (#{10-mainLoop}), last-loop changes: #{result.changes}, watches: #{result.total} / #{duration}ms"
-    catch e
-        alight.exceptionHandler e, '$scan, error in expression: ' + result.src,
-            src: result.src
-            scope: result.scope
-            element: result.element
-            result: result
+        if not result.extraLoop and not root.extraLoop
+            break
+    if alight.debug.scan
+        duration = get_time() - start
+        console.log "$scan: loops: (#{10-mainLoop}), last-loop changes: #{result.changes}, watches: #{result.total} / #{duration}ms"
     result.mainLoop = mainLoop
     result.totalChanges = totalChanges
     result
