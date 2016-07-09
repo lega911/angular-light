@@ -19,7 +19,7 @@ alight.createComponent('rating', (scope, element, env) => {
 
   const f$ = alight.f$;
 
-  function makeWatch({listener, scope, name, parentName, parentCD}) {
+  function makeWatch({listener, childCD, name, parentName, parentCD}) {
     let fn;
     let watchOption = {};
     if(listener) {
@@ -33,11 +33,11 @@ alight.createComponent('rating', (scope, element, env) => {
     }
     if(!fn) {
       fn = function(value) {
-        scope[name] = value;
-        scope.$scan();
+        childCD.scope[name] = value;
+        childCD.scan();
       }
     }
-    return parentCD.watch(parentName, fn, watchOption)
+    parentCD.watch(parentName, fn, watchOption);
   }
 
   alight.createComponent = function(attrName, constructor) {
@@ -60,28 +60,52 @@ alight.createComponent('rating', (scope, element, env) => {
       stopBinding: true,
       priority: 5,
       init: function(parentScope, element, _value, env) {
-        const parentCD = env.changeDetector;
-        let scope = alight.Scope()
-        parentScope.$watch('$destroy', () => scope.$destroy() )
-        scope.$dispatch = function(eventName, value) {
+        const parentCD = env.changeDetector.new();
+        const childCD = alight.Scope({
+          returnChangeDetector: true
+        })
+        const scope = childCD.scope;
+
+        scope.$sendEvent = function(eventName, value) {
           let event = new CustomEvent(eventName);
           event.value = value;
+          event.component = true;
           element.dispatchEvent(event);
         };
-        
-        let option = constructor(scope, element, env);
+
+        function ChildEnv() {};
+        ChildEnv.prototype = env;
+        const childEnv = new ChildEnv();
+        childEnv.changeDetector = childCD
+        childEnv.parentChangeDetector = parentCD;
+
+        try {
+          const option = constructor(scope, element, childEnv) || {};
+        } catch (e) {
+          alight.exceptionHandler(e, 'Error in component <' + attrName + '>: ', {
+            element: element,
+            scope: scope,
+            cd: childCD
+          });
+          return;
+        }
 
         if(option.onStart) {
-          scope.$watch('$finishBinding', option.onStart)
+          childCD.watch('$finishBinding', option.onStart);
         }
 
         // bind props
-        let watchers = [];
-        scope.$watch('$destroy', () => {
-          for(let w of watchers) w.stop()
-          if(option.onDestroy) option.onDestroy()
+        parentDestroyed = false;
+        parentCD.watch('$destroy', () => {
+          parentDestroyed = true;
+          childCD.destroy();
         })
-        
+
+        childCD.watch('$destroy', () => {
+          if(option.onDestroy) option.onDestroy();
+          if(!parentDestroyed) parentCD.destroy();  // child of parentCD
+        })
+
         // option props
         let readyProps = {};
         if(option.props) {
@@ -91,7 +115,7 @@ alight.createComponent('rating', (scope, element, env) => {
             let listener = option.props[key];
             readyProps[propName] = true;
             if(!propValue) continue;
-            watchers.push(makeWatch({scope, listener, name: key, parentName: propValue, parentCD}));
+            makeWatch({childCD, listener, name: key, parentName: propValue, parentCD});
           }
         }
         
@@ -108,7 +132,7 @@ alight.createComponent('rating', (scope, element, env) => {
           if(!parts) continue;
           let name = parts[1];
           
-          watchers.push(makeWatch({scope, name, parentName: propValue, parentCD}));
+          makeWatch({childCD, name, parentName: propValue, parentCD});
         }
 
         // template
@@ -135,7 +159,7 @@ alight.createComponent('rating', (scope, element, env) => {
         }
 
         function binding(async) {
-          alight.bind(scope, element, {skip_top: true});
+          alight.bind(childCD, element, {skip_top: true});
         }
       }
     }

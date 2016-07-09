@@ -70,7 +70,11 @@ alight.Scope = (option) ->
         for d in alight.hooks.scope
             d.fn.call self
         scope = self.scope
-    scope
+
+    if option.returnChangeDetector
+        childCD
+    else
+        scope
 
 Scope = ->
 

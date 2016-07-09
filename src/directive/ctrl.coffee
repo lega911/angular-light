@@ -64,8 +64,8 @@ alight.d.al.ctrl =
                             @
                         ChildEnv:: = env
                         childEnv = new ChildEnv
-                        childCD.changeDetector = childCD
-                        childCD.parentChangeDetector = env.changeDetector
+                        childEnv.changeDetector = childCD
+                        childEnv.parentChangeDetector = env.changeDetector
 
                         cd_setActive childScope, childCD
                         fn.call childScope, childScope, element, name, childEnv

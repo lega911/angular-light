@@ -22,3 +22,4 @@
 * using Map instead of $changeDetector and $rootChangeDetector
 * double binding detector: alight.debug.doubleBinding
 * alight.bind, alias of option "skip" == "skip_attr"
+* alight.Scope, new option "returnChangeDetector"

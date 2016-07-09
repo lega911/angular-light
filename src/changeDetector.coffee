@@ -82,11 +82,11 @@ ChangeDetector::destroy = ->
     if cd.parent
         removeItem cd.parent.children, cd
 
-    for child in cd.children.slice()
-        child.destroy()
-
     for fn in cd.destroy_callbacks
         fn()
+
+    for child in cd.children.slice()
+        child.destroy()
 
     cd.destroy_callbacks.length = 0
     for d in cd.watchList

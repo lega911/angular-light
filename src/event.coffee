@@ -168,12 +168,14 @@ do ->
                 getValue = ->
                     element.value or element.checked
             else
-                getValue = ->
+                getValue = (event) ->
+                    if event.component
+                        return event.value
                     element.value
 
             execute = (event) ->
                 try
-                    fn cd.locals, event, element, getValue()
+                    fn cd.locals, event, element, getValue event
                 catch error
                     alight.exceptionHandler error, "Error in event: #{attrArgument} = #{expression}",
                         attr: attrArgument
