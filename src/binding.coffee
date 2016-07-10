@@ -498,7 +498,7 @@ Env::bind = (_cd, _element, _option) ->
     option = arguments[count]
     if not option
         option =
-            skip_attr: @.skippedAttr()
+            skip: @.skippedAttr()
     if not element
         element = @.element
     if not cd
@@ -517,7 +517,11 @@ bindElement = do ->
             skipToElement: null
         config = config || {}
         skipChildren = false
-        skip_attr = config.skip_attr or config.skip or []
+        skip_attr = config.skip_attr
+        if config.skip is true
+            config.skip_top = true
+        else if not skip_attr
+            skip_attr = config.skip or []
         if not (skip_attr instanceof Array)
             skip_attr = [skip_attr]
 

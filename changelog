@@ -21,5 +21,6 @@
 * scope.$watch, option changeDetector was removed
 * using Map instead of $changeDetector and $rootChangeDetector
 * double binding detector: alight.debug.doubleBinding
-* alight.bind, alias of option "skip" == "skip_attr"
+* alight.bind, alias of option "skip", can be true or list of attributes
 * alight.Scope, new option "returnChangeDetector"
+* watchMode "copy" for components

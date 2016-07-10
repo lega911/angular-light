@@ -26,9 +26,14 @@ alight.createComponent('rating', (scope, element, env) => {
       if(f$.isFunction(listener)) {
         fn = listener;
       } else {
-        if(listener.watchMode === 'array') watchOption.isArray = true;
-        if(listener.watchMode === 'deep') watchOption.deep = true;
         fn = listener.onChange;
+        if(listener === 'copy' || listener.watchMode === 'copy') {
+          if(fn) fn(parentName)
+          else childCD.scope[name] = parentName;
+          return
+        }
+        if(listener === 'array' || listener.watchMode === 'array') watchOption.isArray = true;
+        if(listener === 'deep' || listener.watchMode === 'deep') watchOption.deep = true;
       }
     }
     if(!fn) {
@@ -159,7 +164,7 @@ alight.createComponent('rating', (scope, element, env) => {
         }
 
         function binding(async) {
-          alight.bind(childCD, element, {skip_top: true});
+          alight.bind(childCD, element, {skip: true});
         }
       }
     }
