@@ -42,6 +42,13 @@
         destroy partial 3.8
         watch array 344.5
 
+    0.13.0
+        fill 69.0
+        scan 987.9
+        destroy 3.6
+        destroy partial 4.4
+        watch array 377.8
+
 ###
 
 fillCD = (count) ->

@@ -38,6 +38,7 @@ do ->
             leftVariable = null
             variableChildren = []
             sign = ''
+            digit = ''
             status = false
             original = ''
             stringKey = ''
@@ -139,6 +140,14 @@ do ->
                         value: sign
                     status = ''
                     sign = ''
+                else if status is 'digit'
+                    if isDigit(a) or a is '.'
+                        digit += a
+                        continue
+                    result.push
+                        type: 'digit'
+                        value: digit
+                    digit = ''
 
                 # no status
                 if isChar a
@@ -149,6 +158,11 @@ do ->
                 if isSign a
                     status = 'sign'
                     sign += a
+                    continue
+
+                if isDigit a
+                    status = 'digit'
+                    digit += a
                     continue
 
                 if a is '"' or a is "'"
