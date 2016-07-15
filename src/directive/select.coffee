@@ -92,7 +92,8 @@ do ->
             # child-options were changed
             lastValue = null
             cd.$select.change = ->
-                setValueOfElement lastValue
+                alight.nextTick ->  # wait when DOM changes are finished
+                    setValueOfElement lastValue
 
             setValueOfElement = (value) ->
                 id = mapper.getId value
