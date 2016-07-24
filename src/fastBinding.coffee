@@ -37,53 +37,58 @@ compileText = (text) ->
     st.fn
 
 
-alight.core.fastBinding = fastBinding = (element) ->
+alight.core.fastBinding = (bindResult) ->
+    if not alight.debug.fastBinding
+        return
+    if bindResult.directive or bindResult.hook or not bindResult.fb
+        return
+    new FastBinding bindResult
+
+
+FastBinding = (bindResult) ->
     self = @
     source = []
     self.fastWatchFn = []
     path = []
-    walk = (element, deep) ->
-        if element.nodeType is 1
-            # attributes
-            for attr in element.attributes
-                if attr.value.indexOf(alight.utils.pars_start_tag) < 0
-                    continue
+    walk = (fb, deep) ->
+        if fb.dir
+            rel = pathToEl path
+            for d in fb.dir
+                source.push 's.dir(' + self.fastWatchFn.length + ', ' + rel + ');'
+                self.fastWatchFn.push d
 
-                text = attr.value
-                key = attr.nodeName
+        if fb.attr
+            for it in fb.attr
+                text = it.value
+                key = it.attrName
 
                 rel = pathToEl path
                 fn = compileText text
                 rtext = text.replace(/"/g, '\\"').replace(/\n/g, '\\n')
                 if fn
-                    source.push "s.fw('#{rtext}', #{self.fastWatchFn.length}, #{rel}, '#{key}');"
+                    source.push 's.fw("' + rtext + '", ' + self.fastWatchFn.length + ', '+ rel + ', "' + key + '");'
                     self.fastWatchFn.push fn
                 else
                     source.push "s.wt('#{rtext}', #{rel}, '#{key}');"
 
-            # child nodes
-            for childElement, i in element.childNodes
-                path.length = deep + 1
-                path[deep] = i
-                walk childElement, deep + 1
-        else if element.nodeType is 3
-            if element.nodeValue.indexOf(alight.utils.pars_start_tag) < 0
-                return
-
-            text = element.nodeValue
-
+        if fb.text
             rel = pathToEl path
-            fn = compileText text
-            rtext = text.replace(/"/g, '\\"').replace(/\n/g, '\\n')
+            fn = compileText fb.text
+            rtext = fb.text.replace(/"/g, '\\"').replace(/\n/g, '\\n')
             if fn
                 source.push 's.fw("' + rtext + '", ' + self.fastWatchFn.length + ', ' + rel + ');'
                 self.fastWatchFn.push fn
             else
                 source.push 's.wt("' + rtext + '", ' + rel + ');'
 
+        if fb.children
+            for it in fb.children
+                path.length = deep + 1
+                path[deep] = it.index
+                walk it.fb, deep + 1
         null
 
-    walk element, 0
+    walk bindResult.fb, 0
 
     source = source.join '\n'
     self.resultFn = alight.utils.compile.Function 's', 'el', 'f$', source
@@ -91,16 +96,23 @@ alight.core.fastBinding = fastBinding = (element) ->
     @
 
 
-fastBinding::bind = (cd, element) ->
-    self = @
-    self.currentCD = cd
-    self.resultFn self, element, f$
+FastBinding::bind = (cd, element) ->
+    @.currentCD = cd
+    @.resultFn @, element, f$
     return
 
-fastBinding::fw = (text, fnIndex, element, attr) ->
-    self = @
-    cd = self.currentCD
-    fn = self.fastWatchFn[fnIndex]
+FastBinding::dir = (fnIndex, el) ->
+    d = @.fastWatchFn[fnIndex]
+    cd = @.currentCD
+    d.fb cd.scope, el, d.value,
+        attrName: d.attrName
+        attrArgument: d.attrArgument
+        changeDetector: cd
+    null
+
+FastBinding::fw = (text, fnIndex, element, attr) ->
+    cd = @.currentCD
+    fn = @.fastWatchFn[fnIndex]
     value = fn cd.locals
     
     w =
@@ -120,7 +132,7 @@ fastBinding::fw = (text, fnIndex, element, attr) ->
     return
 
 
-fastBinding::wt = (expression, element, attr) ->
+FastBinding::wt = (expression, element, attr) ->
     @.currentCD.watchText expression, null,
         element: element
         elementAttr: attr

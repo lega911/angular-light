@@ -9,6 +9,7 @@ alight.debug =
     parser: false
     domOptimization: true
     doubleBinding: 0
+    fastBinding: true
 
 
 doubleBinding = do ->
@@ -123,7 +124,6 @@ do ->
         fn: ->
             ns = @.ns
             name = @.name
-            attrArgument = @.attrArgument or null
             directive = @.directive
             directive.$init = (cd, element, value, env) ->
 
@@ -162,7 +162,6 @@ do ->
 
                 if directive.stopBinding
                     env.stopBinding = true
-                env.attrArgument = attrArgument
 
                 doProcess()
 
@@ -328,6 +327,7 @@ testDirective = do ->
             directive: attrSelf.directive
             priority: attrSelf.directive.priority
             attrName: attrName
+            attrArgument: attrSelf.attrArgument
         return
 
 
@@ -351,13 +351,13 @@ attrBinding = (cd, element, value, attrName) ->
     true
 
 
-bindText = (cd, element) ->
+bindText = (cd, element, option) ->
     text = element.data
     if text.indexOf(alight.utils.pars_start_tag) < 0
         return
     cd.watchText text, null,
         element: element
-    true
+    text
 
 
 bindComment = (cd, element, option) ->
@@ -509,12 +509,15 @@ Env::bind = (_cd, _element, _option) ->
 bindElement = do ->
 
     (cd, element, config) ->
+        fb =
+            attr: []
+            dir: []
+            children: []
         bindResult =
             directive: 0
-            text: 0
-            attr: 0
             hook: 0
             skipToElement: null
+            fb: fb
         config = config || {}
         skipChildren = false
         skip_attr = config.skip_attr
@@ -563,13 +566,16 @@ bindElement = do ->
                     if alight.debug.doubleBinding
                         doubleBinding.startDirective element, d.attrName, value, true
                     if attrBinding cd, element, value, d.attrName
-                        bindResult.attr++
+                        fb.attr.push
+                            attrName: d.attrName
+                            value: value
+
                 else
-                    bindResult.directive++
                     directive = d.directive
                     env = new Env
                         element: element
                         attrName: d.attrName
+                        attrArgument: d.attrArgument or null
                         attributes: list
                         stopBinding: false
                         elementCanBeRemoved: config.elementCanBeRemoved
@@ -577,6 +583,16 @@ bindElement = do ->
                         console.log 'bind', d.attrName, value, d
                     if alight.debug.doubleBinding
                         doubleBinding.startDirective element, d.attrName, value
+
+                    if directive.fastBinding
+                        fb.dir.push
+                            fb: directive.init
+                            attrName: d.attrName
+                            value: value
+                            attrArgument: env.attrArgument
+                    else
+                        bindResult.directive++
+
                     try
                         if directive.$init(cd, element, value, env) is 'stopBinding'
                             skipChildren = true
@@ -602,7 +618,7 @@ bindElement = do ->
             skipToElement = null
             childNodes = for childElement in element.childNodes
                 childElement
-            for childElement in childNodes
+            for childElement, index in childNodes
                 if not childElement
                     continue
                 if skipToElement
@@ -611,10 +627,13 @@ bindElement = do ->
                     continue
                 r = bindNode cd, childElement
                 bindResult.directive += r.directive
-                bindResult.text += r.text
-                bindResult.attr += r.attr
                 bindResult.hook += r.hook
                 skipToElement = r.skipToElement
+                if r.fb
+                    if r.fb.text or (r.fb.attr && r.fb.attr.length) or (r.fb.dir && r.fb.dir.length) or (r.fb.children && r.fb.children.length)
+                        fb.children.push
+                            index: index
+                            fb: r.fb
 
         bindResult
 
@@ -622,10 +641,9 @@ bindElement = do ->
 bindNode = (cd, element, option) ->
     result =
         directive: 0
-        text: 0
-        attr: 0
         hook: 0
         skipToElement: null
+        fb: null
     if alight.hooks.binding.length
         for h in alight.hooks.binding
             result.hook += 1
@@ -636,15 +654,16 @@ bindNode = (cd, element, option) ->
     if element.nodeType is 1
         r = bindElement cd, element, option
         result.directive += r.directive
-        result.text += r.text
-        result.attr += r.attr
         result.hook += r.hook
         result.skipToElement = r.skipToElement
+        result.fb = r.fb
     else if element.nodeType is 3
         if alight.debug.doubleBinding
             doubleBinding.startDirective element, 'text', '', true
-        if bindText cd, element, option
-            result.text++
+        text = bindText cd, element, option
+        if text
+            result.fb =
+                text: text
     else if element.nodeType is 8
         r = bindComment cd, element, option
         if r
@@ -698,15 +717,11 @@ alight.bind = alight.applyBindings = (scope, element, option) ->
         root.finishBinding_lock = true
         root.bindingResult =
             directive: 0
-            text: 0
-            attr: 0
             hook: 0
 
     result = bindNode cd, element, option
 
     root.bindingResult.directive += result.directive
-    root.bindingResult.text += result.text
-    root.bindingResult.attr += result.attr
     root.bindingResult.hook += result.hook
 
     cd.digest()

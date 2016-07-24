@@ -134,7 +134,7 @@ alight.directives.al.repeat =
                 self.updateDom = do ->
                     nodes = []
                     index = 0
-                    fastBinding = false
+                    fastBinding = null
 
                     if self.trackExpression is '$index'
                         node_by_id = {}
@@ -495,6 +495,6 @@ alight.directives.al.repeat =
                                     r = alight.bind it.cd, it.el,
                                         skip_attr: skippedAttrs
                                         elementCanBeRemoved: env.attrName
-                                    if r.directive is 0 and r.hook is 0
-                                        fastBinding = new alight.core.fastBinding self.base_element
+                                    if fastBinding is null
+                                        fastBinding = alight.core.fastBinding(r) or false
                             return

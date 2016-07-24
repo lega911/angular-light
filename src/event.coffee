@@ -68,6 +68,7 @@ do ->
 
     alight.d.al.on =
         priority: 10
+        fastBinding: true
         init: (scope, element, expression, env) ->
             if not env.attrArgument
                 return

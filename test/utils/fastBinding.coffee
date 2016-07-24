@@ -2,14 +2,18 @@
 Test('fast-binding 0', 'fast-binding-0').run ($test, alight) ->
     $test.start 14
 
-    el = document.createElement 'div'
-    el.innerHTML = '''
+    elBase = document.createElement 'div'
+    elBase.innerHTML = '''
         root={{rootValue}}
         <span attr0="a{{attr0}}" attr1="value1" attr2="{{attr2}}a">child0={{child0}}</span>
         <span>no bind <b><b attr4="{{attr4}}x"></b></b> </span>
         <span attr3="a{{attr3}}a">{{child2}}-from-child</span>
     '''
-    f$_attr el, 'attr5', 'y{{attr5}}'
+    f$_attr elBase, 'attr5', 'y{{attr5}}'
+
+    el = elBase.cloneNode true
+
+    bindResult = alight.bind alight.ChangeDetector(), elBase
 
     cd = alight.ChangeDetector
         rootValue: 'unix'
@@ -21,7 +25,7 @@ Test('fast-binding 0', 'fast-binding-0').run ($test, alight) ->
         attr4: '444'
         attr5: '555'
 
-    fb = new alight.core.fastBinding el
+    fb = alight.core.fastBinding bindResult
     fb.bind cd, el
 
     $test.equal ttGetText(el), 'root=unix child0=linux no bind ubuntu-from-child'
@@ -104,7 +108,7 @@ Test('fast-binding-2').run ($test, alight) ->
     el = ttDOM """
         <select>
             <option al-repeat="it in list" value="{{it}}">{{it}} </option>
-        </select
+        </select>
     """
 
     cd = alight.bootstrap el,
@@ -114,5 +118,49 @@ Test('fast-binding-2').run ($test, alight) ->
     $test.equal f$_find(el, 'option')[0].attributes.value.value, 'windows'
     $test.equal f$_find(el, 'option')[1].attributes.value.value, 'mac'
     $test.equal f$_find(el, 'option')[2].attributes.value.value, 'linux'
+
+    $test.close()
+
+
+Test('fast-binding-3').run ($test, alight) ->
+    $test.start 9
+    el = ttDOM """
+        <one attr0="x{{a0}}">x{{t0}}</one>
+        <two @click.ar.gu.me.nt="t1=5" attr1="x{{a1}}">x{{t1}}</two>
+    """
+
+    el2 = el.cloneNode true
+
+    cd = alight.ChangeDetector
+        a0: 'First'
+        t0: 'One'
+        a1: 'Second'
+        t1: 'Two'
+
+    bindResult = alight.bind cd, el
+    fb = alight.core.fastBinding bindResult
+    fb.bind cd, el2
+
+    $test.equal f$_find(el2, 'one')[0].attributes.attr0.value, 'xFirst'
+    $test.equal f$_find(el2, 'one')[0].innerHTML, 'xOne'
+    $test.equal f$_find(el2, 'two')[0].attributes.attr1.value, 'xSecond'
+    $test.equal f$_find(el2, 'two')[0].innerHTML, 'xTwo'
+
+    cd.scope.a0 = 'Linux'
+    cd.scope.t0 = 'Ubuntu'
+    cd.scope.a1 = 'Debian'
+    cd.scope.t1 = 'Unix'
+
+    cd.scan()
+
+    $test.equal f$_find(el2, 'one')[0].attributes.attr0.value, 'xLinux'
+    $test.equal f$_find(el2, 'one')[0].innerHTML, 'xUbuntu'
+    $test.equal f$_find(el2, 'two')[0].attributes.attr1.value, 'xDebian'
+    $test.equal f$_find(el2, 'two')[0].innerHTML, 'xUnix'
+
+    event = new CustomEvent 'click'
+    f$_find(el2, 'two')[0].dispatchEvent event
+
+    $test.equal f$_find(el2, 'two')[0].innerHTML, 'x5'
 
     $test.close()
