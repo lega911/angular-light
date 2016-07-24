@@ -9,7 +9,8 @@ alight.createComponent('rating', (scope, element, env) => {
     templateUrl,
     props,
     onStart,
-    onDestroy
+    onDestroy,
+    api
   };
 })
 
@@ -111,8 +112,15 @@ alight.createComponent('rating', (scope, element, env) => {
           if(!parentDestroyed) parentCD.destroy();  // child of parentCD
         })
 
-        // option props
+        // option api
         let readyProps = {};
+        if(option.api) {
+          readyProps[':api'] = true
+          let propValue = env.takeAttr(':api');
+          if(propValue) parentCD.locals[propValue] = option.api;
+        }
+
+        // option props
         if(option.props) {
           for(var key in option.props) {
             let propName = ':' + key;
