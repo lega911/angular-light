@@ -71,9 +71,28 @@ do ->
         init: (scope, element, expression, env) ->
             if not env.attrArgument
                 return
-            event = env.attrArgument.split('.')[0]
-            handler = makeEvent env.attrArgument, directiveOption[event]
-            handler scope, element, expression, env
+            eventName = env.attrArgument.split('.')[0]
+            ev = makeEvent env.attrArgument, eventOption[eventName]
+
+            ev.scope = scope
+            ev.element = element
+            ev.expression = expression
+            ev.cd = cd = env.changeDetector
+            ev.fn = cd.compile expression,
+                no_return: true
+                input: ['$event', '$element', '$value']
+
+            eventHandler = (e) ->
+                handler ev, e
+
+            for e in ev.eventList
+                f$.on element, e, eventHandler
+            if ev.initFn
+                ev.initFn scope, element, expression, env
+            cd.watch '$destroy', ->
+                for e in ev.eventList
+                    f$.off element, e, eventHandler
+            return
 
     keyCodes =
         enter: 13
@@ -87,150 +106,7 @@ do ->
         left: 37
         right: 39
 
-    makeEvent = (attrArgument, option) ->
-        option = option or {}
-        args = attrArgument.split '.'
-        eventName = args[0]
-        eventList = null
-        stop = option.stop or false
-        prevent = option.prevent or false
-        scan = true
-        modifiers = []
-        filterByKey = null
-        throttle = null
-        throttleId = null
-        debounce = null
-        debounceTime = 0
-        initFn = null
-
-        modifier = alight.hooks.eventModifier[eventName]
-        if modifier
-            modifier = formatModifier modifier
-            if modifier.event
-                eventList = modifier.event
-                if modifier.fn
-                    modifiers.push modifier
-                if modifier.init
-                    initFn = modifier.init
-        if not eventList
-            eventList = [eventName]
-
-        for k in args.slice(1)
-            if k is 'stop'
-                stop = true
-                continue
-            if k is 'prevent'
-                prevent = true
-                continue
-            if k is 'nostop'
-                stop = false
-                continue
-            if k is 'noprevent'
-                prevent = false
-                continue
-            if k is 'noscan'
-                scan = false
-                continue
-            if k.substring(0, 9) is 'throttle-'
-                throttle = Number k.substring 9
-                continue
-            if k.substring(0, 9) is 'debounce-'
-                debounce = Number k.substring 9
-                continue
-
-            modifier = alight.hooks.eventModifier[k]
-            if modifier
-                modifier = formatModifier modifier, eventList
-                if modifier
-                    modifiers.push modifier
-                continue
-
-            if not option.filterByKey
-                continue
-
-            if filterByKey is null
-                filterByKey = {}
-
-            if keyCodes[k]
-                k = keyCodes[k]
-            filterByKey[k] = true
-
-        (scope, element, expression, env) ->
-            cd = env.changeDetector
-            fn = cd.compile expression,
-                no_return: true
-                input: ['$event', '$element', '$value']
-
-            if element.type is 'checkbox'
-                getValue = ->
-                    element.checked
-            else if element.type is 'radio'
-                getValue = ->
-                    element.value or element.checked
-            else
-                getValue = (event) ->
-                    if event.component
-                        return event.value
-                    element.value
-
-            execute = (event) ->
-                try
-                    fn cd.locals, event, element, getValue event
-                catch error
-                    alight.exceptionHandler error, "Error in event: #{attrArgument} = #{expression}",
-                        attr: attrArgument
-                        exp: expression
-                        scope: scope
-                        cd: cd
-                        element: element
-                        event: event
-                if scan
-                    cd.scan()
-                return
-
-            handler = (event) ->
-                if filterByKey
-                    if not filterByKey[event.keyCode]
-                        return
-
-                if modifiers.length
-                    env =
-                        stop: false
-                    for modifier in modifiers
-                        modifier.fn event, env
-                        if env.stop
-                            return
-
-                if prevent
-                    event.preventDefault()
-                if stop
-                    event.stopPropagation()
-
-                if throttle
-                    if throttleId
-                        clearTimeout throttleId
-                    throttleId = setTimeout ->
-                        throttleId = null
-                        execute event
-                    , throttle
-                else if debounce
-                    if debounceTime < Date.now()
-                        debounceTime = Date.now() + debounce
-                        execute event
-                else
-                    execute event
-                return
-
-            for e in eventList
-                f$.on element, e, handler
-            if initFn
-                initFn scope, element, expression, env
-            cd.watch '$destroy', ->
-                for e in eventList
-                    f$.off element, e, handler
-            return
-
-    directiveOption =
+    eventOption =
         click:
             stop: true
             prevent: true
@@ -246,3 +122,135 @@ do ->
             filterByKey: true
         keydown:
             filterByKey: true
+
+    makeEvent = (attrArgument, option) ->
+        option = option or {}
+        ev =
+            attrArgument: attrArgument
+            throttle: null
+            throttleId: null
+            debounce: null
+            debounceTime: 0
+            initFn: null
+            eventList: null
+            stop: option.stop or false
+            prevent: option.prevent or false
+            scan: true
+            modifiers: []
+
+        args = attrArgument.split '.'
+        eventName = args[0]
+        filterByKey = null
+
+        modifier = alight.hooks.eventModifier[eventName]
+        if modifier
+            modifier = formatModifier modifier
+            if modifier.event
+                ev.eventList = modifier.event
+                if modifier.fn
+                    ev.modifiers.push modifier
+                if modifier.init
+                    ev.initFn = modifier.init
+        if not ev.eventList
+            ev.eventList = [eventName]
+
+        for k in args.slice(1)
+            if k is 'stop'
+                ev.stop = true
+                continue
+            if k is 'prevent'
+                ev.prevent = true
+                continue
+            if k is 'nostop'
+                ev.stop = false
+                continue
+            if k is 'noprevent'
+                ev.prevent = false
+                continue
+            if k is 'noscan'
+                ev.scan = false
+                continue
+            if k.substring(0, 9) is 'throttle-'
+                ev.throttle = Number k.substring 9
+                continue
+            if k.substring(0, 9) is 'debounce-'
+                ev.debounce = Number k.substring 9
+                continue
+
+            modifier = alight.hooks.eventModifier[k]
+            if modifier
+                modifier = formatModifier modifier, ev.eventList
+                if modifier
+                    ev.modifiers.push modifier
+                continue
+
+            if not option.filterByKey
+                continue
+
+            if filterByKey is null
+                filterByKey = {}
+
+            if keyCodes[k]
+                k = keyCodes[k]
+            filterByKey[k] = true
+        ev.filterByKey = filterByKey
+        ev
+
+    getValue = (ev, event) ->
+        element = ev.element
+        if element.type is 'checkbox'
+            element.checked
+        else if element.type is 'radio'
+            element.value or element.checked
+        else if event.component
+            event.value
+        else
+            element.value
+
+    execute = (ev, event) ->
+        try
+            ev.fn ev.cd.locals, event, ev.element, getValue ev, event
+        catch error
+            alight.exceptionHandler error, "Error in event: #{ev.attrArgument} = #{ev.expression}",
+                attr: ev.attrArgument
+                exp: ev.expression
+                scope: ev.scope
+                cd: ev.cd
+                element: ev.element
+                event: event
+        if ev.scan
+            ev.cd.scan()
+        return
+
+    handler = (ev, event) ->
+        if ev.filterByKey
+            if not ev.filterByKey[event.keyCode]
+                return
+
+        if ev.modifiers.length
+            env =
+                stop: false
+            for modifier in ev.modifiers
+                modifier.fn event, env
+                if env.stop
+                    return
+
+        if ev.prevent
+            event.preventDefault()
+        if ev.stop
+            event.stopPropagation()
+
+        if ev.throttle
+            if ev.throttleId
+                clearTimeout ev.throttleId
+            ev.throttleId = setTimeout ->
+                ev.throttleId = null
+                execute ev, event
+            , ev.throttle
+        else if ev.debounce
+            if ev.debounceTime < Date.now()
+                ev.debounceTime = Date.now() + ev.debounce
+                execute ev, event
+        else
+            execute ev, event
+        return
