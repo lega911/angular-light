@@ -22,13 +22,17 @@ alight.d.al.html.modifier.scope = (self, option) ->
         self.activeElement.innerHTML = html
         self.insertDom self.topElement, self.activeElement
 
-        childCD = self.childCD = option.env.changeDetector.new null,
+        parentCD = option.env.changeDetector
+        childCD = self.childCD = parentCD.new null,
             locals: true
 
-        childCD.watch outerName, (outerValue) ->
+        w = parentCD.watch outerName, (outerValue) ->
             childCD.locals[innerName] = outerValue
         ,
             oneTime: oneTime
+
+        self.childCD.watch '$destroy', ->
+            w.stop()
 
         alight.bind self.childCD, self.activeElement,
             skip_attr: option.env.skippedAttr()

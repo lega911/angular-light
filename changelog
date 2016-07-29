@@ -24,3 +24,9 @@
 * alight.bind, alias of option "skip", can be true or list of attributes
 * alight.Scope, new option "returnChangeDetector"
 * watchMode "copy" for components
+* fastBinding for directives (env.fastBinding)
+
+
+Fixes:
+
+* fix :scope.html
