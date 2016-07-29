@@ -584,15 +584,6 @@ bindElement = do ->
                     if alight.debug.doubleBinding
                         doubleBinding.startDirective element, d.attrName, value
 
-                    if directive.fastBinding
-                        fb.dir.push
-                            fb: directive.init
-                            attrName: d.attrName
-                            value: value
-                            attrArgument: env.attrArgument
-                    else
-                        bindResult.directive++
-
                     try
                         if directive.$init(cd, element, value, env) is 'stopBinding'
                             skipChildren = true
@@ -603,6 +594,16 @@ bindElement = do ->
                             cd: cd
                             scope: cd.scope
                             element: element
+
+                    if env.fastBinding
+                        fb.dir.push
+                            fb: directive.init
+                            attrName: d.attrName
+                            value: value
+                            attrArgument: env.attrArgument
+                    else
+                        bindResult.directive++
+
                     if alight.debug.doubleBinding
                         doubleBinding.finishDirective element, d.attrName
 

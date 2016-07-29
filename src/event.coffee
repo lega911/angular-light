@@ -68,8 +68,8 @@ do ->
 
     alight.d.al.on =
         priority: 10
-        fastBinding: true
         init: (scope, element, expression, env) ->
+            env.fastBinding = true
             if not env.attrArgument
                 return
             eventName = env.attrArgument.split('.')[0]

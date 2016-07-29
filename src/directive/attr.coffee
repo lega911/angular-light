@@ -29,6 +29,7 @@ do ->
         hidden: 'hidden'
 
     alight.d.al.attr = (scope, element, key, env) ->
+        env.fastBinding = true
         if not env.attrArgument
             return
         d = env.attrArgument.split '.'
@@ -65,8 +66,8 @@ do ->
                         element.removeAttribute attrName
 
         if isTemplate
-            scope.$watchText key, setter,
+            env.changeDetector.watchText key, setter,
                 readOnly: true
         else
-            scope.$watch key, setter,
+            env.changeDetector.watch key, setter,
                 readOnly: true

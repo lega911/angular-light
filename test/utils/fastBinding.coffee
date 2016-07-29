@@ -123,13 +123,16 @@ Test('fast-binding-2').run ($test, alight) ->
 
 
 Test('fast-binding-3').run ($test, alight) ->
-    $test.start 9
+    $test.start 13
     el = ttDOM """
-        <one attr0="x{{a0}}">x{{t0}}</one>
-        <two @click.ar.gu.me.nt="t1=5" attr1="x{{a1}}">x{{t1}}</two>
+        <one attr0="x{{a0}}" :title="a0">x{{t0}}</one>
+        <two @click.ar.gu.me.nt="t1=5" attr1="x{{a1}}" :title="a1">x{{t1}}</two>
     """
 
     el2 = el.cloneNode true
+
+    bindResult = alight.bind alight.ChangeDetector(), el
+    fb = alight.core.fastBinding bindResult
 
     cd = alight.ChangeDetector
         a0: 'First'
@@ -137,13 +140,14 @@ Test('fast-binding-3').run ($test, alight) ->
         a1: 'Second'
         t1: 'Two'
 
-    bindResult = alight.bind cd, el
-    fb = alight.core.fastBinding bindResult
     fb.bind cd, el2
+    cd.scan()
 
     $test.equal f$_find(el2, 'one')[0].attributes.attr0.value, 'xFirst'
+    $test.equal f$_find(el2, 'one')[0].attributes.title.value, 'First'
     $test.equal f$_find(el2, 'one')[0].innerHTML, 'xOne'
     $test.equal f$_find(el2, 'two')[0].attributes.attr1.value, 'xSecond'
+    $test.equal f$_find(el2, 'two')[0].attributes.title.value, 'Second'
     $test.equal f$_find(el2, 'two')[0].innerHTML, 'xTwo'
 
     cd.scope.a0 = 'Linux'
@@ -154,8 +158,10 @@ Test('fast-binding-3').run ($test, alight) ->
     cd.scan()
 
     $test.equal f$_find(el2, 'one')[0].attributes.attr0.value, 'xLinux'
+    $test.equal f$_find(el2, 'one')[0].attributes.title.value, 'Linux'
     $test.equal f$_find(el2, 'one')[0].innerHTML, 'xUbuntu'
     $test.equal f$_find(el2, 'two')[0].attributes.attr1.value, 'xDebian'
+    $test.equal f$_find(el2, 'two')[0].attributes.title.value, 'Debian'
     $test.equal f$_find(el2, 'two')[0].innerHTML, 'xUnix'
 
     event = new CustomEvent 'click'
