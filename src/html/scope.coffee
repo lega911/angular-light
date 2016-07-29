@@ -27,16 +27,20 @@ alight.d.al.html.modifier.scope = (self, option) ->
         ChildScope = ->
         ChildScope:: = parentScope
 
+        parentCD = option.env.changeDetector
         scope = new ChildScope
         scope.$$root = parentScope.$$root or parentScope
-        scope.$rootChangeDetector = self.childCD = option.env.changeDetector.new scope
+        scope.$rootChangeDetector = self.childCD = parentCD.new scope
         scope.$changeDetector = null
         scope.$parent = parentScope
 
-        self.childCD.watch '$parent.' + outerName, (outerValue) ->
+        w = parentCD.watch outerName, (outerValue) ->
             scope[innerName] = outerValue
         ,
             oneTime: oneTime
+
+        self.childCD.watch '$destroy', ->
+            w.stop()
 
         alight.bind self.childCD, self.activeElement,
             skip_attr: option.env.skippedAttr()
