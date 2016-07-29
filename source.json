@@ -44,6 +44,9 @@
     "file": "event.coffee",
     "tag": ["basis"]
 }, {
+    "file": "direct_directive.es.js",
+    "tag": ["full"]
+}, {
     "file": "a2style.coffee",
     "tag": ["ext"],
     "description": "Angular 2 style for attributes and events"

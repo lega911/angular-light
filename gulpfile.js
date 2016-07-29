@@ -55,11 +55,7 @@ gulp.task('prepare', [], function(){
         }
         if(skip) continue;
         var d = f.file.match(/^(.*\.)(\w+)$/)
-        var name = d[1] + 'js';
-        var ext = d[2];
-        if(ext === 'js') name = './src/' + name
-        else name = './tmp/' + name
-        resultList.push(name);
+        resultList.push('./tmp/' + d[1] + 'js');
     }
 });
 
@@ -67,7 +63,13 @@ gulp.task('clean', function () {
   return del.sync(['tmp']);
 });
 
-gulp.task('compile', ['compile_coffeescript', 'compile_typescript'], function() {});
+gulp.task('compile', ['compile_coffeescript', 'compile_typescript', 'copy_js'], function() {});
+
+gulp.task('copy_js', function () {
+  return gulp
+    .src('./src/js/*')
+    .pipe(gulp.dest('tmp/js/'));
+});
 
 gulp.task('compile_coffeescript', ['clean'], function() {
   return gulp.src('./src/**/*.coffee')

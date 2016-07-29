@@ -184,7 +184,7 @@ do ->
                 @.env.changeDetector = @.cd
 
                 cd_setActive @.cd.scope, @.cd
-                result = @.directive.init @.cd.scope, @.element, @.value, @.env
+                result = @.directive.init.call @.env, @.cd.scope, @.element, @.value, @.env
                 if result and result.start
                     result.start()
                 cd_setActive @.cd.scope, null
@@ -258,7 +258,7 @@ do ->
             if @.directive.link
                 @.env.changeDetector = @.cd
                 cd_setActive @.cd.scope, @.cd
-                result = @.directive.link @.cd.scope, @.element, @.value, @.env
+                result = @.directive.link.call @.env, @.cd.scope, @.element, @.value, @.env
                 if result and result.start
                     result.start()
                 cd_setActive @.cd.scope, null

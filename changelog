@@ -25,6 +25,7 @@
 * alight.Scope, new option "returnChangeDetector"
 * watchMode "copy" for components
 * fastBinding for directives (env.fastBinding)
+* experimental direct directive
 
 
 Fixes:
