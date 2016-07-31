@@ -1,5 +1,10 @@
 
 Test('event-0').run ($test, alight, timeout) ->
+    if $test.isPhantom
+        $test.skip 1
+        $test.close()
+        return
+
     $test.start 2
 
     el = ttDOM '''
@@ -22,6 +27,11 @@ Test('event-0').run ($test, alight, timeout) ->
 
 
 Test('event-1').run ($test, alight, timeout) ->
+    if $test.isPhantom
+        $test.skip 1
+        $test.close()
+        return
+
     $test.start 10
 
     el = ttDOM '''

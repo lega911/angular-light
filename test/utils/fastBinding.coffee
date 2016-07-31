@@ -164,9 +164,17 @@ Test('fast-binding-3').run ($test, alight) ->
     $test.equal f$_find(el2, 'two')[0].attributes.title.value, 'Debian'
     $test.equal f$_find(el2, 'two')[0].innerHTML, 'xUnix'
 
-    event = new CustomEvent 'click'
-    f$_find(el2, 'two')[0].dispatchEvent event
+    cd.scope.a0 = null
+    cd.scan()
+    $test.equal f$_find(el2, 'one')[0].attributes.title, undefined
 
-    $test.equal f$_find(el2, 'two')[0].innerHTML, 'x5'
+    if window.CustomEvent
+        $test.start 1
+        event = new CustomEvent 'click'
+        f$_find(el2, 'two')[0].dispatchEvent event
+
+        $test.equal f$_find(el2, 'two')[0].innerHTML, 'x5'
+    else
+        $test.skip 1
 
     $test.close()

@@ -33,6 +33,7 @@ stat =
     error: 0
     bStarted: 0
     bFinished: 0
+    skipped: 0
 
 testList = []
 
@@ -43,6 +44,8 @@ printTotals = ->
         console.error msg
     else
         console.log msg
+    if stat.skipped
+        console.warn 'Skipped', stat.skipped
     stat
 
 
@@ -107,6 +110,7 @@ window.Test = do ->
             }
         makeScope = (title) ->
             self =
+                isPhantom: navigator.userAgent.indexOf('Phantom') >= 0
                 title: title
                 n: 0
                 l_started: 0
@@ -131,6 +135,8 @@ window.Test = do ->
                     stat.error++
                     self.l_error++
                     console.error self.n, title, msg or ''
+                skip: (count) ->
+                    stat.skipped += count
                 ok: (msg) ->
                     stat.ok++
                     self.l_ok++

@@ -475,7 +475,10 @@ scanCore = (topCD, result) ->
                         try
                             if w.el
                                 if w.ea
-                                    w.el.setAttribute w.ea, value
+                                    if value?
+                                        w.el.setAttribute w.ea, value
+                                    else
+                                        w.el.removeAttribute w.ea
                                 else
                                     w.el.nodeValue = value
                             else

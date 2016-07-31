@@ -37,6 +37,9 @@ do ->
         prop = props[attrName]
         isTemplate = d.indexOf('tpl') > 0
 
+        args =
+            readOnly: true
+
         if attrName is 'style'
             if not d[1]
                 throw 'Need to define a style attribute'
@@ -53,21 +56,18 @@ do ->
                 else
                     element.blur()
         else
-            setter = (value) ->
-                if prop
-                    if value is undefined
-                        value = null
-                    if element[prop] isnt value
-                        element[prop] = value
-                else
-                    if value?
-                        element.setAttribute attrName, value
-                    else
-                        element.removeAttribute attrName
+            if prop
+                setter = (value) ->
+                    if prop
+                        if value is undefined
+                            value = null
+                        if element[prop] isnt value
+                            element[prop] = value
+            else
+                args.element = element
+                args.elementAttr = attrName
 
         if isTemplate
-            env.changeDetector.watchText key, setter,
-                readOnly: true
+            env.changeDetector.watchText key, setter, args
         else
-            env.changeDetector.watch key, setter,
-                readOnly: true
+            env.changeDetector.watch key, setter, args
