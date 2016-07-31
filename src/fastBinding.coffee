@@ -104,10 +104,13 @@ FastBinding::bind = (cd, element) ->
 FastBinding::dir = (fnIndex, el) ->
     d = @.fastWatchFn[fnIndex]
     cd = @.currentCD
-    d.fb cd.scope, el, d.value,
+    env = new Env
         attrName: d.attrName
         attrArgument: d.attrArgument
         changeDetector: cd
+    r = d.fb.call env, cd.scope, el, d.value, env
+    if r and r.start
+        r.start()
     null
 
 FastBinding::fw = (text, fnIndex, element, attr) ->

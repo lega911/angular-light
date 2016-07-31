@@ -1,7 +1,8 @@
 
 alight.d.al.checked =
     priority: 20
-    link: (scope, element, name) ->
+    init: (scope, element, name, env) ->
+        env.fastBinding = true
         self =
             start: ->
                 self.onDom()
@@ -9,19 +10,19 @@ alight.d.al.checked =
                 return
             onDom: ->
                 f$.on element, 'change', self.updateModel
-                scope.$watch '$destroy', self.offDom
+                env.watch '$destroy', self.offDom
                 return
             offDom: ->
                 f$.off element, 'change', self.updateModel
                 return
             updateModel: ->
                 value = element.checked
-                scope.$setValue name, value
+                env.setValue name, value
                 self.watch.refresh()
-                scope.$scan()
+                env.scan()
                 return
             watchModel: ->
-                self.watch = scope.$watch name, self.updateDom
+                self.watch = env.watch name, self.updateDom
                 return
             updateDom: (value) ->
                 element.checked = !!value

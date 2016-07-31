@@ -459,7 +459,7 @@ Env::setValue = (name, value) ->
     @.changeDetector.setValue name, value
 
 Env::eval = (exp) ->
-    @.changeDetector.getValue exp
+    @.changeDetector.eval exp
 
 ###
     env.new(scope, option)

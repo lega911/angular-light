@@ -1,5 +1,5 @@
 
-Test('fast-binding 0', 'fast-binding-0').run ($test, alight) ->
+Test('fast-binding-0').run ($test, alight) ->
     $test.start 14
 
     elBase = document.createElement 'div'
@@ -176,5 +176,69 @@ Test('fast-binding-3').run ($test, alight) ->
         $test.equal f$_find(el2, 'two')[0].innerHTML, 'x5'
     else
         $test.skip 1
+
+    $test.close()
+
+
+Test('fast-binding-4').run ($test, alight) ->
+    if $test.isPhantom
+        $test.skip 1
+        $test.close()
+        return
+
+    $test.start 12
+
+    _el = ttDOM """
+        <input type="text" al-model="a" />
+        <input type="text" al-value="b" />
+        <input type="checkbox" al-model="c" />
+        <input type="checkbox" al-checked="d" />
+    """
+
+    el = _el.cloneNode true
+
+    bindResult = alight.bind alight.ChangeDetector(), _el
+    fb = alight.core.fastBinding bindResult
+
+    cd = alight.ChangeDetector
+        a: 'aaa'
+        b: 'bbb'
+        c: true
+        d: true
+
+    fb.bind cd, el
+    cd.scan()
+
+    $test.equal el.children[0].value, 'aaa'
+    $test.equal el.children[1].value, 'bbb'
+    $test.equal el.children[2].checked, true
+    $test.equal el.children[3].checked, true
+
+    cd.scope.a = 'ubuntu'
+    cd.scope.b = 'linux'
+    cd.scope.c = false
+    cd.scope.d = false
+    cd.scan()
+
+    $test.equal el.children[0].value, 'ubuntu'
+    $test.equal el.children[1].value, 'linux'
+    $test.equal el.children[2].checked, false
+    $test.equal el.children[3].checked, false
+
+    el.children[0].value = 'one'
+    el.children[0].dispatchEvent new Event 'change'
+    el.children[1].value = 'two'
+    el.children[1].dispatchEvent new Event 'change'
+
+    el.children[2].checked = true
+    el.children[2].dispatchEvent new Event 'change'
+
+    el.children[3].checked = true
+    el.children[3].dispatchEvent new Event 'change'
+
+    $test.equal cd.scope.a, 'one'
+    $test.equal cd.scope.b, 'two'
+    $test.equal cd.scope.c, true
+    $test.equal cd.scope.d, true
 
     $test.close()
