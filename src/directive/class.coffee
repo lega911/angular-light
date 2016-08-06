@@ -2,7 +2,7 @@
 # al-css="class:exp"
 alight.d.al.class = alight.d.al.css =
     priority: 30
-    link: (scope, element, exp) ->
+    link: (scope, element, exp, env) ->
         self =
             start: ->
                 self.parsLine()
@@ -31,7 +31,7 @@ alight.d.al.class = alight.d.al.css =
                             self.draw item, value
                             '$scanNoChanges'
 
-                    scope.$watch item.exp, color
+                    env.watch item.exp, color
                 return
             draw: (item, value) ->
                 if value

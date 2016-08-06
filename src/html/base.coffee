@@ -117,7 +117,7 @@ alight.d.al.html =
                 if self.watchMode is 'literal'
                     self.updateDom self.name
                 else if self.watchMode is 'tpl'
-                    scope.$watchText self.name, self.updateDom
+                    env.watchText self.name, self.updateDom
                 else
-                    scope.$watch self.name, self.updateDom
+                    env.watch self.name, self.updateDom
                 return

@@ -1,5 +1,5 @@
 
-alight.d.al.text = (scope, element, name) ->
+alight.d.al.text = (scope, element, name, env) ->
     self =
         start: ->
             self.watchModel()
@@ -12,5 +12,5 @@ alight.d.al.text = (scope, element, name) ->
                 element.innerText = value
             '$scanNoChanges'
         watchModel: ->
-            scope.$watch name, self.updateDom
+            env.watch name, self.updateDom
             return

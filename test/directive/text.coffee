@@ -14,20 +14,21 @@ Test('bindonce').run ($test, alight) ->
 
     dom = $ '<div attr="{{= num + 5 }}">Text {{= num + num }}</div>'
 
-    scope = alight.bootstrap dom[0],
+    cd = alight.bootstrap dom[0],
         num: 15
 
     $test.equal dom.attr('attr'), '20'
     $test.equal dom.text(), 'Text 30'
 
-    scope.num = 50
-    scope.$scan ->
+    cd.scope.num = 50
+    cd.scan ->
         $test.equal dom.attr('attr'), '20'
         $test.equal dom.text(), 'Text 30'
         $test.close()
 
 
 Test('text-directive-0').run ($test, alight, timeout) ->
+    alight.option.injectScope = true
     $test.start 4
 
     alight.filters.minus = class
@@ -45,7 +46,7 @@ Test('text-directive-0').run ($test, alight, timeout) ->
 
     dom = $ '<div attr="Attr {{#double num | minus:7 }}"></div>'
 
-    scope = alight.bootstrap dom[0],
+    cd = alight.bootstrap dom[0],
         num: 15
 
     $test.equal dom.attr('attr'), 'Attr $'
@@ -53,8 +54,8 @@ Test('text-directive-0').run ($test, alight, timeout) ->
     timeout.add 150, ->
         $test.equal dom.attr('attr'), 'Attr 16'
 
-        scope.num = 50
-        scope.$scan ->
+        cd.scope.num = 50
+        cd.scan ->
             $test.equal dom.attr('attr'), 'Attr 16'
 
             timeout.add 150, ->
@@ -185,13 +186,15 @@ Test('one-time-binding-1', 'one-time-binding-1').run ($test, alight) ->
 
 
 Test('onetime-binding-2', 'onetime-binding-2').run ($test, alight, timeout) ->
+    alight.option.injectScope = true
     $test.start 6
 
     exp = 'a{{::a}}-b{{::b}}-c{{::c}}!'
     dom = document.createElement 'div'
     dom.innerHTML = "<div>#{exp}</div>::<div>#{exp}</div>"
 
-    scope = alight.bootstrap dom
+    cd = alight.bootstrap dom
+    scope = cd.scope
 
     result = ->
         ttGetText dom

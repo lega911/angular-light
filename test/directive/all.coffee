@@ -1,14 +1,16 @@
 
 Test('al-css-1', 'al-css-1').run ($test, alight) ->
+	alight.option.injectScope = true
 	$test.start 5
 
 	el = document.createElement 'div'
 	el.innerHTML = '<i class="aaa" al-css="bbb ccc ddd: active, fff eee: active2"></i>'
 	tag = el.children[0]
 
-	scope = alight.bootstrap tag,
+	cd = alight.bootstrap tag,
 		active: false
 		active2: false
+	scope = cd.scope
 
 	result = ->
 		if tag.classList
@@ -144,7 +146,8 @@ Test('al-ctrl-0').run ($test, alight) ->
 	$test.close()
 
 
-Test('al-value-on-off', 'al-value-on-off').run ($test, alight, timeout) ->
+Test('al-value-on-off').run ($test, alight, timeout) ->
+	alight.option.injectScope = true
 	if typeof(CustomEvent) isnt 'function'
 		$test.close()
 		console.warn 'skip al-value on/off'
@@ -155,8 +158,9 @@ Test('al-value-on-off', 'al-value-on-off').run ($test, alight, timeout) ->
 	dom = $ '<div><input type="text" al-value="name" /></div>'
 	input = dom.find('input')[0]
 
-	scope = alight.bootstrap dom,
+	cd = alight.bootstrap input,
 		name: '123'
+	scope = cd.scope
 
 	$test.equal input.value, '123'
 
@@ -178,7 +182,7 @@ Test('al-value-on-off', 'al-value-on-off').run ($test, alight, timeout) ->
 	, 50
 
 
-Test('al-value setter').run ($test, alight) ->
+Test('al-value-setter').run ($test, alight) ->
 	if typeof(CustomEvent) isnt 'function'
 		$test.close()
 		console.warn 'skip al-value on/off'
@@ -189,7 +193,7 @@ Test('al-value setter').run ($test, alight) ->
 	dom = $ '<div><input type="text" al-value="name[0]" /></div>'
 	input = dom.find('input')[0]
 
-	scope = alight.bootstrap dom,
+	cd = alight.bootstrap input,
 		name: ['123']
 
 	$test.equal input.value, '123'
@@ -198,13 +202,13 @@ Test('al-value setter').run ($test, alight) ->
 	input.dispatchEvent(new CustomEvent('input'))
 
 	setTimeout ->
-		$test.equal scope.name[0], 'linux'
+		$test.equal cd.scope.name[0], 'linux'
 
 		input.value = 'new value'
 		input.dispatchEvent(new CustomEvent('input'))
 
 		setTimeout ->
-			$test.equal scope.name[0], 'new value'
+			$test.equal cd.scope.name[0], 'new value'
 			$test.close()
 		, 50
 	, 50
@@ -215,13 +219,13 @@ Test('al-text').run ($test, alight) ->
 
 	el = ttDOM '<div al-text="name"></div>'
 
-	scope = alight.bootstrap el,
+	cd = alight.bootstrap el,
 		name: 'one'
 
 	$test.equal ttGetText(el), 'one'
 
-	scope.name = 'two'
-	scope.$scan ->
+	cd.scope.name = 'two'
+	cd.scan ->
 		$test.equal ttGetText(el), 'two'
 
 		$test.close()

@@ -1,7 +1,7 @@
 
-alight.d.al.submit = (scope, element, name) ->
+alight.d.al.submit = (scope, element, name, env) ->
     self =
-        callback: scope.$compile name,
+        callback: env.compile name,
             no_return: true
             input: ['$event']
         start: ->
@@ -9,7 +9,7 @@ alight.d.al.submit = (scope, element, name) ->
             return
         onDom: ->
             f$.on element, 'submit', self.doCallback
-            scope.$watch '$destroy', self.offDom
+            env.watch '$destroy', self.offDom
             return
         offDom: ->
             f$.off element, 'submit', self.doCallback
@@ -24,5 +24,5 @@ alight.d.al.submit = (scope, element, name) ->
                     name: name
                     scope: scope
                     element: element
-            scope.$scan()
+            env.scan()
             return

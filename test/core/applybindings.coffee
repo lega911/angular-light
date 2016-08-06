@@ -1,5 +1,6 @@
 
 Test('apply-binding-0').run ($test, alight) ->
+    alight.option.injectScope = true
     $test.start 12
     f$ = alight.f$
 
@@ -10,11 +11,12 @@ Test('apply-binding-0').run ($test, alight) ->
     f$_attr el, 'some-text', 'start:{{link}}:finish'
 
     count = 0
-    scope = alight.bootstrap el,
+    cd = alight.bootstrap el,
         link: 'img.jpg'
         redClass: false
         testInit: ->
             count += 1
+    scope = cd.scope
 
     $test.equal el.className, ''
     $test.equal f$_attr el, 'src', 'some-img.jpg'
@@ -39,14 +41,16 @@ Test('apply-binding-0').run ($test, alight) ->
 
 
 Test('bootstrap-el').run ($test, alight) ->
+    alight.option.injectScope = true
     $test.start 4
 
     el = ttDOM "<div>{{name}}</div>"
 
-    scope = alight.bootstrap el,
+    cd = alight.bootstrap el,
         name: 'Some text'
         click: ->
             @.name = 'Hello'
+    scope = cd.scope
 
     $test.equal scope.name, 'Some text'
     $test.equal ttGetText(el), 'Some text'

@@ -6,5 +6,5 @@ alight.d.al.src = (scope, element, name) ->
         element.setAttribute 'src', value
         '$scanNoChanges'
 
-    scope.$watchText name, setter
+    @.watchText name, setter
     return

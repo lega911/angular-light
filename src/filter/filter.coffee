@@ -56,7 +56,7 @@ alight.filters.filter = class F
             env.setValue result
             null
 
-        scope.$watch exp, (input) ->
+        env.changeDetector.watch exp, (input) ->
             filterObject = input
             that.doFiltering()
         ,

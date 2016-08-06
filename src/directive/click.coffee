@@ -5,7 +5,7 @@ clickMaker = (event) ->
     link: (scope, element, name, env) ->
         self =
             stopPropagation: @.stopPropagation
-            callback: scope.$compile name,
+            callback: env.compile name,
                 no_return: true
                 input: ['$event']
             start: ->
@@ -14,7 +14,7 @@ clickMaker = (event) ->
                 return
             onDom: ->
                 f$.on element, event, self.doCallback
-                scope.$watch '$destroy', self.offDom
+                env.watch '$destroy', self.offDom
                 return
             offDom: ->
                 f$.off element, event, self.doCallback
@@ -36,12 +36,12 @@ clickMaker = (event) ->
                         scope: scope
                         element: element
 
-                if self.stop and scope.$eval self.stop
+                if self.stop and env.eval self.stop
                     e.preventDefault()
                     if self.stopPropagation
                         e.stopPropagation()
 
-                scope.$scan()
+                env.scan()
                 return
 
 alight.d.al.click = clickMaker 'click'

@@ -8,7 +8,9 @@
         alight.text = {};
         alight.core = {};
         alight.utils = {};
-        alight.option = {};
+        alight.option = {
+            injectScope: false
+        };
         alight.ctrl = alight.controllers = {};
         alight.d = alight.directives = {
             al: {},

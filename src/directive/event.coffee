@@ -2,20 +2,20 @@
 do ->
     for key in ['keydown', 'keypress', 'keyup', 'mousedown', 'mouseenter', 'mouseleave', 'mousemove', 'mouseover', 'mouseup', 'focus', 'blur', 'change']
         do (key) ->
-            alight.d.al[key] = (scope, element, exp) ->
+            alight.d.al[key] = (scope, element, exp, env) ->
                 self =
                     start: ->
                         self.makeCaller()
                         self.onDom()
                         return
                     makeCaller: ->
-                        self.caller = scope.$compile exp,
+                        self.caller = env.compile exp,
                             no_return: true
                             input: ['$event']
                         return
                     onDom: ->
                         f$.on element, key, self.callback
-                        scope.$watch '$destroy', self.offDom
+                        env.watch '$destroy', self.offDom
                         return
                     offDom: ->
                         f$.off element, key, self.callback
@@ -28,5 +28,5 @@ do ->
                                 exp: exp
                                 scope: scope
                                 element: element
-                        scope.$scan()
+                        env.scan()
                         return

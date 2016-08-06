@@ -51,7 +51,7 @@ alight.d.al.if =
                     elementCanBeRemoved: env.attrName
                 return
             watchModel: ->
-                scope.$watch name, self.updateDom
+                env.watch name, self.updateDom
                 return
             removeDom: (element) ->
                 f$.remove element

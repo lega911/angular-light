@@ -49,6 +49,12 @@ ChangeDetector = (root, scope) ->
     @.rwatchers =
         any: []
         finishScan: []
+
+    if alight.option.injectScope
+        alight.Scope
+            changeDetector: @
+            customScope: scope
+
     @
 
 
@@ -185,7 +191,8 @@ makeFilterChain = do ->
             else
                 prevCallback = do (filter=filterObject, prevCallback, filterArg, cd) ->
                     (value) ->
-                        prevCallback filter value, filterArg, cd.scope
+                        prevCallback filter value, filterArg, cd.scope,
+                            changeDetector: cd
 
         watchOptions =
             oneTime: option.oneTime

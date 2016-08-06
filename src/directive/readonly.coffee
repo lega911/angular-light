@@ -4,6 +4,6 @@ alight.d.al.readonly = (scope, element, exp) ->
         element.readOnly = !!value
         return
 
-    scope.$watch exp, setter,
+    @.watch exp, setter,
         readOnly: true
     return

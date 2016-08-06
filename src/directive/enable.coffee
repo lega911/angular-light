@@ -7,7 +7,7 @@ alight.d.al.enable = (scope, element, exp) ->
             element.setAttribute 'disabled', 'disabled'
         return
 
-    scope.$watch exp, setter
+    @.watch exp, setter
     return
 
 
@@ -19,5 +19,5 @@ alight.d.al.disable = (scope, element, exp) ->
             element.removeAttribute 'disabled'
         return
 
-    scope.$watch exp, setter
+    @.watch exp, setter
     return

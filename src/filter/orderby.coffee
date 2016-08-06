@@ -1,7 +1,7 @@
 
 # | orderBy: key, reverse
 alight.filters.orderBy = class O
-    constructor: (exp, scope) ->
+    constructor: (exp, scope, env) ->
         @.list = null
         @.key = 'key'
         @.direction = 1
@@ -10,13 +10,13 @@ alight.filters.orderBy = class O
 
         # key
         if d[0]
-            scope.$watch d[0].trim(), (value) =>
+            env.changeDetector.watch d[0].trim(), (value) =>
                 @.key = value
                 @.doSort()
 
         # reverse
         if d[1]
-            scope.$watch d[1].trim(), (value) =>
+            env.changeDetector.watch d[1].trim(), (value) =>
                 @.direction = if value then 1 else -1
                 @.doSort()
 

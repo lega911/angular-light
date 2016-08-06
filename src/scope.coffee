@@ -52,7 +52,9 @@ alight.Scope = (option) ->
     else
         scope = new Scope
 
-    if option.childFromChangeDetector
+    if option.changeDetector
+        childCD = option.changeDetector
+    else if option.childFromChangeDetector
         childCD = option.childFromChangeDetector.new scope
     else
         childCD = alight.ChangeDetector scope

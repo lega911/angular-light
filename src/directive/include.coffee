@@ -64,7 +64,7 @@ alight.d.al.include =
                 f$.after base, element
                 return
             watchModel: ->
-                scope.$watch name, self.updateDom
+                env.watch name, self.updateDom
                 return
 
         self

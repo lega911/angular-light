@@ -11,5 +11,5 @@ alight.filters.throttle = class T
             to = setTimeout ->
                 to = null
                 env.setValue value
-                scope.$scan()
+                env.changeDetector.scan()
             , delay

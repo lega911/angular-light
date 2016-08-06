@@ -13,6 +13,6 @@ alight.d.al.style = (scope, element, name) ->
             element.style[key] = v or ''
         return
 
-    scope.$watch name, setter,
+    env.watch name, setter,
         deep: true
     return

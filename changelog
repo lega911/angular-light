@@ -31,6 +31,8 @@
   * :attr
 * experimental direct directive
 * alight() is a alias of alight.bootstrap, alight.bootstrap was improved
+* alight.bootstrap returns changeDetector instead of scope
+* alight.option.injectScope
 
 Fixes:
 

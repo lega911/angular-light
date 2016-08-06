@@ -159,12 +159,14 @@ Test('$watch $destroy', 'watch-destroy').run ($test, alight) ->
 
 
 Test('watch-text-5', 'watch-text-5').run ($test, alight) ->
+    alight.option.injectScope = true
     $test.start 10
 
     el = ttDOM '<div>{{one}}-{{two}}</div>'
 
-    scope = alight.bootstrap el,
+    cd = alight.bootstrap el,
         one: 'A'
+    scope = cd.scope
 
     count = 0
     alight.core.cd_getRoot(scope).watch ->

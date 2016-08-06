@@ -4,6 +4,7 @@ alight.filters.slice = (exp, scope, env) ->
     a = null
     b = null
     kind = null
+    cd = env.changeDetector
 
     setter = ->
         if not value
@@ -17,12 +18,12 @@ alight.filters.slice = (exp, scope, env) ->
 
     d = exp.split ','
     if d.length is 1
-        scope.$watch exp, (pos) ->
+        cd.watch exp, (pos) ->
             kind = 1
             a = pos
             setter()
     else
-        scope.$watch "#{d[0]} + '_' + #{d[1]}", (filter) ->
+        cd.watch "#{d[0]} + '_' + #{d[1]}", (filter) ->
             kind = 2
             f = filter.split '_'
             a = Number f[0]

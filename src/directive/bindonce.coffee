@@ -4,7 +4,7 @@ alight.d.bo.switch =
     ChangeDetector: true
     link: (scope, element, name, env) ->
         env.changeDetector.$switch =
-            value: scope.$eval name
+            value: env.eval name
             on: false
         return
 
@@ -34,7 +34,7 @@ do ->
         self =
             priority: 700
             link: (scope, element, exp, env) ->
-                value = scope.$eval exp
+                value = env.eval exp
                 if !value is direct
                     f$.remove element
                     env.stopBinding = true

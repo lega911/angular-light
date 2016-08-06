@@ -3,18 +3,19 @@
 
 alight.text['&'] = (callback, expression, scope, env) ->
     d = expression.split ':'
+    cd = env.changeDetector
 
-    fn = scope.$compile d[1],
+    fn = cd.compile d[1],
         input: ['$value']
 
-    scope.$watch d[0], (value) ->
+    cd.watch d[0], (value) ->
         result = fn scope, value
 
         if window.Promise
             if result instanceof Promise
                 result.then (value) ->
                     callback value
-                    scope.$scan()
+                    cd.scan()
             else
                 callback result
         else

@@ -7,14 +7,14 @@ Test('binding-0').run ($test, alight) ->
 
     el = ttDOM '<div attr="{{ num + 5 }}">Text {{ num | double }}</div>'
 
-    scope = alight.bootstrap el,
+    cd = alight.bootstrap el,
         num: 15
 
     $test.equal ttGetText(el), 'Text 30'
     $test.equal f$_attr(el.childNodes[0], 'attr'), '20'
 
-    scope.num = 50
-    scope.$scan ->
+    cd.scope.num = 50
+    cd.scan ->
         $test.equal ttGetText(el), 'Text 100'
         $test.equal f$_attr(el.childNodes[0], 'attr'), '55'
         $test.close()
@@ -239,6 +239,7 @@ Test 'stop-binding-1'
 
 Test 'binding-order-0'
     .run ($test, alight) ->
+        alight.option.injectScope = true
         $test.start 1
 
         el = ttDOM """
