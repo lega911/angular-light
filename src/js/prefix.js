@@ -1,26 +1,25 @@
 (function() {
     "use strict";
     function buildAlight() {
-        var alight = {
-            filters: {},
-            text: {},
-            ctrl: {},
-            core: {},
-            utils: {},
-            d: {
-                al: {},
-                bo: {},
-                $global: {}
-            },
-            hooks: {
-                directive: [],
-                binding: []
-            }
+        var alight = function(element, data) {
+            return alight.bootstrap(element, data);
+        }
+        alight.filters = {};
+        alight.text = {};
+        alight.core = {};
+        alight.utils = {};
+        alight.option = {};
+        alight.ctrl = alight.controllers = {};
+        alight.d = alight.directives = {
+            al: {},
+            bo: {},
+            $global: {}
         };
-        var f$ = {};
-        alight.f$ = f$;
-        alight.directives = alight.d;
-        alight.controllers = alight.ctrl;
+        alight.hooks = {
+            directive: [],
+            binding: []
+        };
+        var f$ = alight.f$ = {};
 
         var removeItem = function(list, item) {
             var i = list.indexOf(item);

@@ -25,8 +25,12 @@
 * alight.Scope, new option "returnChangeDetector"
 * watchMode "copy" for components
 * fastBinding for directives (env.fastBinding)
+  * al-model
+  * al-value
+  * al-checked
+  * :attr
 * experimental direct directive
-
+* alight() is a alias of alight.bootstrap, alight.bootstrap was improved
 
 Fixes:
 

@@ -5,7 +5,6 @@
 /test/directive/*.js
 /test/filter/*.js
 /test/utils/*.js
-/src/*.js
 /src/filter/*.js
 /src/directive/*.js
 /src/parser/*.js
