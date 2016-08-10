@@ -52,6 +52,7 @@ do ->
         else if attrName is 'class'
             if not d[1]
                 throw 'Class is not declared'
+            isTemplate = false
             list = d.slice 1
             setter = (value) ->
                 if value
