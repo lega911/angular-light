@@ -1,5 +1,6 @@
 
 alight.d.al.init = (scope, element, exp, env) ->
+    env.fastBinding = true
     cd = env.changeDetector
     try
         fn = cd.compile exp,

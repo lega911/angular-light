@@ -26,17 +26,16 @@ alight.bootstrap = function(input, data) {
     if(typeof(input) === 'string') {
         let elements = document.querySelectorAll(input);
         for(let element of elements)
-            alight.bootstrap(item, changeDetector);
+            alight.bootstrap(element, changeDetector);
+        return;
     }
 
     if(f$.isElement(input)) {
         var ctrlKey, ctrlName;
         for(ctrlKey of ['al-app', 'al:app', 'data-al-app']) {
             ctrlName = input.getAttribute(ctrlKey);
-            if(ctrlName) {
-                input.removeAttribute(ctrlKey);
-                break;
-            }
+            input.removeAttribute(ctrlKey);
+            if(ctrlName) break;
         }
 
         var option;
