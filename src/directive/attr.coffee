@@ -42,13 +42,24 @@ do ->
 
         if attrName is 'style'
             if not d[1]
-                throw 'Need to define a style attribute'
+                throw 'Style is not declared'
             styleName = d[1].replace /(-\w)/g, (m) ->
                 m.substring(1).toUpperCase()
             setter = (value) ->
                 if not value?
                     value = ''
                 element.style[styleName] = value
+        else if attrName is 'class'
+            if not d[1]
+                throw 'Class is not declared'
+            list = d.slice 1
+            setter = (value) ->
+                if value
+                    for c in list
+                        f$.addClass element, c
+                else
+                    for c in list
+                        f$.removeClass element, c
         else if attrName is 'focus'
             setter = (value) ->
                 if value
