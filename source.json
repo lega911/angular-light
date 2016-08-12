@@ -74,7 +74,7 @@
     "tag": ["basis"]
 }, {
     "file": "directive/class.coffee",
-    "tag": ["basis"]
+    "tag": ["full"]
 }, {
     "file": "directive/src.coffee",
     "tag": ["compatibility"]
@@ -191,6 +191,9 @@
     "tag": ["basis"]
 }, {
     "file": "text/textWatch.coffee",
+    "tag": ["full"]
+}, {
+    "file": "ext/component.es.js",
     "tag": ["full"]
 }, {
     "file": "js/postfix.js",

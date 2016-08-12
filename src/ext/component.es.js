@@ -66,6 +66,7 @@ alight.createComponent('rating', (scope, element, env) => {
       stopBinding: true,
       priority: 5,
       init: function(parentScope, element, _value, env) {
+        env.fastBinding = true;
         const parentCD = env.changeDetector.new();
         const childCD = alight.Scope({
           returnChangeDetector: true
@@ -101,7 +102,7 @@ alight.createComponent('rating', (scope, element, env) => {
         }
 
         // bind props
-        parentDestroyed = false;
+        var parentDestroyed = false;
         parentCD.watch('$destroy', () => {
           parentDestroyed = true;
           childCD.destroy();
@@ -148,6 +149,9 @@ alight.createComponent('rating', (scope, element, env) => {
           makeWatch({childCD, name, parentName: propValue, parentCD});
         }
 
+        var scanned = false;
+        parentCD.watch('$onScanOnce', () => scanned = true);
+
         // template
         if(option.template) element.innerHTML = option.template;
         if(option.templateId) {
@@ -172,6 +176,7 @@ alight.createComponent('rating', (scope, element, env) => {
         }
 
         function binding(async) {
+          if(!scanned) parentCD.digest();
           alight.bind(childCD, element, {skip: true});
         }
       }
