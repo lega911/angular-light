@@ -35,10 +35,18 @@ else
     cd_setActive = (scope, cd) ->
         scope.$changeDetector = cd
 
+scopeWrap = (cd, fn) ->
+    cd_setActive cd.scope, cd
+    try
+        fn()
+    finally
+        cd_setActive cd.scope, null
+
 alight.core.cd_setRoot = cd_setRoot
 alight.core.cd_getRoot = cd_getRoot
 alight.core.cd_getActive = cd_getActive
 alight.core.cd_setActive = cd_setActive
+alight.core.scopeWrap = scopeWrap
 
 alight.Scope = (option) ->
     option = option or {}
@@ -129,3 +137,14 @@ Scope::$new = () ->
     alight.Scope
         $parent: @
         childFromChangeDetector: cd
+
+Scope::$watchText = (expression, callback, option) ->
+    cd = cd_getActive @
+    if cd
+        cd.watchText expression, callback, option
+    else
+        alight.exceptionHandler '', 'You can do $watchText during binding only, use env.watchText instead: ' + expression,
+            expression: expression
+            option: option
+            scope: @
+        return

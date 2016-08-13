@@ -1,5 +1,8 @@
 
 Test('hook-scope-0', 'hook-scope-0').run ($test, alight) ->
+    if $test.basis
+        return 'skip'
+    alight.option.injectScope = true
     $test.start 27
 
     count0 = count1 = count2 = count3 = 0

@@ -42,8 +42,12 @@ alight.bootstrap = function(input, data) {
         if(ctrlName) {
             option = {
                 skip_attr: [ctrlKey],
-                attachDirective: {'al-ctrl': ctrlName}
+                attachDirective: {}
             }
+            if(alight.d.al.ctrl)
+                option.attachDirective['al-ctrl'] = ctrlName;
+            else
+                option.attachDirective[ctrlName + '()'] = '';
         }
 
         alight.bind(changeDetector, input, option);

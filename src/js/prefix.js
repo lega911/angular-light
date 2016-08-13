@@ -9,7 +9,8 @@
         alight.core = {};
         alight.utils = {};
         alight.option = {
-            injectScope: false
+            injectScope: false,
+            globalController: false
         };
         alight.ctrl = alight.controllers = {};
         alight.d = alight.directives = {

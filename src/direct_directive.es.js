@@ -7,7 +7,7 @@ alight.hooks.attribute.unshift({
         let name = d[1].replace(/(-\w)/g, function(m) {
             return m.substring(1).toUpperCase()
         });
-        this.directive = this.cd.locals[name] || window[name];
+        this.directive = this.cd.locals[name] || alight.option.globalController && window[name];
         if(!this.directive) {
             this.result = 'noDirective';
             this.stop = true;

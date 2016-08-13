@@ -183,11 +183,11 @@ do ->
                         console.warn "#{@.ns}-#{@.name} uses scope and init together, probably you need use link instead of init"
                 @.env.changeDetector = @.cd
 
-                cd_setActive @.cd.scope, @.cd
-                result = @.directive.init.call @.env, @.cd.scope, @.element, @.value, @.env
-                if result and result.start
-                    result.start()
-                cd_setActive @.cd.scope, null
+                that = @
+                scopeWrap @.cd, ->
+                    result = that.directive.init.call that.env, that.cd.scope, that.element, that.value, that.env
+                    if result and result.start
+                        result.start()
             return
 
     ext.push
@@ -231,15 +231,12 @@ do ->
 
             switch @.directive.scope
                 when true
-                    scope = alight.Scope
+                    childCD = parentCD.new
                         $parent: parentCD.scope
-                        childFromChangeDetector: parentCD
-                    childCD = cd_getRoot scope
                 when 'root'
-                    scope = alight.Scope
+                    childCD = alight.ChangeDetector
                         $parent: parentCD.scope
 
-                    childCD = cd_getRoot scope
                     parentCD.watch '$destroy', ->
                         childCD.destroy()
                 else
@@ -257,11 +254,11 @@ do ->
         fn: ->
             if @.directive.link
                 @.env.changeDetector = @.cd
-                cd_setActive @.cd.scope, @.cd
-                result = @.directive.link.call @.env, @.cd.scope, @.element, @.value, @.env
-                if result and result.start
-                    result.start()
-                cd_setActive @.cd.scope, null
+                that = @
+                scopeWrap @.cd, =>
+                    result = that.directive.link.call that.env, that.cd.scope, that.element, that.value, that.env
+                    if result and result.start
+                        result.start()
             return
 
     ext.push

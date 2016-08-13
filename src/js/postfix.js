@@ -14,7 +14,7 @@
 	} else if(typeof(module) === 'object' && typeof(module.exports) === 'object') {
 		module.exports = alight
 	} else {
-		alight.d.al.ctrl.global = true;  // global controllers
+		alight.option.globalController = true;  // global controllers
 		window.alight = alight;
 		alight.f$.ready(alight.bootstrap);
 	};

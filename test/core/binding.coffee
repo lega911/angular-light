@@ -38,9 +38,9 @@ Test('test-take-attr').run ($test, alight) ->
     $test.start 5
     el = ttDOM '<div ut-test0 ut-text="mo{{d}}el0" ut-css="mo{{d}}el1"></div>'
 
-    scope = alight.Scope()
+    cd = alight.ChangeDetector()
 
-    alight.bind scope, el.childNodes[0],
+    alight.bind cd, el.childNodes[0],
         skip_attr: ['ut-text']
     $test.close()
 
@@ -75,12 +75,12 @@ Test('skipped-attrs-0').run ($test, alight) ->
                 $test.equal skippedAttr(env), 'one,ut-test-attr0,ut-test-attr1,ut-three,ut-two'
                 $test.equal activeAttr(env), ''
 
-    scope = alight.Scope()
+    cd = alight.ChangeDetector()
     dom = document.createElement 'div'
     dom.innerHTML = '<div one="1" ut-test-attr1 ut-test-attr0 ut-two ut-three></div>'
     element = dom.children[0]
 
-    alight.bind scope, element,
+    alight.bind cd, element,
         skip_attr: ['ut-two']
     $test.close()
 
@@ -165,6 +165,9 @@ Test('html-prefix-data').run ($test, alight) ->
 
 Test 'root-scope-access-to-parent'
     .run ($test, alight) ->
+        if $test.basis
+            return 'skip'
+        alight.option.injectScope = true
         $test.start 2
 
         alight.d.al.test =
@@ -239,6 +242,8 @@ Test 'stop-binding-1'
 
 Test 'binding-order-0'
     .run ($test, alight) ->
+        if $test.basis
+            return 'skip'
         alight.option.injectScope = true
         $test.start 1
 

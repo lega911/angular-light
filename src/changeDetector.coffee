@@ -50,7 +50,7 @@ ChangeDetector = (root, scope) ->
         any: []
         finishScan: []
 
-    if alight.option.injectScope
+    if alight.option.injectScope and alight.Scope
         alight.Scope
             changeDetector: @
             customScope: scope
@@ -157,11 +157,10 @@ makeFilterChain = do ->
 
             filterObject = getFilter filterName, cd
             if Array.isArray(filterObject)
-                cd_setActive cd.scope, cd
-                filter = filterObject[0] filterArg, cd.scope,
-                    setValue: prevCallback
-                    changeDetector: cd
-                cd_setActive cd.scope, null
+                filter = scopeWrap cd, ->
+                    filterObject[0] filterArg, cd.scope,
+                        setValue: prevCallback
+                        changeDetector: cd
 
                 if filter.watchMode
                     watchMode = filter.watchMode
@@ -173,11 +172,10 @@ makeFilterChain = do ->
                     prevCallback = filter.onChange
             else if Object.keys(filterObject::).length
                 # class
-                cd_setActive cd.scope, cd
-                filter = new filterObject filterArg, cd.scope,
-                    setValue: prevCallback
-                    changeDetector: cd
-                cd_setActive cd.scope, null
+                filter = scopeWrap cd, ->
+                    new filterObject filterArg, cd.scope,
+                        setValue: prevCallback
+                        changeDetector: cd
                 filter.setValue = prevCallback
 
                 if filter.watchMode

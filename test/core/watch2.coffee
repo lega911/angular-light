@@ -159,6 +159,8 @@ Test('$watch $destroy', 'watch-destroy').run ($test, alight) ->
 
 
 Test('watch-text-5', 'watch-text-5').run ($test, alight) ->
+    if $test.basis
+        return 'skip'
     alight.option.injectScope = true
     $test.start 10
 

@@ -147,11 +147,12 @@ Test('al-ctrl-0').run ($test, alight) ->
 
 
 Test('al-value-on-off').run ($test, alight, timeout) ->
+	if $test.basis
+		return 'skip'
 	alight.option.injectScope = true
 	if typeof(CustomEvent) isnt 'function'
-		$test.close()
 		console.warn 'skip al-value on/off'
-		return
+		return 'skip'
 
 	$test.start 3
 

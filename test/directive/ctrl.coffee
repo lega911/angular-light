@@ -115,6 +115,9 @@ Test('al-app-1').run ($test, alight) ->
 
 
 Test('al-ctrl-2').run ($test, alight) ->
+    if $test.basis
+        return 'skip'
+    alight.option.injectScope = true
     $test.start 3
 
     el = ttDOM """

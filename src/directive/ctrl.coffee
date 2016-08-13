@@ -1,6 +1,5 @@
 
 alight.d.al.ctrl =
-    global: false
     stopBinding: true
     priority: 500
     link: (scope, element, name, env) ->
@@ -24,7 +23,7 @@ alight.d.al.ctrl =
                 if not fn
                     fn = alight.ctrl[name]
 
-                    if not fn and alight.d.al.ctrl.global
+                    if not fn and alight.option.globalController
                         fn = window[name]
 
                 if not fn
@@ -48,18 +47,15 @@ alight.d.al.ctrl =
                     for k, v of fn::
                         Controller::[k] = v
 
-                    childScope = alight.Scope
-                        $parent: scope
-                        customScope: new Controller
-                        childFromChangeDetector: env.changeDetector
+                    childScope = new Controller
                 else
-                    childScope = alight.Scope
-                        $parent: scope
-                        childFromChangeDetector: env.changeDetector
+                    childScope = {}
+
+                childScope.$parent = scope
+                childCD = env.changeDetector.new childScope
 
                 try
                     if fn
-                        childCD = cd_getRoot childScope
                         ChildEnv = (cd) ->
                             @
                         ChildEnv:: = env
@@ -67,11 +63,10 @@ alight.d.al.ctrl =
                         childEnv.changeDetector = childCD
                         childEnv.parentChangeDetector = env.changeDetector
 
-                        cd_setActive childScope, childCD
-                        fn.call childScope, childScope, element, name, childEnv
-                        cd_setActive childScope, null
+                        scopeWrap childCD, ->
+                            fn.call childScope, childScope, element, name, childEnv
                 catch e
                     error e, 'Error in controller: ' + name
-                alight.bind childScope, element,
+                alight.bind childCD, element,
                     skip_attr: env.skippedAttr()
                 return

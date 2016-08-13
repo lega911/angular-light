@@ -157,27 +157,40 @@ window.Test = do ->
             testList.push self
             self
 
+        run = (fn, basis) ->
+            if basis
+                alight = buildBasis.makeInstance()
+            else
+                alight = buildAlight.makeInstance()
+            stat.bStarted++;
+            timeout = Timeout()
+            if basis
+                scope = makeScope 'bs:' + title
+            else
+                scope = makeScope title
+            scope.basis = basis
+            try
+                if fn(scope, alight, timeout) is 'skip'
+                    scope.close()
+                    return
+                i = 9999
+                while true
+                    if not timeout.next()
+                        break
+                    i--
+                    if i < 0
+                        throw 'Infinity timeout'
+            catch e
+                err = e
+                if e.stack
+                    err = e.stack
+                else if e.description
+                    err = e.description
+                scope.error()
+                console.error '!!', err
+
         r =
             run: (fn) ->
-                alight = buildAlight.makeInstance()
-                stat.bStarted++;
-                timeout = Timeout()
-                scope = makeScope title
-                try
-                    fn scope, alight, timeout
-                    i = 9999
-                    while true
-                        if not timeout.next()
-                            break
-                        i--
-                        if i < 0
-                            throw 'Infinity timeout'
-                catch e
-                    err = e
-                    if e.stack
-                        err = e.stack
-                    else if e.description
-                        err = e.description
-                    scope.error()
-                    console.error '!!', err
+                run fn
+                run fn, true
         r

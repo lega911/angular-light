@@ -176,6 +176,10 @@ Test 'al-repeat-child-cd-0'
     .run ($test, alight) ->
         $test.start 1
 
+        alight.d.al.test = (scope, el, val, env) ->
+            it = env.getValue 'it'
+            it.name += '_rc'
+
         el = ttDOM '''
             r{{it?.name}}#
             <div al-repeat="it in list">
@@ -184,18 +188,12 @@ Test 'al-repeat-child-cd-0'
             </div>
         '''
 
-        scope = alight.Scope()
-        scope.list = [
-            {name: 'linux'},
-            {name: 'macos'},
-            {name: 'windows'}
-        ]
-
-        alight.d.al.test = (scope, el, val, env) ->
-            it = env.getValue 'it'
-            it.name += '_rc'
-
-        alight.bind scope, el
+        scope = alight el,
+            list: [
+                {name: 'linux'}
+                {name: 'macos'}
+                {name: 'windows'}
+            ]
 
         $test.equal ttGetText(el), 'r# 0=linux_rc 1=macos_rc 2=windows_rc'
 
@@ -204,6 +202,9 @@ Test 'al-repeat-child-cd-0'
 
 Test 'isolated-scope-0'
     .run ($test, alight, timeout) ->
+        if $test.basis
+            return 'skip'
+        alight.option.injectScope = true
         $test.start 2
 
         el = ttDOM """

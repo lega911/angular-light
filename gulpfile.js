@@ -53,8 +53,12 @@ gulp.task('prepare', [], function(){
                 break;
             }
         }
-        if(skip) continue;
-        var d = f.file.match(/^(.*\.)(\w+)$/)
+        var fileName = f.file;
+        if(skip) {
+          if(f.otherwise) fileName = f.otherwise;
+          else continue;
+        }
+        var d = fileName.match(/^(.*\.)(\w+)$/)
         resultList.push('./tmp/' + d[1] + 'js');
     }
 });

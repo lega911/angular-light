@@ -1,6 +1,9 @@
 Test('filter slice', 'filter-slice').run ($test, alight) ->
+    if not alight.filters.slice
+        return 'skip'
     $test.start 4
-    scope = alight.Scope()
+    cd = alight.ChangeDetector()
+    scope = cd.scope
     scope.lst = [0,1,2,3,4,5,6,7,8,9]
     scope.a = 7
     scope.b = 15
@@ -8,11 +11,11 @@ Test('filter slice', 'filter-slice').run ($test, alight) ->
     result = null
     result2 = null
 
-    scope.$watch 'lst | slice:a', (value) ->
+    cd.watch 'lst | slice:a', (value) ->
         result = value
     ,
         isArray: true
-    scope.$watch 'lst | slice:a,b', (value) ->
+    cd.watch 'lst | slice:a,b', (value) ->
         result2 = value
     ,
         isArray: true
@@ -27,19 +30,21 @@ Test('filter slice', 'filter-slice').run ($test, alight) ->
                 return false
         true
 
-    scope.$scan ->
+    cd.scan ->
         $test.check equal(result, [7,8,9])
         $test.check equal(result2, [7,8,9])
 
         scope.a = 3
         scope.b = 6
-        scope.$scan ->
+        cd.scan ->
             $test.check equal(result, [3,4,5,6,7,8,9])
             $test.check equal(result2, [3,4,5])
             $test.close()
 
 
 Test('filter-date').run ($test, alight) ->
+    if not alight.filters.date
+        return 'skip'
     $test.start 9
     scope =
         value: null
@@ -196,6 +201,8 @@ Test('filter-async-0', 'filter-async-0').run ($test, alight) ->
                             $test.close()
 
 Test('filter-async-1', 'filter-async-1').run ($test, alight) ->
+    if not alight.filters.slice
+        return 'skip'
     $test.start 4
 
     alight.filters.foo = (value, exp, scope) ->
@@ -203,19 +210,19 @@ Test('filter-async-1', 'filter-async-1').run ($test, alight) ->
         r.push 'E'
         r
 
-    scope = alight.Scope()
-    scope.list = [1,2,3,4,5,6,7,8,9]
+    cd = alight.ChangeDetector
+        list: [1,2,3,4,5,6,7,8,9]
 
     rcount = 0
     rlen = 0
-    scope.$watch 'list | slice:2,5 | foo', (value) ->
+    cd.watch 'list | slice:2,5 | foo', (value) ->
         rcount++
         rlen = value.length
 
     $test.equal rcount, 0
     $test.equal rlen, 0
 
-    scope.$scan()
+    cd.scan()
     $test.equal rcount, 1
     $test.equal rlen, 4
 
@@ -239,26 +246,27 @@ Test('filter-async-2', 'filter-async-2').run ($test, alight, timeout) ->
                 that.setValue that.value
             timeout.add 100, setter
 
-            scope.$watch '$destroy', ->
+            env.changeDetector.watch '$destroy', ->
                 rdestroy++
                 active = false
 
         onChange: (input) ->
             @.value = input
 
-    scope = alight.Scope()
-    scope.r = 'one'
+    scope =
+        r: 'one'
+    cd = alight.ChangeDetector scope
 
     rcount = 0
     rvalue = ''
-    scope.$watch 'r | foo', (value) ->
+    cd.watch 'r | foo', (value) ->
         rcount++
         rvalue = value
 
     $test.equal rcount, 0
     $test.equal rvalue, ''
 
-    scope.$scan()
+    cd.scan()
     $test.equal rcount, 0
     $test.equal rvalue, ''
 
@@ -273,14 +281,14 @@ Test('filter-async-2', 'filter-async-2').run ($test, alight, timeout) ->
             $test.equal rvalue, 'one'
             rcount = 0
 
-            scope.$scan ->
+            cd.scan ->
                 timeout.add 100, ->
                     $test.equal rcount>0, true
                     $test.equal rvalue, 'two'
                     rcount = 0
 
                     scope.r = 'three'
-                    scope.$destroy()
+                    cd.destroy()
                     $test.equal rdestroy, 1
                     timeout.add 200, ->
                         $test.equal rcount, 0
@@ -359,6 +367,8 @@ Test('async-filter-watch-text-0').run ($test, alight, timeout) ->
 
 
 Test('filter-json', 'filter-json').run ($test, alight) ->
+    if not alight.filters.json
+        return 'skip'
     $test.start 2
     scope = alight.Scope()
     scope.data =
@@ -384,20 +394,22 @@ Test('filter-json', 'filter-json').run ($test, alight) ->
 
 
 Test('filter-filter').run ($test, alight) ->
+    if not alight.filters.filter
+        return 'skip'
     $test.start 5
 
-    scope = alight.Scope()
-    scope.list = [
-        { name: 'linux 1' }
-        { name: 'ubuntu 2' }
-        { name: 'red hat 4', k: 'kind' }
-        { name: 'windows 8', k: 'kind' }
-    ]
-    scope.text = ''
+    scope =
+        list: [
+            { name: 'linux 1' }
+            { name: 'ubuntu 2' }
+            { name: 'red hat 4', k: 'kind' }
+            { name: 'windows 8', k: 'kind' }
+        ]
+        text: ''
+    cd = alight.ChangeDetector scope
 
     resultList = []
 
-    cd = alight.core.cd_getRoot scope
     cd.watch 'list | filter:text', (value) ->
         resultList = value
     ,
@@ -445,7 +457,7 @@ Test('filter-async-3', 'filter-async-3').run ($test, alight, timeout) ->
     fooStop = 0
     fooDestroy = 0
     alight.filters.foo = class FooFilter
-        constructor: (exp, scope) ->
+        constructor: (exp, scope, env) ->
             that = @
             fooInited++
             @.active = true
@@ -458,7 +470,7 @@ Test('filter-async-3', 'filter-async-3').run ($test, alight, timeout) ->
                     timeout.add 100, step
             timeout.add 100, step
 
-            scope.$watch '$destroy', ->
+            env.changeDetector.watch '$destroy', ->
                 fooDestroy++
                 that.active = false
 
@@ -471,10 +483,10 @@ Test('filter-async-3', 'filter-async-3').run ($test, alight, timeout) ->
 
     c0 = 0
     v0 = null
-    scope = alight.Scope()
-    scope.one = 5
+    cd = alight.ChangeDetector
+        one: 5
 
-    scope.$watch '::one | foo', (value) ->
+    cd.watch '::one | foo', (value) ->
         c0++
         v0 = value
 
@@ -492,7 +504,7 @@ Test('filter-async-3', 'filter-async-3').run ($test, alight, timeout) ->
         $test.equal v0, '#1'
         $test.equal fooChange, 0
 
-        scope.$scan()
+        cd.scan()
         $test.equal fooStep, 1
         $test.equal fooChange, 1
         $test.equal fooStop, 1, 'fooStop'
@@ -503,7 +515,7 @@ Test('filter-async-3', 'filter-async-3').run ($test, alight, timeout) ->
             $test.equal v0, '#6'
             $test.equal fooChange, 1
 
-            scope.$destroy()
+            cd.destroy()
 
             timeout.add 100, ->
                 $test.equal c0, 2, '$destroy'

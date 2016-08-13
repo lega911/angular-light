@@ -28,6 +28,8 @@ Test('bindonce').run ($test, alight) ->
 
 
 Test('text-directive-0').run ($test, alight, timeout) ->
+    if $test.basis
+        return 'skip'
     alight.option.injectScope = true
     $test.start 4
 
@@ -186,6 +188,8 @@ Test('one-time-binding-1', 'one-time-binding-1').run ($test, alight) ->
 
 
 Test('onetime-binding-2', 'onetime-binding-2').run ($test, alight, timeout) ->
+    if $test.basis
+        return 'skip'
     alight.option.injectScope = true
     $test.start 6
 

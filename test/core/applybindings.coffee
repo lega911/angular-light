@@ -1,5 +1,7 @@
 
 Test('apply-binding-0').run ($test, alight) ->
+    if $test.basis
+        return 'skip'
     alight.option.injectScope = true
     $test.start 12
     f$ = alight.f$
@@ -41,6 +43,8 @@ Test('apply-binding-0').run ($test, alight) ->
 
 
 Test('bootstrap-el').run ($test, alight) ->
+    if $test.basis
+        return 'skip'
     alight.option.injectScope = true
     $test.start 4
 
@@ -72,8 +76,8 @@ Test('stop-binding-2').run ($test, alight) ->
             </div>
         '''
 
-        root = alight.Scope()
-        root.name = 'root'
+        root = alight.ChangeDetector
+            name: 'root'
 
         alight.bind root, el
 
