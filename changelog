@@ -34,6 +34,7 @@
 * alight.bootstrap returns changeDetector instead of scope
 * alight.option.injectScope
 * :class supports true/false way, e.g. :class.red.bold="!!active"
+* al-init.window - adds window arguments
 
 Fixes:
 
