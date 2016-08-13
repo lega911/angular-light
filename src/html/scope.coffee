@@ -25,6 +25,7 @@ alight.d.al.html.modifier.scope = (self, option) ->
         parentCD = option.env.changeDetector
         childCD = self.childCD = parentCD.new null,
             locals: true
+        childCD.locals[innerName] = null
 
         w = parentCD.watch outerName, (outerValue) ->
             childCD.locals[innerName] = outerValue
