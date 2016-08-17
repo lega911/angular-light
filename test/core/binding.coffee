@@ -112,16 +112,17 @@ Test('deferred-process').run ($test, alight, timeout) ->
                 scope3 = scope
 
     runOne = (template) ->
-        scope = alight.Scope()
-        scope.name = 'root'
+        cd = alight.ChangeDetector
+            name: 'root'
 
         dom = document.createElement 'div'
         dom.innerHTML = template
 
-        alight.bind scope, dom
+        alight.bind cd, dom
 
         response =
-            scope: scope
+            cd: cd
+            scope: cd.scope
             html: ->
                 dom.innerHTML.toLowerCase()
         response
@@ -133,14 +134,14 @@ Test('deferred-process').run ($test, alight, timeout) ->
         # 0
         $test.equal alight.directives.ut.test5.template, undefined
         $test.equal r0.scope.name, 'root'
-        $test.equal alight.core.cd_getRoot(r0.scope).children[0].scope.name, 'linux'
+        $test.equal r0.cd.children[0].scope.name, 'linux'
         $test.equal scope5.name, 'linux'
         $test.equal r0.html(), '<span ut-test5="noop"><p>linux</p></span>'
 
         # 1
         $test.equal scope3, r1.scope
         $test.equal r1.scope.name, 'linux'
-        $test.equal alight.core.cd_getRoot(r1.scope).children.length, 0
+        $test.equal r1.cd.children.length, 0
         $test.equal r1.html(), '<span ut-test3="noop"><p>linux</p></span>'
 
         $test.close()
@@ -154,7 +155,7 @@ Test('html-prefix-data').run ($test, alight) ->
         r.push value
 
     el = ttDOM '<div> <b al-test="one"></b> <b data-al-test="two"></b> </div>'
-    alight.bind alight.Scope(), el.childNodes[0]
+    alight el.childNodes[0]
 
     $test.equal r[0], 'one'
     $test.equal r[1], 'two'

@@ -339,7 +339,7 @@ Test('hook-scope-3', 'hook-scope-3').run ($test, alight) ->
     $test.close()
 ###
 
-Test('hook-scope-4', 'hook-scope-4').run ($test, alight) ->
+Test('hook-scope-4').run ($test, alight) ->
     $test.start 27
 
     count0 = count1 = count2 = 0
@@ -353,7 +353,7 @@ Test('hook-scope-4', 'hook-scope-4').run ($test, alight) ->
                 childScope = scope
                 scope.top = 'child'
                 scope.child = 'child'
-                scope.$watch 'top', ->
+                this.watch 'top', ->
                     count2++
 
     dom = ttDOM """
@@ -363,14 +363,15 @@ Test('hook-scope-4', 'hook-scope-4').run ($test, alight) ->
         </i>
     """
 
-    rootScope = alight.Scope()
+    cd = alight.ChangeDetector()
+    rootScope = cd.scope
     rootScope.top = 'root'
-    rootScope.$watch 'top', ->
+    cd.watch 'top', ->
         count0++
-    rootScope.$watch 'child', ->
+    cd.watch 'child', ->
         count1++
 
-    alight.bind rootScope, dom
+    alight.bind cd, dom
     $test.equal ttGetText(dom), 'root=child child=child'
     $test.equal count0, 1
     $test.equal count1, 1
@@ -378,43 +379,43 @@ Test('hook-scope-4', 'hook-scope-4').run ($test, alight) ->
     $test.equal rootScope.child, 'child'  # the same scope
     $test.equal childScope.$parent, undefined
 
-    rootScope.$scan()
+    cd.scan()
     $test.equal ttGetText(dom), 'root=child child=child', 'scan root'
     $test.equal count0, 1
     $test.equal count1, 1
     $test.equal count2, 1  # the watch was created earlier
 
     rootScope.top = 'tip'
-    rootScope.$scan()
+    cd.scan()
     $test.equal ttGetText(dom), 'root=tip child=tip', 'update root'
     $test.equal count0, 2
     $test.equal count1, 1
     $test.equal count2, 2
 
-    childScope.$scan()
+    cd.scan()
     $test.equal ttGetText(dom), 'root=tip child=tip', 'scan child'
     $test.equal count0, 2
     $test.equal count1, 1
     $test.equal count2, 2
 
     childScope.top = 'fromChild'
-    childScope.$scan()
+    cd.scan()
     $test.equal ttGetText(dom), 'root=fromChild child=fromChild', 'update child'
     $test.equal count0, 3
     $test.equal count1, 1
     $test.equal count2, 3
 
-    rootScope.$scan()
+    cd.scan()
     $test.equal ttGetText(dom), 'root=fromChild child=fromChild', 'scan root'
     $test.equal count0, 3
     $test.equal count1, 1
     $test.equal count2, 3
 
     countDestroy = 0
-    childScope.$watch '$destroy', ->
+    cd.watch '$destroy', ->
         countDestroy++
 
-    rootScope.$destroy()
+    cd.destroy()
 
     $test.equal countDestroy, 1
 

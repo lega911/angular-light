@@ -127,20 +127,20 @@ window.Test = do ->
                     testList.splice(testList.indexOf(self), 1)
                     onClose()
                     if self.l_error or (self.l_started isnt self.l_ok)
-                        console.warn "UT #{title} has problem: #{self.l_ok} of #{self.l_started}"
+                        console.warn "UT #{self.title} has problem: #{self.l_ok} of #{self.l_started}"
                 start: (count) ->
                     stat.started += count
                     self.l_started += count
                 error: (msg) ->
                     stat.error++
                     self.l_error++
-                    console.error self.n, title, msg or ''
+                    console.error self.n, self.title, msg or ''
                 skip: (count) ->
                     stat.skipped += count
                 ok: (msg) ->
                     stat.ok++
                     self.l_ok++
-                    console.log self.n, title, msg or ''
+                    console.log self.n, self.title, msg or ''
                 check: (value, msg) ->
                     self.n++
                     if value
@@ -157,18 +157,23 @@ window.Test = do ->
             testList.push self
             self
 
-        run = (fn, basis) ->
-            if basis
+        run = (fn, mode) ->
+            scope = makeScope()
+            if mode is 'scope'
+                alight = buildAlight.makeInstance()
+                alight.option.injectScope = true
+                scope.title = 's:' + title
+            else if mode is 'basis'
                 alight = buildBasis.makeInstance()
+                scope.title = 'b:' + title
+                scope.basis = true
             else
                 alight = buildAlight.makeInstance()
+                alight.option.injectScope = false
+                scope.title = title
+
             stat.bStarted++;
             timeout = Timeout()
-            if basis
-                scope = makeScope 'bs:' + title
-            else
-                scope = makeScope title
-            scope.basis = basis
             try
                 if fn(scope, alight, timeout) is 'skip'
                     scope.close()
@@ -192,5 +197,6 @@ window.Test = do ->
         r =
             run: (fn) ->
                 run fn
-                run fn, true
+                run fn, 'scope'
+                #run fn, 'basis'
         r

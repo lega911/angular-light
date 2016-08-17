@@ -75,7 +75,8 @@ Test('fast-binding-1').run ($test, alight) ->
         value = env.changeDetector.eval expression
         env.setter value+value
 
-    scope = alight.Scope()
+    cd = alight.ChangeDetector()
+    scope = cd.scope
     scope.list = [
         {name: 'l', value: 5}
         {name: 'u', value: 7}
@@ -84,20 +85,20 @@ Test('fast-binding-1').run ($test, alight) ->
     scope.foo = (x) ->
         x*2
 
-    alight.bind scope, el
+    alight.bind cd, el
 
     $test.equal ttGetText(el), 'a-l b-10 c-10 d-l e-ll ' + 'a-u b-14 c-14 d-u e-uu ' + 'a-d b-22 c-22 d-d e-dd'
     
     scope.list[1] =
         name: 'x'
         value: 3
-    scope.$scan()
+    cd.scan()
     $test.equal ttGetText(el), 'a-l b-10 c-10 d-l e-ll ' + 'a-x b-6 c-6 d-x e-xx ' + 'a-d b-22 c-22 d-d e-dd'
 
     scope.list.push
         name: 'y'
         value: 9
-    scope.$scan()
+    cd.scan()
     $test.equal ttGetText(el), 'a-l b-10 c-10 d-l e-ll ' + 'a-x b-6 c-6 d-x e-xx ' + 'a-d b-22 c-22 d-d e-dd ' + 'a-y b-18 c-18 d-y e-yy'
 
     $test.close()
@@ -187,6 +188,13 @@ Test('fast-binding-4').run ($test, alight) ->
         return
 
     $test.start 12
+
+    if not alight.d.al.model
+        alight.d.al.model = (scope, element, key, env) ->
+            if element.type is 'checkbox'
+                alight.d.al.checked.init.call @, scope, element, key, env
+            else
+                alight.d.al.value.init.call @, scope, element, key, env
 
     _el = ttDOM """
         <input type="text" al-model="a" />

@@ -53,6 +53,11 @@ Test('ns-1', 'ns-1').run ($test, alight) ->
     $test.start 2
     f$ = alight.f$
 
+    if not alight.d.al.text
+        alight.d.al.text = (scope, el, key) ->
+            this.watch key, (text) ->
+                el.innerText = text
+
     tag = ttDOM '<p al-private="title"></p>:<p al-text="title"></p>'
     makeScope = ->
         title: 'title'
