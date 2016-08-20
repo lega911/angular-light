@@ -35,6 +35,10 @@
 * alight.option.injectScope
 * :class supports true/false way, e.g. :class.red.bold="!!active"
 * al-init.window - adds window arguments
+* alight.bootstrap accepts function as second argument
+* renaming alight.createComponent -> alight.component
+* Component: if props is declared then auto props will be off
+* Component: props as array
 
 Fixes:
 

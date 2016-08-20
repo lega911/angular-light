@@ -13,6 +13,10 @@ alight.bootstrap = function(input, data) {
         input = data;
     } else if(data instanceof alight.core.ChangeDetector) {
         changeDetector = data;
+    } else if(f$.isFunction(data)) {
+        var scope = {};
+        changeDetector = alight.ChangeDetector(scope);
+        data.call(changeDetector, scope);
     } else {
         changeDetector = alight.ChangeDetector(data);
     }

@@ -2,7 +2,7 @@
 
 /*
 
-alight.createComponent('rating', (scope, element, env) => {
+alight.component('rating', (scope, element, env) => {
   return {
     template,
     templateId,
@@ -23,7 +23,7 @@ alight.createComponent('rating', (scope, element, env) => {
   function makeWatch({listener, childCD, name, parentName, parentCD}) {
     let fn;
     let watchOption = {};
-    if(listener) {
+    if(listener && listener !== true) {
       if(f$.isFunction(listener)) {
         fn = listener;
       } else {
@@ -46,7 +46,7 @@ alight.createComponent('rating', (scope, element, env) => {
     parentCD.watch(parentName, fn, watchOption);
   }
 
-  alight.createComponent = function(attrName, constructor) {
+  alight.component = function(attrName, constructor) {
     let parts = attrName.match(/^(\w+)[\-](.+)$/)
     let ns, name;
     if(parts) {
@@ -65,29 +65,29 @@ alight.createComponent('rating', (scope, element, env) => {
       restrict: 'E',
       stopBinding: true,
       priority: 5,
-      init: function(parentScope, element, _value, env) {
-        env.fastBinding = true;
-        const parentCD = env.changeDetector.new();
-        const childCD = alight.Scope({
-          returnChangeDetector: true
-        })
-        const scope = childCD.scope;
-
-        scope.$sendEvent = function(eventName, value) {
-          let event = new CustomEvent(eventName);
-          event.value = value;
-          event.component = true;
-          element.dispatchEvent(event);
+      init: function(_parentScope, element, _value, parentEnv) {
+        parentEnv.fastBinding = true;
+        const scope = {
+          $sendEvent: function(eventName, value) {
+            let event = new CustomEvent(eventName);
+            event.value = value;
+            event.component = true;
+            element.dispatchEvent(event);
+          }
         };
 
-        function ChildEnv() {};
-        ChildEnv.prototype = env;
-        const childEnv = new ChildEnv();
-        childEnv.changeDetector = childCD
-        childEnv.parentChangeDetector = parentCD;
+        const parentCD = parentEnv.changeDetector.new();
+        const childCD = alight.ChangeDetector(scope);
+
+        const env = new Env({
+          element,
+          attributes: parentEnv.attributes,
+          changeDetector: childCD,
+          parentChangeDetector: parentCD
+        });
 
         try {
-          const option = constructor(scope, element, childEnv) || {};
+          const option = constructor(scope, element, env) || {};
         } catch (e) {
           alight.exceptionHandler(e, 'Error in component <' + attrName + '>: ', {
             element: element,
@@ -114,39 +114,39 @@ alight.createComponent('rating', (scope, element, env) => {
         })
 
         // option api
-        let readyProps = {};
         if(option.api) {
-          readyProps[':api'] = true
           let propValue = env.takeAttr(':api');
           if(propValue) parentCD.locals[propValue] = option.api;
         }
 
+        function watchProp(key, listener) {
+            let name = ':' + key;
+            let value = env.takeAttr(name);
+            if(!value) {
+              value = env.takeAttr(key);
+              if(!value) return;
+              listener = 'copy';
+            }
+            makeWatch({childCD, listener, name: key, parentName: value, parentCD});
+        }
+
         // option props
         if(option.props) {
-          for(var key in option.props) {
-            let propName = ':' + key;
-            let propValue = env.takeAttr(propName);
-            let listener = option.props[key];
-            readyProps[propName] = true;
+          if(Array.isArray(option.props))
+            for(let key of option.props) watchProp(key, true)
+          else
+            for(let key in option.props) watchProp(key, option.props[key])
+        } else {
+          // auto props
+          for(let attr of element.attributes) {
+            let propName = attr.name;
+            let propValue = attr.value;
             if(!propValue) continue;
-            makeWatch({childCD, listener, name: key, parentName: propValue, parentCD});
+
+            let parts = propName.match(/^\:(.*)$/)
+            if(!parts) continue;
+            makeWatch({childCD, name: parts[1], parentName: propValue, parentCD});
           }
-        }
-        
-        // element props
-        for(let attr of element.attributes) {
-          let propName = attr.name;
-          if(readyProps[propName]) continue;
-          readyProps[propName] = true;
-          
-          let propValue = attr.value;
-          if(!propValue) continue;
-          
-          let parts = propName.match(/^\:(.*)$/)
-          if(!parts) continue;
-          let name = parts[1];
-          
-          makeWatch({childCD, name, parentName: propValue, parentCD});
         }
 
         var scanned = false;
@@ -168,7 +168,7 @@ alight.createComponent('rating', (scope, element, env) => {
               binding(true);
             },
             error: () => {
-              console.error('Template is not loaded',option.templateUrl )
+              console.error('Template is not loaded',option.templateUrl)
             }
           })
         } else {
