@@ -45,7 +45,7 @@ do ->
             stringValue = ''
             freeText = ''
             bracket = 0
-            filters = null
+            filter = null
 
             commitText = ->
                 if freeText
@@ -128,8 +128,8 @@ do ->
                         sign += a
                         continue
                     if sign is '|' and level is 0 and bracket is 0
-                        # filters
-                        filters = line.substring index-1
+                        # filter
+                        filter = line.substring index-1
                         index = line.length + 1
                         continue
 
@@ -205,21 +205,21 @@ do ->
 
             result: result
             index: index
-            filters: filters
+            filter: filter
 
         data = pars
             line: expression
 
         ret =
-            isSimple: not data.filters
+            isSimple: not data.filter
             simpleVariables: []
-            #filters
+            #filter
             #expression
             #result
 
-        if data.filters
-            ret.expression = expression.substring 0, expression.length - data.filters.length - 1
-            ret.filters = data.filters.split '|'
+        if data.filter
+            ret.expression = expression.substring 0, expression.length - data.filter.length - 1
+            ret.filter = data.filter
         else
             ret.expression = expression
 
@@ -309,3 +309,83 @@ do ->
         if alight.debug.parser
             console.log expression, ret
         ret
+
+    alight.utils.parsFilter = (text) ->
+        index = 0
+        filterName = ''
+        result = []
+        args = []
+        fetchName = true
+        text = text.trim()
+        arg = ''
+        bracket = 0
+        string0 = false  # "
+        string1 = false  # '
+
+        push = ->
+            if arg
+                args.push arg
+                arg = ''
+
+        while index <= text.length
+            a = text[index] or ''
+            index++
+
+            if fetchName
+                if isChar(a) or isDigit(a)
+                    filterName += a
+                    continue
+                if not filterName
+                    continue
+                fetchName = false
+
+            if string0
+                arg += a
+                if a is '"'
+                    string0 = false
+                continue
+
+            if string1
+                arg += a
+                if a is "'"
+                    string1 = false
+                continue
+
+            if bracket
+                arg += a
+                if a is '('
+                    bracket++
+                if a is ')'
+                    bracket--
+                continue
+
+            if a is ' '
+                push()
+                continue
+
+            if a is '|' or not a
+                push()
+                result.push
+                    name: filterName
+                    args: args
+                filterName = ''
+                args = []
+                fetchName = true
+                arg = ''
+                continue
+
+            if a is '"'
+                string0 = true
+
+            if a is "'"
+                string1 = true
+
+            if a is '('
+                bracket = 1
+
+            arg += a
+
+        if bracket or string0 or string1
+            return null
+
+        result: result

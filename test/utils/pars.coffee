@@ -147,3 +147,34 @@ Test('parsText').run ($test, alight) ->
     $test.equal r[1].list[0], "#get tag.ref -> items.css, $value || 'label-default'"
 
     $test.close()
+
+
+Test('parsing-3').run ($test, alight) ->
+    $test.start 17
+
+    d = alight.utils.parsFilter ' f0 arg1 arg2 | f1 | f2'
+    $test.equal d.result[0].name, 'f0'
+    $test.equal d.result[0].args[0], 'arg1'
+    $test.equal d.result[0].args[1], 'arg2'
+    $test.equal d.result[1].name, 'f1'
+    $test.equal d.result[2].name, 'f2'
+
+    d = alight.utils.parsFilter 'f0 arg1 arg2|f1|f2'
+    $test.equal d.result[0].name, 'f0'
+    $test.equal d.result[0].args[0], 'arg1'
+    $test.equal d.result[0].args[1], 'arg2'
+    $test.equal d.result[1].name, 'f1'
+    $test.equal d.result[2].name, 'f2'
+
+    d = alight.utils.parsFilter ' sum (a + b) | decor'
+    $test.equal d.result[0].name, 'sum'
+    $test.equal d.result[0].args[0], '(a + b)'
+    $test.equal d.result[1].name, 'decor'
+
+    d = alight.utils.parsFilter ' sum "a -((+ b" | decor \'msg\''
+    $test.equal d.result[0].name, 'sum'
+    $test.equal d.result[0].args[0], '"a -((+ b"'
+    $test.equal d.result[1].name, 'decor'
+    $test.equal d.result[1].args[0], "'msg'"
+
+    $test.close()
