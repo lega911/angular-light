@@ -113,6 +113,7 @@ ChangeDetector::destroy = ->
     return
 
 
+###
 getFilter = (name, cd) ->
     error = false
     scope = cd.scope
@@ -125,7 +126,6 @@ getFilter = (name, cd) ->
     if not filter
         throw 'Filter not found: ' + name
     filter
-
 
 makeFilterChain = do ->
     index = 1
@@ -204,7 +204,7 @@ makeFilterChain = do ->
             watchOptions.deep = true
         w = cd.watch ce.expression, prevCallback, watchOptions
         w
-
+###
 
 WA = (callback) ->
     @.cb = callback
@@ -295,7 +295,7 @@ ChangeDetector::watch = (name, callback, option) ->
             exp = option.watchText.fn
         else
             ce = alight.utils.compile.expression(name)
-            if ce.filters
+            if ce.filter
                 return makeFilterChain cd, ce, callback, option
             isStatic = ce.isSimple and ce.simpleVariables.length is 0
             exp = ce.fn

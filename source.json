@@ -11,6 +11,9 @@
     "file": "js/fqueryReady.js",
     "tag": ["core"]
 }, {
+    "file": "filter.es.js",
+    "tag": ["core"]
+}, {
     "file": "changeDetector.coffee",
     "tag": ["core"]
 }, {

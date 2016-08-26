@@ -1,4 +1,4 @@
-Test('filter slice', 'filter-slice').run ($test, alight) ->
+Test('filter-slice').run ($test, alight) ->
     if not alight.filters.slice
         return 'skip'
     $test.start 4
@@ -11,11 +11,11 @@ Test('filter slice', 'filter-slice').run ($test, alight) ->
     result = null
     result2 = null
 
-    cd.watch 'lst | slice:a', (value) ->
+    cd.watch 'lst | slice a', (value) ->
         result = value
     ,
         isArray: true
-    cd.watch 'lst | slice:a,b', (value) ->
+    cd.watch 'lst | slice a b', (value) ->
         result2 = value
     ,
         isArray: true

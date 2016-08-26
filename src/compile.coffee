@@ -64,7 +64,7 @@ do ->
         if no_return
             result = "var $$;#{exp}"
         else
-            if cfg.string and not funcCache.filters
+            if cfg.string and not funcCache.filter
                 result = "var $$, __ = (#{exp}); return '' + (__ || (__ == null?'':__))"
                 funcCache.rawExpression = "(__=#{exp}) || (__ == null?'':__)"
             else

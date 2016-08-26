@@ -318,6 +318,7 @@ do ->
         fetchName = true
         text = text.trim()
         arg = ''
+        raw = ''
         bracket = 0
         string0 = false  # "
         string1 = false  # '
@@ -338,6 +339,8 @@ do ->
                 if not filterName
                     continue
                 fetchName = false
+            else
+                raw += a
 
             if string0
                 arg += a
@@ -349,6 +352,16 @@ do ->
                 arg += a
                 if a is "'"
                     string1 = false
+                continue
+
+            if a is '"'
+                arg += a
+                string0 = true
+                continue
+
+            if a is "'"
+                arg += a
+                string1 = true
                 continue
 
             if bracket
@@ -365,20 +378,18 @@ do ->
 
             if a is '|' or not a
                 push()
+                if a is '|'
+                    raw = raw.slice 0, raw.length-1
                 result.push
                     name: filterName
+                    raw: raw
                     args: args
                 filterName = ''
+                raw = ''
                 args = []
                 fetchName = true
                 arg = ''
                 continue
-
-            if a is '"'
-                string0 = true
-
-            if a is "'"
-                string1 = true
 
             if a is '('
                 bracket = 1
