@@ -605,7 +605,7 @@ ChangeDetector::setValue = (name, value) ->
         input: ['$value']
         no_return: true
     try
-        fn cd.scope, value
+        fn cd.locals, value
     catch e
         msg = "can't set variable: #{name}"
         if alight.debug.parser
@@ -614,13 +614,13 @@ ChangeDetector::setValue = (name, value) ->
             rx = name.match(/^([\w\d\.]+)\.[\w\d]+$/)
             if rx and rx[1]
                 # try to make a path
-                scope = cd.scope
+                locals = cd.locals
                 for key in rx[1].split '.'
-                    if scope[key] is undefined
-                        scope[key] = {}
-                    scope = scope[key]
+                    if locals[key] is undefined
+                        locals[key] = {}
+                    locals = locals[key]
                 try
-                    fn cd.scope, value
+                    fn cd.locals, value
                     return
                 catch
 
