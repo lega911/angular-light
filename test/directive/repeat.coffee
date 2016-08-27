@@ -131,7 +131,7 @@ do ->
         6: 'a:1, g:2, c:3, d:4'
         7: 'a:1, i:2, c:3, d:4'
 
-    run 'filter-controller', '<div al-repeat="it in list | slice:0,3" al-test-repeat>{{r}}:{{=numerator()}}</div>',
+    run 'filter-controller', '<div al-repeat="it in list | slice 0 3" al-test-repeat>{{r}}:{{=numerator()}}</div>',
         0: 'aa:1, bb:2, cc:3'
         1: 'aa:1, bb:2, cc:3'
         2: 'ff:4, aa:1, bb:2'
@@ -339,7 +339,7 @@ Test('repeat-store-to-0').run ($test, alight) ->
             @.onChange = (value) ->
                 env.setValue makeResult
 
-    dom = ttDOM '<div class="item" al-repeat="it in list | myfilter | storeTo:filteredList"></div>'
+    dom = ttDOM '<div class="item" al-repeat="it in list | myfilter | storeTo filteredList"></div>'
 
     scope = alight.Scope()
     scope.filteredList = []

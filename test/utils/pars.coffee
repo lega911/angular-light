@@ -8,18 +8,11 @@ Test('parsing', 'parsing').run ($test, alight) ->
             $test.error pe.result
             return
         else
-            if pe.filters or expected.length > 1
+            if pe.filter or expected.length > 1
                 # filters
-                if not pe.filters
-                    $test.error pe.filters
+                if pe.filter != expected[1]
+                    $test.error pe.filter
                     return
-                if pe.filters.length isnt expected.length-1
-                    $test.error pe.filters
-                    return
-                for filter, i in pe.filters
-                    if filter isnt expected[i+1]
-                        $test.error pe.filters
-                        return
         $test.ok expected
 
     pars 'path.variable', ["$$scope.path.variable"]
@@ -162,7 +155,7 @@ Test('parsing-3').run ($test, alight) ->
     $test.equal d.result[2].name, 'f2'
     $test.equal d.result[2].raw, ''
 
-    d = alight.utils.parsFilter 'f0 arg1 arg2|f1|f2'
+    d = alight.utils.parsFilter 'f0:arg1 arg2|f1|f2'
     $test.equal d.result[0].name, 'f0'
     $test.equal d.result[0].raw, 'arg1 arg2'
     $test.equal d.result[0].args[0], 'arg1'

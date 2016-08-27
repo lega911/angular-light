@@ -53,11 +53,11 @@ Test('filter-date').run ($test, alight) ->
     r0 = ''
     r1 = ''
     r2 = ''
-    cd.watch 'value | date:yyyy-mm-dd', (value) ->
+    cd.watch 'value | date yyyy-mm-dd', (value) ->
         r0 = value
-    cd.watch 'value | date:HH:MM:SS', (value) ->
+    cd.watch 'value | date HH:MM:SS', (value) ->
         r1 = value
-    cd.watch 'value | date:yyyy-mm-dd HH:MM:SS', (value) ->
+    cd.watch 'value | date yyyy-mm-dd HH:MM:SS', (value) ->
         r2 = value
 
     cd.scan ->
@@ -79,16 +79,16 @@ Test('filter-date').run ($test, alight) ->
                 $test.close()
 
 
-Test('filter-async-0', 'filter-async-0').run ($test, alight) ->
+Test('filter-async-0').run ($test, alight) ->
     $test.start 56
 
     fdouble = 0
     fadd = 0
-    alight.filters.double = (value, exp, scope) ->
+    alight.filters.double = (value) ->
         fdouble++
         value + value
 
-    alight.filters.add = (value, exp, scope) ->
+    alight.filters.add = (value, exp) ->
         fadd++
         value + exp.trim()
 
@@ -107,7 +107,7 @@ Test('filter-async-0', 'filter-async-0').run ($test, alight) ->
     scope =
         value: 'one'
     cd = alight.ChangeDetector scope
-    cd.watch 'value | double | get | add:EX', (value) ->
+    cd.watch 'value | double | get | add:"EX"', (value) ->
         result0.push value
 
     cd.scan()
@@ -118,10 +118,10 @@ Test('filter-async-0', 'filter-async-0').run ($test, alight) ->
     $test.equal setters.length, 1
     $test.equal async.length, 1
 
-    w1 = cd.watch 'value | add:PRE | get | double', (value) ->
+    w1 = cd.watch 'value | add:"PRE" | get | double', (value) ->
         result1.push value
 
-    cd.watch 'value | add:BEGIN | double | add:END', (value) ->
+    cd.watch 'value | add:"BEGIN" | double | add:"END"', (value) ->
         result2.push value
 
     cd.scan()
@@ -200,12 +200,12 @@ Test('filter-async-0', 'filter-async-0').run ($test, alight) ->
 
                             $test.close()
 
-Test('filter-async-1', 'filter-async-1').run ($test, alight) ->
+Test('filter-async-1').run ($test, alight) ->
     if not alight.filters.slice
         return 'skip'
     $test.start 4
 
-    alight.filters.foo = (value, exp, scope) ->
+    alight.filters.foo = (value) ->
         r = value.slice()
         r.push 'E'
         r
@@ -215,7 +215,7 @@ Test('filter-async-1', 'filter-async-1').run ($test, alight) ->
 
     rcount = 0
     rlen = 0
-    cd.watch 'list | slice:2,5 | foo', (value) ->
+    cd.watch 'list | slice 2 5 | foo', (value) ->
         rcount++
         rlen = value.length
 

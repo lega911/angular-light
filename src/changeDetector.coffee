@@ -536,7 +536,7 @@ ChangeDetector::digest = ->
         scanCore @, result
         totalChanges += result.changes
 
-        if not result.extraLoop and not root.extraLoop
+        if not result.extraLoop and not root.extraLoop and not root.watchers.onScanOnce.length
             break
     if alight.debug.scan
         duration = get_time() - start

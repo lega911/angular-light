@@ -339,6 +339,8 @@ do ->
                 if not filterName
                     continue
                 fetchName = false
+                if a and a isnt '|'
+                    continue
             else
                 raw += a
 

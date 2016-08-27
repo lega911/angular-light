@@ -1,5 +1,5 @@
 
-function getFilter(name, cd) {
+alight.core.getFilter = function(name, cd) {
     var error = false;
     var scope = cd.scope;
     var filter = null;
@@ -13,63 +13,91 @@ function getFilter(name, cd) {
 }
 
 
-function makeFilterChain(cd, ce, baseCallback, option) {
-    var watchMode = null;
+alight.core.buildFilterNode = function(cd, filterConf, filter, callback) {
+    if(f$.isFunction(filter)) {
+        var onStop;
+        var values = [];
+        var active = false;
 
-    if(option.isArray) watchMode = 'array'
-    else if(option.deep) watchMode = 'deep';
-    
-    var prevCallback = baseCallback;
-    var conf = alight.utils.parsFilter(ce.filter);
-    var filter;
+        if(filterConf.args.length) {
+            var watchers = [];
 
-    for(var i=conf.result.length-1;i>=0;i--) {
-        var f = conf.result[i];
-        filter = getFilter(f.name, cd);
-
-        if(f$.isFunction(filter)) {
-            prevCallback = (function(filter, prevCallback) {
-                var values = [];
-
-                if(f.args.length) {
-                    f.args.forEach((exp, i) => {
-                        cd.watch(exp, function(value) {
-                            values[i+1] = value;
-                            handler();
-                        });
-                    });
-
-                    var planned = false;
-                    var handler = function() {
-                        if(!planned) {
-                            planned = true;
-                            cd.watch('$onScanOnce', () => {
-                                planned = false;
-                                prevCallback(filter.apply(null, values));
-                            })
-                        }
-                    }
-                } else {
-                    var handler = function() {
-                        prevCallback(filter.apply(null, values));
-                    }
-                }
-
-                return function(value) {
-                    values[0] = value;
+            filterConf.args.forEach((exp, i) => {
+                watchers.push(cd.watch(exp, function(value) {
+                    values[i+1] = value;
                     handler();
-                };
-            })(filter, prevCallback);
+                }));
+            });
 
+            var planned = false;
+            var handler = function() {
+                if(!planned) {
+                    planned = true;
+                    cd.watch('$onScanOnce', () => {
+                        planned = false;
+                        if(active) callback(filter.apply(null, values));
+                    })
+                }
+            }
+            onStop = function() {
+                watchers.foEach(w => w.stop())
+            }
         } else {
-
+            var handler = function() {
+                callback(filter(values[0]));
+            }
         }
 
+        var node = {
+            onChange: function(value) {
+                active = true;
+                values[0] = value;
+                handler();
+            },
+            onStop: onStop
+        };
+        return node;
+    } else if(filter.init) {
+        return filter.init.call(cd, cd.scope, filterConf.raw, {
+            setValue: callback,
+            conf: filterConf,
+            changeDetector: cd
+        });
+    }
+    throw 'Wrong filter: ' + filterConf.name;
+}
+
+
+function makeFilterChain(cd, ce, prevCallback, option) {
+    var watchMode = null;
+
+    const oneTime = option.oneTime;
+    if(option.isArray) watchMode = 'array'
+    else if(option.deep) watchMode = 'deep';
+
+    var chain = alight.utils.parsFilter(ce.filter);
+    var onStop = [];
+
+    for(var i=chain.result.length-1;i>=0;i--) {
+        var filter = alight.core.getFilter(chain.result[i].name, cd);
+        var node = alight.core.buildFilterNode(cd, chain.result[i], filter, prevCallback);
+        if(node.watchMode) watchMode = node.watchMode;
+        if(node.onStop) onStop.push(node.onStop);
+        prevCallback = node.onChange;
     };
 
-    option = {};
+    option = {
+        oneTime: oneTime
+    };
     if(watchMode === 'array') option.isArray = true;
     else if(watchMode === 'deep') option.deep = true;
+
+    if(onStop.length) {
+        option.onStop = function() {
+            onStop.forEach(fn => fn())
+            onStop.length = 0;
+        }
+    }
 
     return cd.watch(ce.expression, prevCallback, option);
 };

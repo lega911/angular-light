@@ -161,7 +161,7 @@ do ->
             if d.type is 'expression'
 
                 # check for a text directive
-                exp = d.list.join ' | '
+                exp = d.list.join '|'
                 lname = exp.match /^([^\w\d\s\$"'\(\u0410-\u044F\u0401\u0451]+)/
                 if lname
                     d.isDir = true
@@ -196,7 +196,7 @@ do ->
                     ce = alight.utils.compile.expression exp,
                         string: true
 
-                    if not ce.filters
+                    if not ce.filter
                         d.fn = ce.fn
                         if not ce.rawExpression
                             throw 'Error'

@@ -14,6 +14,9 @@
     "file": "filter.es.js",
     "tag": ["core"]
 }, {
+    "file": "ext/class-filter.es.js",
+    "tag": ["full"]
+}, {
     "file": "changeDetector.coffee",
     "tag": ["core"]
 }, {

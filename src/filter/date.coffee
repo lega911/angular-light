@@ -24,5 +24,7 @@ do ->
             r = r.replace d[0], d[1]
         r
 
-    alight.filters.date = (value, exp) ->
-        makeDate exp, value
+    alight.filters.date =
+        init: (scope, exp, env) ->
+            onChange: (value) ->
+                env.setValue makeDate exp, value

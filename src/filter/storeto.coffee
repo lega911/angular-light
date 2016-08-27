@@ -1,4 +1,6 @@
 
-alight.filters.storeTo = (value, key, scope, env) ->
-    env.changeDetector.setValue key, value
-    value
+alight.filters.storeTo =
+    init: (scope, key, env) ->
+        onChange: (value) ->
+            env.changeDetector.setValue key, value
+            env.setValue value
