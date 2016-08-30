@@ -40,6 +40,8 @@
 * Component: if props is declared then auto props will be off
 * Component: props as array
 * Component: simple attribute as copy-prop
+* alight.utils.parsFilter
+* basic filters
 
 Fixes:
 

@@ -374,7 +374,7 @@ do ->
                     bracket--
                 continue
 
-            if a is ' '
+            if a is ' ' or a is ','
                 push()
                 continue
 
