@@ -23,10 +23,11 @@ alight.core.buildFilterNode = function(cd, filterConf, filter, callback) {
             var watchers = [];
 
             filterConf.args.forEach((exp, i) => {
-                watchers.push(cd.watch(exp, function(value) {
+                const w = cd.watch(exp, function(value) {
                     values[i+1] = value;
                     handler();
-                }));
+                });
+                if(!w.$.isStatic) watchers.push(w);
             });
 
             var planned = false;
@@ -39,8 +40,10 @@ alight.core.buildFilterNode = function(cd, filterConf, filter, callback) {
                     })
                 }
             }
-            onStop = function() {
-                watchers.foEach(w => w.stop())
+            if(watchers.length) {
+                onStop = function() {
+                    watchers.forEach(w => w.stop())
+                }
             }
         } else {
             var handler = function() {

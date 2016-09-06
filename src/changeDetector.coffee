@@ -113,99 +113,6 @@ ChangeDetector::destroy = ->
     return
 
 
-###
-getFilter = (name, cd) ->
-    error = false
-    scope = cd.scope
-    if scope.$ns and scope.$ns.filters
-        filter = scope.$ns.filters[name]
-        if not filter and not scope.$ns.inheritGlobal
-            error = true
-    if not filter and not error
-        filter = alight.filters[name]
-    if not filter
-        throw 'Filter not found: ' + name
-    filter
-
-makeFilterChain = do ->
-    index = 1
-    getId = ->
-        'wf' + (index++)
-
-    (cd, ce, baseCallback, option) ->
-        root = cd.root
-
-        # watchMode: simple, deep, array
-        if option.isArray
-            watchMode = 'array'
-        else if option.deep
-            watchMode = 'deep'
-        else
-            watchMode = 'simple'
-        prevCallback = baseCallback
-        rindex = ce.filters.length
-        onStop = []
-        while rindex > 0
-            filterExp = ce.filters[--rindex].trim()
-            i = filterExp.indexOf ':'
-            if i>0
-                filterName = filterExp[..i-1]
-                filterArg = filterExp[i+1..]
-            else
-                filterName = filterExp
-                filterArg = null
-
-            filterObject = getFilter filterName, cd
-            if Array.isArray(filterObject)
-                filter = scopeWrap cd, ->
-                    filterObject[0] filterArg, cd.scope,
-                        setValue: prevCallback
-                        changeDetector: cd
-
-                if filter.watchMode
-                    watchMode = filter.watchMode
-
-                if filter.onStop
-                    onStop.push filter.onStop
-
-                if filter.onChange
-                    prevCallback = filter.onChange
-            else if Object.keys(filterObject::).length
-                # class
-                filter = scopeWrap cd, ->
-                    new filterObject filterArg, cd.scope,
-                        setValue: prevCallback
-                        changeDetector: cd
-                filter.setValue = prevCallback
-
-                if filter.watchMode
-                    watchMode = filter.watchMode
-
-                if filter.onStop
-                    onStop.push filter.onStop.bind filter
-
-                if filter.onChange
-                    prevCallback = filter.onChange.bind filter
-            else
-                prevCallback = do (filter=filterObject, prevCallback, filterArg, cd) ->
-                    (value) ->
-                        prevCallback filter value, filterArg, cd.scope,
-                            changeDetector: cd
-
-        watchOptions =
-            oneTime: option.oneTime
-            onStop: ->
-                for fn in onStop
-                    fn()
-                onStop.length = 0
-        if watchMode is 'array'
-            watchOptions.isArray = true
-        else if watchMode is 'deep'
-            watchOptions.deep = true
-        w = cd.watch ce.expression, prevCallback, watchOptions
-        w
-###
-
 WA = (callback) ->
     @.cb = callback
 
@@ -324,11 +231,15 @@ ChangeDetector::watch = (name, callback, option) ->
     r =
         $: d
         stop: ->
+            if option.onStop
+                try
+                    option.onStop()
+                catch e
+                    alight.exceptionHandler e, "Error in onStop of watcher: " + name,
+                        name
             if d.isStatic
                 return
             removeItem cd.watchList, d
-            if option.onStop
-                option.onStop()
         refresh: ->
             value = d.exp scope
             if value and d.deep
