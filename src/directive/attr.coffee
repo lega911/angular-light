@@ -49,9 +49,7 @@ do ->
                 if not value?
                     value = ''
                 element.style[styleName] = value
-        else if attrName is 'class'
-            if not d[1]
-                throw 'Class is not declared'
+        else if attrName is 'class' and d.length > 1
             isTemplate = false
             list = d.slice 1
             setter = (value) ->
