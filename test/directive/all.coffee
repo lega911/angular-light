@@ -244,3 +244,33 @@ Test 'al-stop'
 		$test.equal ttGetText(el), 'linux {{name}}'
 
 		$test.close()
+
+
+Test 'attr-class-0'
+	.run ($test, alight) ->
+		$test.start 6
+
+		el = ttDOM '<span :class="custom"> </span><span :class.red.blue="v > 3"> </span>'
+
+		cd = alight.ChangeDetector
+			custom: 'green'
+			v: 0
+
+		alight.bind cd, el
+
+		c = (n) ->
+			el.childNodes[n].className or ''
+
+		$test.equal c(0), 'green'
+		$test.equal c(1).indexOf('red'), -1
+		$test.equal c(1).indexOf('blue'), -1
+
+		cd.scope.custom = 'one two'
+		cd.scope.v = 5
+		cd.scan()
+
+		$test.equal c(0), 'one two'
+		$test.equal c(1).indexOf('red') >= 0, true
+		$test.equal c(1).indexOf('blue') >= 0, true
+
+		$test.close()
