@@ -13,60 +13,70 @@ alight.core.getFilter = function(name, cd) {
 }
 
 
-alight.core.buildFilterNode = function(cd, filterConf, filter, callback) {
-    if(f$.isFunction(filter)) {
-        var onStop;
-        var values = [];
-        var active = false;
+function makeSimpleFilter(filter, option) {
+    var onStop;
+    var values = [];
+    var active = false;
+    var cd = option.cd;
+    var callback = option.callback;
 
-        if(filterConf.args.length) {
-            var watchers = [];
+    if(option.filterConf.args.length) {
+        var watchers = [];
 
-            filterConf.args.forEach((exp, i) => {
-                const w = cd.watch(exp, function(value) {
-                    values[i+1] = value;
-                    handler();
-                });
-                if(!w.$.isStatic) watchers.push(w);
+        option.filterConf.args.forEach((exp, i) => {
+            const w = cd.watch(exp, function(value) {
+                values[i+1] = value;
+                handler();
             });
+            if(!w.$.isStatic) watchers.push(w);
+        });
 
-            var planned = false;
-            var handler = function() {
-                if(!planned) {
-                    planned = true;
-                    cd.watch('$onScanOnce', () => {
-                        planned = false;
-                        if(active) callback(filter.apply(null, values));
-                    })
-                }
-            }
-            if(watchers.length) {
-                onStop = function() {
-                    watchers.forEach(w => w.stop())
-                }
-            }
-        } else {
-            var handler = function() {
-                callback(filter(values[0]));
+        var planned = false;
+        var handler = function() {
+            if(!planned) {
+                planned = true;
+                cd.watch('$onScanOnce', () => {
+                    planned = false;
+                    if(active) callback(filter.apply(null, values));
+                })
             }
         }
+        if(watchers.length) {
+            onStop = function() {
+                watchers.forEach(w => w.stop())
+            }
+        }
+    } else {
+        var handler = function() {
+            callback(filter(values[0]));
+        }
+    }
 
-        var node = {
-            onChange: function(value) {
-                active = true;
-                values[0] = value;
-                handler();
-            },
-            onStop: onStop
-        };
-        return node;
+    var node = {
+        onChange: function(value) {
+            active = true;
+            values[0] = value;
+            handler();
+        },
+        onStop: onStop,
+        watchMode: option.watchMode
+    };
+    return node;
+}
+
+alight.core.buildFilterNode = function(cd, filterConf, filter, callback) {
+    if(f$.isFunction(filter)) {
+        return makeSimpleFilter(filter, {cd, filterConf, callback});
     } else if(filter.init) {
         return filter.init.call(cd, cd.scope, filterConf.raw, {
             setValue: callback,
             conf: filterConf,
             changeDetector: cd
         });
+    } else if(f$.isFunction(filter.fn)) {
+        return makeSimpleFilter(filter.fn, {cd, filterConf, callback, watchMode: filter.watchMode});
     }
+
     throw 'Wrong filter: ' + filterConf.name;
 }
 
