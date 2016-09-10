@@ -1,5 +1,6 @@
 
-alight.filters.json = class J
-    watchMode: 'deep'
-    onChange: (value) ->
-        @.setValue JSON.stringify alight.utils.clone(value), null, 4
+alight.filters.json =
+    init: (scope, expression, env) ->
+        watchMode: 'deep'
+        onChange: (value) ->
+            env.setValue JSON.stringify alight.utils.clone(value), null, 4
