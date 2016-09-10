@@ -5,7 +5,7 @@ do ->
             return '0' + x
         '' + x
 
-    makeDate = (exp, value) ->
+    alight.filters.date = (value, format) ->
         if not value
             return ''
 
@@ -19,12 +19,7 @@ do ->
             [/MM/g, d2 value.getMinutes()]
             [/SS/g, d2 value.getSeconds()]
         ]
-        r = exp
+        r = format
         for d in x
             r = r.replace d[0], d[1]
         r
-
-    alight.filters.date =
-        init: (scope, exp, env) ->
-            onChange: (value) ->
-                env.setValue makeDate exp, value

@@ -42,6 +42,8 @@
 * Component: simple attribute as copy-prop
 * alight.utils.parsFilter
 * basic filters
+* filter date accepts format as string variable
+* format was changed for filter "filter", example "list | format text key"
 
 Fixes:
 

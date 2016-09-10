@@ -1,67 +1,19 @@
 
-alight.filters.filter = class F
-    constructor: (exp, scope, env) ->
-        that = @
-        filterObject = null
-        @.value = []
+alight.filters.filter = (value, text, key) ->
+    if not value or not text
+        return value
 
-        @.doFiltering = ->
-            e = filterObject
-            if not e
-                env.setValue that.value
-                return null
-            if typeof(e) is 'string'
-                e =
-                    __all: e
-            else if typeof(e) isnt 'object'
-                env.setValue that.value
-                return null
-
-            result = for r in that.value
-                if typeof r is 'object'
-                    f = true
-                    if e.__all
-                        f = false
-                        a = e.__all.toLowerCase()
-                        for k, v of r
-                            if k is '$alite_id'
-                                continue
-                            if (''+v).toLowerCase().indexOf(a) >= 0
-                                f = true
-                                break
-                        if not f
-                            continue
-
-                    for k, v of e
-                        if k is '__all'
-                            continue
-                        a = r[k]
-                        if not a
-                            f = false
-                            break
-                        if (''+a).toLowerCase().indexOf((''+v).toLowerCase()) < 0
-                            f = false
-                            break
-                    if not f
-                        continue
-                    r
-                else
-                    if not e.__all
-                        continue
-                    a = e.__all.toLowerCase()
-                    if (''+r).toLowerCase().indexOf(a) < 0
-                        continue
-                    r
-
-            env.setValue result
-            null
-
-        env.changeDetector.watch exp, (input) ->
-            filterObject = input
-            that.doFiltering()
-        ,
-            deep: true
-
-    onChange: (input) ->
-        @.value = input
-        @.doFiltering()
+    result = []
+    text = text.toLowerCase()
+    if key
+        for d in value
+            s = ('' + d[key]).toLowerCase()
+            if s.indexOf(text) >= 0
+                result.push d
+    else
+        for d in value
+            for k, v of d
+                s = ('' + v).toLowerCase()
+                if s.indexOf(text) >= 0
+                    result.push d
+    result
