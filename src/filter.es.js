@@ -37,7 +37,15 @@ function makeSimpleFilter(filter, option) {
                 planned = true;
                 cd.watch('$onScanOnce', () => {
                     planned = false;
-                    if(active) callback(filter.apply(null, values));
+                    if(active) {
+                        var result = filter.apply(null, values);
+                        if(window.Promise && result instanceof Promise) {
+                            result.then(function(value) {
+                                callback(value);
+                                cd.scan();
+                            });
+                        } else callback(result);
+                    }
                 })
             }
         }
@@ -48,7 +56,13 @@ function makeSimpleFilter(filter, option) {
         }
     } else {
         var handler = function() {
-            callback(filter(values[0]));
+            var result = filter(values[0]);
+            if(window.Promise && result instanceof Promise) {
+                result.then(function(value) {
+                    callback(value);
+                    cd.scan();
+                });
+            } else callback(result);
         }
     }
 
