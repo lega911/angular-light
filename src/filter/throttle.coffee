@@ -1,11 +1,10 @@
 
-alight.filters.throttle = class T
-    ext: true
-    constructor: (delay, scope, env) ->
+alight.filters.throttle =
+    init: (scope, delay, env) ->
         delay = Number delay
         to = null
 
-        @.onChange = (value) ->
+        onChange: (value) ->
             if to
                 clearTimeout to
             to = setTimeout ->

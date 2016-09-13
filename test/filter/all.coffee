@@ -500,3 +500,34 @@ Test('filter-async-4', 'filter-async-4').run ($test, alight, timeout) ->
         $test.equal fooStop, 1
 
         $test.close()
+
+
+Test('filter-toarray-0').run ($test, alight, timeout) ->
+    $test.start 12
+
+    result = null
+    cd = alight.ChangeDetector
+        user:
+            type: 'Linux'
+            name: 'Ubuntu'
+    cd.watch 'user | toArray kk vv', (value) ->
+        result = value
+
+    cd.scan ->
+        $test.equal result.length, 2
+        $test.equal result[0].kk, 'type'
+        $test.equal result[0].vv, 'Linux'
+        $test.equal result[1].kk, 'name'
+        $test.equal result[1].vv, 'Ubuntu'
+
+        cd.scope.user.name = 'Debian'
+        cd.scope.user.version = '16.04'
+        cd.scan ->
+            $test.equal result.length, 3
+            $test.equal result[0].kk, 'type'
+            $test.equal result[0].vv, 'Linux'
+            $test.equal result[1].kk, 'name'
+            $test.equal result[1].vv, 'Debian'
+            $test.equal result[2].kk, 'version'
+            $test.equal result[2].vv, '16.04'
+            $test.close()
