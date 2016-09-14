@@ -531,3 +531,68 @@ Test('filter-toarray-0').run ($test, alight, timeout) ->
             $test.equal result[2].kk, 'version'
             $test.equal result[2].vv, '16.04'
             $test.close()
+
+
+Test('filter-0').run ($test, alight, timeout) ->
+    $test.start 10
+
+    alight.filters.double =
+        init: (scope, dividerKey, env) ->
+            value = null
+            divider = null
+            @.watch dividerKey, (value) ->
+                divider = value
+                update()
+
+            planned = false
+            update = =>
+                if planned
+                    return
+                planned = true
+                @.watch '$onScanOnce', ->
+                    planned = false
+                    if value and divider
+                        env.setValue value + divider + value
+
+            onChange: (input) ->
+                value = input
+                update()
+            onStop: ->
+                onstop += 1
+
+    cd = alight.ChangeDetector
+        name: 'Linux'
+        mid: '+'
+
+    count = 0
+    result = null
+    onstop = 0
+    cd.watch 'name | double mid', (value) ->
+        result = value
+        count += 1
+
+    cd.scan ->
+        $test.equal count, 1
+        $test.equal result, 'Linux+Linux'
+
+        cd.scope.name = 'ubuntu'
+        cd.scan ->
+            $test.equal count, 2
+            $test.equal result, 'ubuntu+ubuntu'
+
+            cd.scope.mid = '-'
+            cd.scan ->
+                $test.equal count, 3
+                $test.equal result, 'ubuntu-ubuntu'
+
+                cd.scope.name = 'debian'
+                cd.scope.mid = '*'
+                cd.scan ->
+                    $test.equal count, 4
+                    $test.equal result, 'debian*debian'
+
+                    $test.equal onstop, 0
+                    cd.destroy()
+                    $test.equal onstop, 1
+
+                    $test.close()
