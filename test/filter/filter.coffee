@@ -16,7 +16,7 @@ Test('filter-filter-0').run ($test, alight) ->
 
     resultList = []
 
-    cd.watch 'list | filter text "name"', (value) ->
+    cd.watch 'list | filter "name" text', (value) ->
         resultList = value
     ,
         isArray: true
@@ -104,4 +104,58 @@ Test('filter-filter-1').run ($test, alight) ->
                 cd.scan ->
                     $test.equal result(), 12
 
+                    $test.close()
+
+
+Test('filter-filter-2').run ($test, alight) ->
+    if not alight.filters.filter
+        return 'skip'
+    $test.start 5
+
+    scope =
+        list: [
+            { value: 1, st: true }
+            { value: 2, st: false }
+            { value: 4, st: true }
+            { value: 8, st: false }
+            { value: 16, st: true }
+        ]
+        value: null
+
+    cd = alight.ChangeDetector scope
+
+    resultList = []
+
+    cd.watch 'list | filter "st" value', (value) ->
+        resultList = value
+    ,
+        isArray: true
+
+    result = ->
+        sum = 0
+        for i in resultList
+            sum += i.value
+        sum
+
+    cd.scan()
+    $test.equal result(), 31
+
+    scope.value = true
+    cd.scan ->
+        $test.equal result(), 21
+
+        scope.value = false
+        cd.scan ->
+            $test.equal result(), 10
+
+            scope.list.push
+                value: 32
+                st: false
+
+            cd.scan ->
+                $test.equal result(), 42
+
+                scope.value = null
+                cd.scan ->
+                    $test.equal result(), 63
                     $test.close()

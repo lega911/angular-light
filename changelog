@@ -43,9 +43,9 @@
 * alight.utils.parsFilter
 * basic filters
 * filter date accepts format as string variable
-* format was changed for filter "filter", example "list | format text key"
 * watchMode and fn for filter object
 * simple filters can return Promise
+* format was changed for filter "filter", example "list | filter key text", "list | filter text"
 
 Fixes:
 
