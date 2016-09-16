@@ -35,11 +35,13 @@ alight.filters.filter = class F
                     for k, v of e
                         if k is '__all'
                             continue
+                        if not v?
+                            continue
                         a = r[k]
-                        if not a
+                        if not a?
                             f = false
                             break
-                        if (''+a).toLowerCase().indexOf((''+v).toLowerCase()) < 0
+                        if a isnt v and (''+a).toLowerCase().indexOf((''+v).toLowerCase()) < 0
                             f = false
                             break
                     if not f
