@@ -146,7 +146,7 @@ Test('parsing-3').run ($test, alight) ->
     $test.start 36
 
     d = alight.utils.parsFilter ' f0 arg1 arg2 | f1 | f2'
-    $test.equal d.result[0].name, 'f0'
+    $test.equal d.result[0].name, 'f0', 1
     $test.equal d.result[0].args[0], 'arg1'
     $test.equal d.result[0].args[1], 'arg2'
     $test.equal d.result[0].raw, 'arg1 arg2 '
@@ -156,7 +156,7 @@ Test('parsing-3').run ($test, alight) ->
     $test.equal d.result[2].raw, ''
 
     d = alight.utils.parsFilter 'f0:arg1 arg2|f1|f2'
-    $test.equal d.result[0].name, 'f0'
+    $test.equal d.result[0].name, 'f0', 2
     $test.equal d.result[0].raw, 'arg1 arg2'
     $test.equal d.result[0].args[0], 'arg1'
     $test.equal d.result[0].args[1], 'arg2'
@@ -164,12 +164,12 @@ Test('parsing-3').run ($test, alight) ->
     $test.equal d.result[2].name, 'f2'
 
     d = alight.utils.parsFilter ' sum (a + b) | decor'
-    $test.equal d.result[0].name, 'sum'
+    $test.equal d.result[0].name, 'sum', 3
     $test.equal d.result[0].args[0], '(a + b)'
     $test.equal d.result[1].name, 'decor'
 
     d = alight.utils.parsFilter ' sum "a -((+ b" | decor \'msg\''
-    $test.equal d.result[0].name, 'sum'
+    $test.equal d.result[0].name, 'sum', 4
     $test.equal d.result[0].raw, '"a -((+ b" '
     $test.equal d.result[0].args[0], '"a -((+ b"'
     $test.equal d.result[1].name, 'decor'
@@ -177,14 +177,14 @@ Test('parsing-3').run ($test, alight) ->
     $test.equal d.result[1].args[0], "'msg'"
 
     d = alight.utils.parsFilter " sum ('a)' + '(b)') | decor"
-    $test.equal d.result[0].name, 'sum'
+    $test.equal d.result[0].name, 'sum', 5
     $test.equal d.result[0].raw, "('a)' + '(b)') "
     $test.equal d.result[0].args[0], "('a)' + '(b)')"
     $test.equal d.result[1].name, 'decor'
     $test.equal d.result[1].raw, ''
 
     d = alight.utils.parsFilter " sum a,b, 'c, d', 5 | decor"
-    $test.equal d.result[0].name, 'sum'
+    $test.equal d.result[0].name, 'sum', 6
     $test.equal d.result[0].raw, "a,b, 'c, d', 5 "
     $test.equal d.result[0].args[0], "a"
     $test.equal d.result[0].args[1], "b"
@@ -192,5 +192,43 @@ Test('parsing-3').run ($test, alight) ->
     $test.equal d.result[0].args[3], "5"
     $test.equal d.result[1].name, 'decor'
     $test.equal d.result[1].raw, ''
+
+    $test.close()
+
+
+Test('parsing-4').run ($test, alight) ->
+    $test.start 19
+
+    d = alight.utils.parsArguments 'arg1 arg2'
+    $test.equal d.result.length, 2
+    $test.equal d.result[0], 'arg1'
+    $test.equal d.result[1], 'arg2'
+    $test.equal d.length, 9
+
+    d = alight.utils.parsArguments '(a + b)'
+    $test.equal d.result.length, 1
+    $test.equal d.result[0], '(a + b)'
+    $test.equal d.length, 7
+
+    d = alight.utils.parsArguments '"a -((+ b" | decor \'msg\'',
+        stop: '|'
+    $test.equal d.result.length, 1
+    $test.equal d.result[0], '"a -((+ b"'
+    $test.equal d.length, 11
+
+    d = alight.utils.parsArguments "('a)' + '(b)') | decor",
+        stop: '|'
+    $test.equal d.result.length, 1
+    $test.equal d.result[0], "('a)' + '(b)')"
+    $test.equal d.length, 15
+
+    d = alight.utils.parsArguments "a,b, 'c, d', 5 | decor",
+        stop: '|'
+    $test.equal d.result.length, 4
+    $test.equal d.result[0], "a"
+    $test.equal d.result[1], "b"
+    $test.equal d.result[2], "'c, d'"
+    $test.equal d.result[3], "5"
+    $test.equal d.length, 15
 
     $test.close()

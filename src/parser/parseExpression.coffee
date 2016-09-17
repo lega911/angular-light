@@ -311,14 +311,43 @@ do ->
         ret
 
     alight.utils.parsFilter = (text) ->
-        index = 0
-        filterName = ''
         result = []
-        args = []
-        fetchName = true
         text = text.trim()
+
+        while text
+            d = text.match /^(\w+)([^\w])(.*)$/
+            if d
+                if d[2] is '|'
+                    result.push
+                        name: d[1]
+                        args: []
+                        raw: ''
+                    text = d[3]
+                else
+                    r = alight.utils.parsArguments d[3],
+                        stop: '|'
+                    result.push
+                        name: d[1]
+                        args: r.result
+                        raw: d[3].slice 0, r.length
+                    text = d[3].slice(r.length + 1).trim()
+            else
+                d = text.match /^(\w+)$/
+                if not d
+                    return null
+                result.push
+                    name: d[1]
+                    args: []
+                    raw: ''
+                break
+
+        result: result
+
+    alight.utils.parsArguments = (text, option) ->
+        option = option or {}
+        index = 0
+        args = []
         arg = ''
-        raw = ''
         bracket = 0
         string0 = false  # "
         string1 = false  # '
@@ -327,22 +356,11 @@ do ->
             if arg
                 args.push arg
                 arg = ''
+            return
 
         while index <= text.length
             a = text[index] or ''
             index++
-
-            if fetchName
-                if isChar(a) or isDigit(a)
-                    filterName += a
-                    continue
-                if not filterName
-                    continue
-                fetchName = false
-                if a and a isnt '|'
-                    continue
-            else
-                raw += a
 
             if string0
                 arg += a
@@ -378,27 +396,15 @@ do ->
                 push()
                 continue
 
-            if a is '|' or not a
+            if option.stop and option.stop is a
                 push()
-                if a is '|'
-                    raw = raw.slice 0, raw.length-1
-                result.push
-                    name: filterName
-                    raw: raw
-                    args: args
-                filterName = ''
-                raw = ''
-                args = []
-                fetchName = true
-                arg = ''
-                continue
+                break
 
             if a is '('
                 bracket = 1
 
             arg += a
+        push()
 
-        if bracket or string0 or string1
-            return null
-
-        result: result
+        result: args
+        length: index-1

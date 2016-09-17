@@ -46,6 +46,7 @@
 * watchMode and fn for filter object
 * simple filters can return Promise
 * format was changed for filter "filter", example "list | filter key text", "list | filter text"
+* alight.utils.parsArguments
 
 Fixes:
 
