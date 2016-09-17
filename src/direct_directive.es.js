@@ -18,8 +18,14 @@ alight.hooks.attribute.unshift({
                             input: ['$element', '$env']
                         }).fn(cd.locals, element, env);
                     }
-                    fn.apply(cd, values);
-                } else fn.call(cd, scope, element, value, env);
+                    scopeWrap(cd,function() {
+                        fn.apply(cd, values);
+                    });
+                } else {
+                    scopeWrap(cd,function() {
+                        fn.call(cd, scope, element, value, env);
+                    })
+                }
             }
         } else {
             this.result = 'noDirective';
