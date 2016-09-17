@@ -169,6 +169,7 @@ window.Test = do ->
                 scope.basis = true
             else
                 alight = buildAlight.makeInstance()
+                alight.option.globalController = false
                 alight.option.injectScope = false
                 scope.title = title
 

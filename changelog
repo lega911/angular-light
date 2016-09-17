@@ -29,7 +29,6 @@
   * al-value
   * al-checked
   * :attr
-* experimental direct directive
 * alight() is a alias of alight.bootstrap, alight.bootstrap was improved
 * alight.bootstrap returns changeDetector instead of scope
 * alight.option.injectScope
@@ -47,6 +46,7 @@
 * simple filters can return Promise
 * format was changed for filter "filter", example "list | filter key text", "list | filter text"
 * alight.utils.parsArguments
+* direct directive: dir-name!="this, $element, $env, variable"
 
 Fixes:
 

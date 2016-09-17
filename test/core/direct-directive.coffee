@@ -1,7 +1,6 @@
 
 Test('direct-directive-0').run ($test, alight) ->
-    alight.option.injectScope = true
-    $test.start 1
+    $test.start 4
 
     dom = ttDOM """
         <div myfunc!="name, $element, this, $env"></div>
@@ -9,8 +8,11 @@ Test('direct-directive-0').run ($test, alight) ->
 
     cd = alight.ChangeDetector
         name: 'Ubuntu'
-        myfunc: (name) ->
+        myfunc: (name, el, scope, env) ->
             $test.equal name, cd.scope.name
+            $test.equal scope, cd.scope
+            $test.equal env.changeDetector, cd
+            $test.equal el, dom.firstElementChild
 
     alight(dom, cd);
     $test.close()
