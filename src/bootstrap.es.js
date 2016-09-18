@@ -17,22 +17,26 @@ alight.bootstrap = function(input, data) {
         var scope = {};
         changeDetector = alight.ChangeDetector(scope);
         data.call(changeDetector, scope);
-    } else {
+    } else if(data) {
         changeDetector = alight.ChangeDetector(data);
     }
 
     if(Array.isArray(input)) {
+        let result;
         for(let item of input)
-            alight.bootstrap(item, changeDetector);
-        return;
+            result = alight.bootstrap(item, changeDetector);
+        return result;
     }
 
     if(typeof(input) === 'string') {
+        let result;
         let elements = document.querySelectorAll(input);
         for(let element of elements)
-            alight.bootstrap(element, changeDetector);
-        return;
+            result = alight.bootstrap(element, changeDetector);
+        return result;
     }
+
+    if(!changeDetector) changeDetector = alight.ChangeDetector();
 
     if(f$.isElement(input)) {
         var ctrlKey, ctrlName;
@@ -51,14 +55,14 @@ alight.bootstrap = function(input, data) {
             if(alight.d.al.ctrl)
                 option.attachDirective['al-ctrl'] = ctrlName;
             else
-                option.attachDirective[ctrlName + '()'] = '';
+                option.attachDirective[ctrlName + '!'] = '';
         }
 
         alight.bind(changeDetector, input, option);
         return changeDetector;
-    } else {
-        alight.exceptionHandler('Error in bootstrap', 'Error input arguments', {
-            input: input
-        })
-    }
+    };
+
+    alight.exceptionHandler('Error in bootstrap', 'Error input arguments', {
+        input: input
+    })
 }
