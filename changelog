@@ -48,6 +48,8 @@
 * format was changed for filter "filter", example "list | filter key text", "list | filter text"
 * alight.utils.parsArguments
 * direct directive: dir-name!="this, $element, $env, variable"
+* global priority
+* jquery plugin
 
 Fixes:
 

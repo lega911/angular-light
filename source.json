@@ -11,6 +11,9 @@
     "file": "js/fqueryReady.js",
     "tag": ["core"]
 }, {
+    "file": "js/jq.es.js",
+    "tag": ["full"]
+}, {
     "file": "filter.es.js",
     "tag": ["core"]
 }, {
