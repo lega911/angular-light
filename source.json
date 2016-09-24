@@ -143,9 +143,6 @@
     "require": "html/base.coffee",
     "description": "modificator 'inline' for al-html"
 }, {
-    "file": "directive/htmlbyid.coffee",
-    "tag": ["ext"]
-}, {
     "file": "directive/radio.coffee",
     "tag": ["full"]
 }, {
@@ -174,19 +171,19 @@
     "tag": ["full"]
 }, {
     "file": "filter/json.coffee",
-    "tag": ["full"]
+    "tag": ["basis"]
 }, {
     "file": "filter/filter.coffee",
-    "tag": ["full"]
+    "tag": ["basis"]
 }, {
     "file": "filter/orderby.coffee",
-    "tag": ["full"]
+    "tag": ["basis"]
 }, {
     "file": "filter/throttle.coffee",
     "tag": ["full"]
 }, {
     "file": "filter/toarray.coffee",
-    "tag": ["full"]
+    "tag": ["basis"]
 }, {
     "file": "filter/storeto.coffee",
     "tag": ["full"]
@@ -201,7 +198,7 @@
     "tag": ["full"]
 }, {
     "file": "ext/component.es.js",
-    "tag": ["full"]
+    "tag": ["basis"]
 }, {
     "file": "js/postfix.js",
     "tag": ["core"]

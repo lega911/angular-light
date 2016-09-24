@@ -177,6 +177,7 @@ window.Test = do ->
             timeout = Timeout()
             try
                 if fn(scope, alight, timeout) is 'skip'
+                    scope.skip 1
                     scope.close()
                     return
                 i = 9999

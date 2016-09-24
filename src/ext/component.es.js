@@ -64,7 +64,7 @@ alight.component('rating', (scope, element, env) => {
     alight.d[ns][name] = {
       restrict: 'E',
       stopBinding: true,
-      priority: 5,
+      priority: alight.priority.$component,
       init: function(_parentScope, element, _value, parentEnv) {
         parentEnv.fastBinding = true;
         const scope = {

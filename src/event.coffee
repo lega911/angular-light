@@ -66,34 +66,32 @@ do ->
 
         result
 
-    alight.d.al.on =
-        priority: 10
-        init: (scope, element, expression, env) ->
-            env.fastBinding = true
-            if not env.attrArgument
-                return
-            eventName = env.attrArgument.split('.')[0]
-            ev = makeEvent env.attrArgument, eventOption[eventName]
-
-            ev.scope = scope
-            ev.element = element
-            ev.expression = expression
-            ev.cd = cd = env.changeDetector
-            ev.fn = cd.compile expression,
-                no_return: true
-                input: ['$event', '$element', '$value']
-
-            eventHandler = (e) ->
-                handler ev, e
-
-            for e in ev.eventList
-                f$.on element, e, eventHandler
-            if ev.initFn
-                ev.initFn scope, element, expression, env
-            cd.watch '$destroy', ->
-                for e in ev.eventList
-                    f$.off element, e, eventHandler
+    alight.d.al.on = (scope, element, expression, env) ->
+        env.fastBinding = true
+        if not env.attrArgument
             return
+        eventName = env.attrArgument.split('.')[0]
+        ev = makeEvent env.attrArgument, eventOption[eventName]
+
+        ev.scope = scope
+        ev.element = element
+        ev.expression = expression
+        ev.cd = cd = env.changeDetector
+        ev.fn = cd.compile expression,
+            no_return: true
+            input: ['$event', '$element', '$value']
+
+        eventHandler = (e) ->
+            handler ev, e
+
+        for e in ev.eventList
+            f$.on element, e, eventHandler
+        if ev.initFn
+            ev.initFn scope, element, expression, env
+        cd.watch '$destroy', ->
+            for e in ev.eventList
+                f$.off element, e, eventHandler
+        return
 
     keyCodes =
         enter: 13

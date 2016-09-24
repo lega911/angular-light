@@ -102,6 +102,8 @@ do ->
         code: 'cloneDirective'
         fn: ->
             r = @.directive
+            ns = @.ns
+            name = @.name
             dir = {}
             if f$.isFunction r
                 dir.init = r
@@ -110,7 +112,7 @@ do ->
                     dir[k] = v
             else
                 throw 'Wrong directive: ' + ns + '.' + name
-            dir.priority = r.priority or 0
+            dir.priority = r.priority or (alight.priority[ns] and alight.priority[ns][name]) or 0
             dir.restrict = r.restrict or 'A'
 
             if dir.restrict.indexOf(@.attrType) < 0
@@ -274,7 +276,7 @@ testDirective = do ->
     addAttr = (attrName, args, base) ->
         if args.attr_type is 'A'
             attr = base or {}
-            attr.priority = -5
+            attr.priority = alight.priority.$attribute
             attr.is_attr = true
             attr.name = attrName
             attr.attrName = attrName
@@ -310,7 +312,7 @@ testDirective = do ->
             if args.attr_type is 'E'
                 args.list.push
                     name: attrName
-                    priority: 0
+                    priority: -10
                     attrName: attrName
                     noDirective: true
                 return

@@ -14,7 +14,6 @@
 ###
 
 alight.directives.al.repeat =
-    priority: 1000
     restrict: 'AM'
     init: (parentScope, element, exp, env) ->  # Change Detector
         if env.elementCanBeRemoved

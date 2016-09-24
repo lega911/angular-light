@@ -183,18 +183,16 @@ Test('fast-binding-3').run ($test, alight) ->
 
 Test('fast-binding-4').run ($test, alight) ->
     if $test.isPhantom
-        $test.skip 1
-        $test.close()
-        return
+        return 'skip'
 
     $test.start 12
 
     if not alight.d.al.model
         alight.d.al.model = (scope, element, key, env) ->
             if element.type is 'checkbox'
-                alight.d.al.checked.init.call @, scope, element, key, env
+                alight.d.al.checked.call @, scope, element, key, env
             else
-                alight.d.al.value.init.call @, scope, element, key, env
+                alight.d.al.value.call @, scope, element, key, env
 
     _el = ttDOM """
         <input type="text" al-model="a" />
