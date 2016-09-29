@@ -102,6 +102,8 @@ alight.directives.al.repeat =
                     self.top_element = document.createComment " #{exp} "
                     f$.before element, self.top_element
                     f$.remove element
+                    if alight.option.removeAttribute
+                        element.removeAttribute env.attrName
                 return
 
             makeChild: (item, index, list) ->

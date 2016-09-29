@@ -261,6 +261,8 @@ Test('al-repeat-skipped-attr').run ($test, alight) ->
 
     skippedAttr = (env) ->
         r = env.skippedAttr()
+        r = r.filter (a) ->
+            a isnt 'al-repeat'
         r.sort().join ','
 
     countHi = 0
@@ -277,7 +279,7 @@ Test('al-repeat-skipped-attr').run ($test, alight) ->
             priority: 50
             init: (scope, el, name, env) ->
                 countLo++
-                $test.equal skippedAttr(env), 'al-repeat,ut-test-attr2,ut-test-attr3,ut-two'
+                $test.equal skippedAttr(env), 'ut-test-attr2,ut-test-attr3,ut-two'
                 $test.equal activeAttr(env), 'one,ut-three'
                 env.takeAttr 'ut-three'
 
