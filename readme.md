@@ -22,19 +22,17 @@ Visit [angularlight.org](http://angularlight.org/)
 ### Example 1
 ``` html
 <div id="app">
-    <input al-value="data.name" type="text" />
-    {{data.name}} <br/>
-    <button al-click="click()">Set Hello</button>
+    <input al-value="name" type="text" />
+    {{name}} <br/>
+    <button al-on.click="click()">Set Hello</button>
 </div>
 ```
 
 ``` js
-alight.bootstrap('#app', {
-    data: {
-        name: 'Some text'
-    },
+alight('#app', {
+    name: 'Some text',
     click: function() {
-        this.data.name = 'Hello'
+        this.name = 'Hello'
     }
 });
 ```
