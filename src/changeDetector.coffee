@@ -241,7 +241,7 @@ ChangeDetector::watch = (name, callback, option) ->
                 return
             removeItem cd.watchList, d
         refresh: ->
-            value = d.exp scope
+            value = d.exp cd.locals
             if value and d.deep
                 d.value = alight.utils.clone value, d.deep
             else if value and d.isArray
@@ -342,7 +342,6 @@ scanCore = (topCD, result) ->
     index = 0
     cd = topCD
     while cd
-        scope = cd.scope
         locals = cd.locals
 
         # default watchers
@@ -400,7 +399,7 @@ scanCore = (topCD, result) ->
                             else
                                 if last is watchInitValue
                                     last = undefined
-                                if w.callback.call(scope, value, last) isnt '$scanNoChanges'
+                                if w.callback.call(cd.scope, value, last) isnt '$scanNoChanges'
                                     if w.extraLoop
                                         extraLoop = true
                         catch e

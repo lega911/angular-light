@@ -5,7 +5,7 @@
 * able to take filter from scope
 * $ns is removed
 * checking for double binding is removed
-
+* element variables, e.g. #input
 
 
 0.13
