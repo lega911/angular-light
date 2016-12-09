@@ -56,6 +56,9 @@
     "file": "direct_directive.es.js",
     "tag": ["basis"]
 }, {
+    "file": "element-variable.es.js",
+    "tag": ["basis"]
+}, {
     "file": "a2style.coffee",
     "tag": ["ext"],
     "description": "Angular 2 style for attributes and events"
