@@ -107,7 +107,7 @@
     "tag": ["compatibility"]
 }, {
     "file": "directive/focused.coffee",
-    "tag": ["basis"]
+    "tag": ["compatibility"]
 }, {
     "file": "directive/readonly.coffee",
     "tag": ["compatibility"]
