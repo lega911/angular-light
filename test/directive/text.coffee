@@ -28,27 +28,21 @@ Test('bindonce').run ($test, alight) ->
 
 
 Test('text-directive-0').run ($test, alight, timeout) ->
-    if $test.basis
-        return 'skip'
-    alight.option.injectScope = true
     $test.start 4
 
-    alight.filters.minus = class
-        constructor: (exp, scope) ->
-            @.delta = scope.$eval exp
-        onChange: (value) ->
-            @.setValue value - @.delta
+    alight.filters.minus = (input, value) ->
+        input - value
 
     alight.text.double = (callback, expression, scope) ->
         callback '$'
-        scope.$watch expression, (value) ->
-            timeout.add 100, ->
+        @.watch expression, (value) =>
+            timeout.add 100, =>
                 callback value + value
-                scope.$scan()
+                @.scan()
 
-    dom = $ '<div attr="Attr {{#double num | minus:7 }}"></div>'
+    dom = $ '<div attr="Attr {{#double num | minus 7 }}"></div>'
 
-    cd = alight.bootstrap dom[0],
+    cd = alight dom[0],
         num: 15
 
     $test.equal dom.attr('attr'), 'Attr $'
@@ -69,28 +63,28 @@ Test('text-directive-2', 'text-directive-2').run ($test, alight) ->
     $test.start 2
 
     alight.text.test0 = (callback, exp, scope) ->
-        callback scope.$eval exp
+        callback @.eval exp
 
-    scope = alight.Scope()
-    scope2 = alight.Scope()
-    scope2.$ns =
+    cd = alight.ChangeDetector()
+    cd2 = alight.ChangeDetector()
+    cd2.scope.$ns =
         text:
             test0: (callback, exp, scope) ->
-                callback 'inner:' + scope.$eval exp
+                callback 'inner:' + @.eval exp
 
-    scope.a = 'Hello'
-    scope.b = 'world'
-    scope2.a = 'Hello'
-    scope2.b = 'world'
+    cd.scope.a = 'Hello'
+    cd.scope.b = 'world'
+    cd2.scope.a = 'Hello'
+    cd2.scope.b = 'world'
 
     result = result2 = null
-    scope.$watchText '{{a}} {{#test0 b}} {{#test0 0}}!', (value) ->
+    cd.watchText '{{a}} {{#test0 b}} {{#test0 0}}!', (value) ->
         result = value
-    scope2.$watchText '{{a}} {{#test0 b}} {{#test0 0}}!', (value) ->
+    cd2.watchText '{{a}} {{#test0 b}} {{#test0 0}}!', (value) ->
         result2 = value
 
-    scope.$scan()
-    scope2.$scan()
+    cd.scan()
+    cd2.scan()
     $test.equal result, 'Hello world 0!'
     $test.equal result2, 'Hello inner:world inner:0!'
     $test.close()
@@ -142,12 +136,13 @@ Test('oneTime binding #0').run ($test, alight) ->
     next()
 
 
-Test('one-time-binding-1', 'one-time-binding-1').run ($test, alight) ->
+Test('one-time-binding-1').run ($test, alight) ->
     $test.start 6
 
-    scope = alight.Scope()
+    scope = {}
+    cd = alight.ChangeDetector scope
     value = null
-    scope.$watchText 'Hello {{::a}}!', (v) ->
+    cd.watchText 'Hello {{::a}}!', (v) ->
         count++
         value = v
     count = 0
@@ -182,22 +177,19 @@ Test('one-time-binding-1', 'one-time-binding-1').run ($test, alight) ->
             return
         step++
         n = s()
-        scope.$scan n
+        cd.scan n
 
     next()
 
 
-Test('onetime-binding-2', 'onetime-binding-2').run ($test, alight, timeout) ->
-    if $test.basis
-        return 'skip'
-    alight.option.injectScope = true
+Test('onetime-binding-2').run ($test, alight, timeout) ->
     $test.start 6
 
     exp = 'a{{::a}}-b{{::b}}-c{{::c}}!'
     dom = document.createElement 'div'
     dom.innerHTML = "<div>#{exp}</div>::<div>#{exp}</div>"
 
-    cd = alight.bootstrap dom
+    cd = alight dom
     scope = cd.scope
 
     result = ->
@@ -205,7 +197,7 @@ Test('onetime-binding-2', 'onetime-binding-2').run ($test, alight, timeout) ->
 
     steps = [
         ->
-            $test.equal scope.$scan().total, 6
+            $test.equal cd.scan().total, 6
             $test.equal result(), 'a-b-c!::a-b-c!'
             scope.a = 3
             ->
@@ -227,7 +219,7 @@ Test('onetime-binding-2', 'onetime-binding-2').run ($test, alight, timeout) ->
         ->
             ->
                 timeout.add 1, ->
-                    $test.equal scope.$scan().total, 0
+                    $test.equal cd.scan().total, 0
                     $test.close()
     ]
 
@@ -238,18 +230,18 @@ Test('onetime-binding-2', 'onetime-binding-2').run ($test, alight, timeout) ->
             return
         step++
         n = s()
-        scope.$scan n
+        cd.scan n
 
     next()
 
 
-Test('one-time-binding-3', 'one-time-binding-3').run ($test, alight) ->
+Test('one-time-binding-3').run ($test, alight) ->
     $test.start 10
 
     exp = 'Hello {{::name}}!'
 
-    scope = alight.Scope()
-    cd = alight.core.cd_getRoot scope
+    scope = {}
+    cd = alight.ChangeDetector(scope)
     v0 = null
     cd.watchText exp, (v) ->
         v0 = v
@@ -302,24 +294,25 @@ Test('text-directive-finally').run ($test, alight) ->
     $test.start 13
     dom = $ '<div>Text {{#test1}}</div>'
 
-    scope = alight.Scope()
+    scope = {}
+    cd = alight.ChangeDetector scope
 
     scanCount = 0
-    scope.$watch '$finishScan', ->
+    cd.watch '$finishScan', ->
         scanCount++
 
     anyCount = 0
-    scope.$watch '$any', ->
+    cd.watch '$any', ->
         anyCount++
 
-    alight.bind scope, dom[0]
+    alight.bind cd, dom[0]
 
     $test.equal dom.text(), 'Text init'
 
-    $test.equal scope.$scan().total, 0
+    $test.equal cd.scan().total, 0
 
     env.setter 'two'
-    scope.$scan
+    cd.scan
         late: true
         callback: ->
             $test.equal scanCount, 2
@@ -327,7 +320,7 @@ Test('text-directive-finally').run ($test, alight) ->
             $test.equal dom.text(), 'Text two'
 
             env.setter 'three'
-            scope.$scan
+            cd.scan
                 late: true
                 callback: ->
                     $test.equal scanCount, 3
@@ -340,30 +333,30 @@ Test('text-directive-finally').run ($test, alight) ->
                         $test.equal anyCount, 0
                         $test.equal dom.text(), 'Text three'
 
-                        scope.$scan
+                        cd.scan
                             late: true
                             callback: ->
                                 $test.equal dom.text(), 'Text four'
-                                $test.equal scope.$scan().total, 0
+                                $test.equal cd.scan().total, 0
                                 $test.close()
                     , 100
 
 
-Test('oneTime binding #4', 'one-time-binding-4').run ($test, alight) ->
+Test('one-time-binding-4').run ($test, alight) ->
     $test.start 2
 
     exp = 'Hello {{::name}}!'
 
-    scope = alight.Scope()
-    scope.name = 'world'
+    cd = alight.ChangeDetector()
+    cd.scope.name = 'world'
     value = null
-    scope.$watchText exp, (v) ->
+    cd.watchText exp, (v) ->
         value = v
 
-    scope.$scan()
+    cd.scan()
 
     $test.equal value, 'Hello world!'
-    $test.equal scope.$scan().total, 0
+    $test.equal cd.scan().total, 0
     $test.close()
 
 
@@ -381,11 +374,11 @@ Test('text-dir-no-watch-0').run ($test, alight) ->
 
         setter 'first'
 
-    scope = alight.Scope()
-    scope.value = 'watch'
-    alight.bind scope, el
+    cd = alight.ChangeDetector()
+    cd.scope.value = 'watch'
+    alight.bind cd, el
 
-    r = scope.$scan()
+    r = cd.scan()
 
     $test.equal ttGetText(el), 'a-first-b-watch'
     $test.equal r.total, 2
@@ -394,7 +387,7 @@ Test('text-dir-no-watch-0').run ($test, alight) ->
     $test.equal ttGetText(el), 'a-first-b-watch'
     $test.equal r.total, 2
 
-    r = scope.$scan()
+    r = cd.scan()
     $test.equal ttGetText(el), 'a-second-b-watch'
     $test.equal r.total, 2
 
@@ -403,16 +396,16 @@ Test('text-dir-no-watch-0').run ($test, alight) ->
     $test.equal ttGetText(el), 'a-second-b-watch'
     $test.equal r.total, 2
 
-    r = scope.$scan()
+    r = cd.scan()
     $test.equal ttGetText(el), 'a-third-b-watch'
     $test.equal r.total, 2  # last time call for watch
 
-    r = scope.$scan()
+    r = cd.scan()
     $test.equal r.total, 2
 
     # test
     setter 'four'
-    r = scope.$scan()
+    r = cd.scan()
     $test.equal ttGetText(el), 'a-third-b-watch'
     $test.equal r.total, 2
 
@@ -432,10 +425,10 @@ Test('text-dir-no-watch-1').run ($test, alight) ->
 
         setter 'first'
 
-    scope = alight.Scope()
-    alight.bind scope, el
+    cd = alight.ChangeDetector()
+    alight.bind cd, el
 
-    r = scope.$scan()
+    r = cd.scan()
 
     $test.equal ttGetText(el), 'a-first-b'
     $test.equal r.total, 0
@@ -444,7 +437,7 @@ Test('text-dir-no-watch-1').run ($test, alight) ->
     $test.equal ttGetText(el), 'a-first-b'
     $test.equal r.total, 0
 
-    r = scope.$scan()
+    r = cd.scan()
     $test.equal ttGetText(el), 'a-second-b'
     $test.equal r.total, 0
 
@@ -453,16 +446,16 @@ Test('text-dir-no-watch-1').run ($test, alight) ->
     $test.equal ttGetText(el), 'a-second-b'
     $test.equal r.total, 0
 
-    r = scope.$scan()
+    r = cd.scan()
     $test.equal ttGetText(el), 'a-third-b'
     $test.equal r.total, 0  # last time call for watch
 
-    r = scope.$scan()
+    r = cd.scan()
     $test.equal r.total, 0
 
     # test
     setter 'four'
-    r = scope.$scan()
+    r = cd.scan()
     $test.equal ttGetText(el), 'a-third-b'
     $test.equal r.total, 0
 
@@ -480,15 +473,15 @@ Test('text-dir-no-watch-2').run ($test, alight) ->
     alight.text.dir1 = (callback, expression, scope, env) ->
         setter1 = callback
 
-    scope = alight.Scope()
+    cd = alight.ChangeDetector()
 
     count = 0
     result = null
-    scope.$watchText 'a-{{#dir0}}-{{#dir1}}-b', (value) ->
+    cd.watchText 'a-{{#dir0}}-{{#dir1}}-b', (value) ->
         result = value
         count++
 
-    scope.$scan()
+    cd.scan()
 
     $test.equal result, 'a---b'
     $test.equal count, 1
@@ -497,7 +490,7 @@ Test('text-dir-no-watch-2').run ($test, alight) ->
     setter1 'second'
     setter0 'third'
 
-    scope.$scan()
+    cd.scan()
     $test.equal result, 'a-third-second-b'
     $test.equal count, 2
 
@@ -513,10 +506,10 @@ Test('text-dir-no-watch-3').run ($test, alight) ->
     alight.text.dir = (callback, expression, scope, env) ->
         setter = env.setterRaw
 
-    scope = alight.Scope()
-    alight.bind scope, el
+    cd = alight.ChangeDetector()
+    alight.bind cd, el
 
-    r = scope.$scan()
+    r = cd.scan()
     $test.equal r.total, 0
 
     $test.equal ttGetText(el), 'a--b'
@@ -540,11 +533,11 @@ Test('text-dir-no-watch-4').run ($test, alight) ->
     alight.text.dir = (callback, expression, scope, env) ->
         setter = env.setterRaw
 
-    scope = alight.Scope()
-    scope.value = 'watch'
-    alight.bind scope, el
+    cd = alight.ChangeDetector()
+    cd.scope.value = 'watch'
+    alight.bind cd, el
 
-    r = scope.$scan()
+    r = cd.scan()
     $test.equal r.total, 2
 
     $test.equal ttGetText(el), 'a--watch-b'
@@ -555,8 +548,8 @@ Test('text-dir-no-watch-4').run ($test, alight) ->
     setter 'second'
     $test.equal ttGetText(el), 'a-second-watch-b'
 
-    scope.value = 'new'
-    scope.$scan()
+    cd.scope.value = 'new'
+    cd.scan()
     $test.equal ttGetText(el), 'a-second-new-b'
 
     $test.close()

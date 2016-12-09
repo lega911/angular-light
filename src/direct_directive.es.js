@@ -18,13 +18,9 @@ alight.hooks.attribute.unshift({
                             input: ['$element', '$env']
                         }).fn(cd.locals, element, env);
                     }
-                    scopeWrap(cd,function() {
-                        fn.apply(cd, values);
-                    });
+                    fn.apply(cd, values);
                 } else {
-                    scopeWrap(cd,function() {
-                        fn.call(cd, scope, element, value, env);
-                    })
+                    fn.call(cd, scope, element, value, env);
                 }
             }
         } else {

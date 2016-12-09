@@ -1,13 +1,12 @@
 
-Test('al-css-1', 'al-css-1').run ($test, alight) ->
-	alight.option.injectScope = true
+Test('al-css-1').run ($test, alight) ->
 	$test.start 5
 
 	el = document.createElement 'div'
 	el.innerHTML = '<i class="aaa" al-css="bbb ccc ddd: active, fff eee: active2"></i>'
 	tag = el.children[0]
 
-	cd = alight.bootstrap tag,
+	cd = alight tag,
 		active: false
 		active2: false
 	scope = cd.scope
@@ -23,19 +22,19 @@ Test('al-css-1', 'al-css-1').run ($test, alight) ->
 	$test.equal result(), 'aaa'
 
 	scope.active = true
-	scope.$scan ->
+	cd.scan ->
 		$test.equal result(), 'aaa bbb ccc ddd'
 
 		scope.active2 = true
-		scope.$scan ->
+		cd.scan ->
 			$test.equal result(), 'aaa bbb ccc ddd eee fff'
 
 			scope.active = false
-			scope.$scan ->
+			cd.scan ->
 				$test.equal result(), 'aaa eee fff'
 
 				scope.active2 = false
-				scope.$scan ->
+				cd.scan ->
 					$test.equal result(), 'aaa'
 					$test.close()
 
@@ -70,32 +69,28 @@ Test('directive-scope-isolate-0').run ($test, alight) ->
 Test('restrict-m-1').run ($test, alight) ->
 	$test.start 1
 
-	# init
-	do ->
-		alight.directives.ut =
-			test1:
-				restrict: 'M'
-				stopBinding: true
-				init: (scope, element, value) ->
-					scope.name = 'Hello'
+	alight.directives.ut =
+		test1:
+			restrict: 'M'
+			stopBinding: true
+			init: (scope, element, value, env) ->
+				scope.name = 'Hello'
 
-					el = document.createElement 'p'
-					el.innerHTML = "{{name}} #{value}"
+				el = document.createElement 'p'
+				el.innerHTML = "{{name}} #{value}"
 
-					alight.f$.after element, el
-					alight.bind scope, el
+				alight.f$.after element, el
+				env.bind scope, el
 
-	# test
-	do ->
-		el = document.createElement 'div'
-		el.innerHTML = "<div>
-							<!-- directive: ut-test1 World!-->
-						</div>"
+	el = document.createElement 'div'
+	el.innerHTML = "<div>
+						<!-- directive: ut-test1 World!-->
+					</div>"
 
-		alight.bootstrap el
+	alight el
 
-		$test.equal ttGetText(f$_find(el, 'p')[0]), 'Hello World!'
-		$test.close()
+	$test.equal ttGetText(f$_find(el, 'p')[0]), 'Hello World!'
+	$test.close()
 
 
 Test('restrict-m-2').run ($test, alight) ->
@@ -147,9 +142,6 @@ Test('al-ctrl-0').run ($test, alight) ->
 
 
 Test('al-value-on-off').run ($test, alight, timeout) ->
-	if $test.basis
-		return 'skip'
-	alight.option.injectScope = true
 	if typeof(CustomEvent) isnt 'function'
 		console.warn 'skip al-value on/off'
 		return 'skip'
@@ -159,7 +151,7 @@ Test('al-value-on-off').run ($test, alight, timeout) ->
 	dom = $ '<div><input type="text" al-value="name" /></div>'
 	input = dom.find('input')[0]
 
-	cd = alight.bootstrap input,
+	cd = alight input,
 		name: '123'
 	scope = cd.scope
 
@@ -171,7 +163,7 @@ Test('al-value-on-off').run ($test, alight, timeout) ->
 	setTimeout ->
 		$test.equal scope.name, 'linux'
 
-		scope.$destroy()
+		cd.destroy()
 
 		input.value = 'macos'
 		input.dispatchEvent(new CustomEvent('input'))

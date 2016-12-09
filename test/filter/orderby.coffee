@@ -4,7 +4,7 @@ Test('filter-orderby-0').run ($test, alight) ->
         return 'skip'
     $test.start 4
 
-    scope = alight.Scope()
+    scope = {}
     scope.sortKey = 'name'
     scope.direct = true
     scope.list = []
@@ -16,7 +16,8 @@ Test('filter-orderby-0').run ($test, alight) ->
     scope.list.push({name: '6 freebsd', k: 6, t: 6})
 
     result = null
-    scope.$watch "list | orderBy:sortKey,direct", (value) ->
+    cd = alight.ChangeDetector scope
+    cd.watch "list | orderBy:sortKey,direct", (value) ->
         result = value
 
     r = ->
@@ -25,19 +26,19 @@ Test('filter-orderby-0').run ($test, alight) ->
             res += '' + i.k
         res
 
-    scope.$scan()
+    cd.scan()
     $test.equal r(), '123456'
 
     scope.direct = false
-    scope.$scan()
+    cd.scan()
     $test.equal r(), '654321'
 
     scope.sortKey = 't'
-    scope.$scan()
+    cd.scan()
     $test.equal r(), '614352'
 
     scope.direct = true
-    scope.$scan()
+    cd.scan()
     $test.equal r(), '253416'
 
     $test.close()

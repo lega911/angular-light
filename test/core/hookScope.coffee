@@ -2,22 +2,23 @@
 Test('hook-scope-0', 'hook-scope-0').run ($test, alight) ->
     if $test.basis
         return 'skip'
-    alight.option.injectScope = true
     $test.start 27
 
     count0 = count1 = count2 = count3 = 0
     childScope = null
+    childCD = null
 
     alight.d.ut =
         dir:
             scope: 'root'
             link: (scope, element, value) ->
+                childCD = @
                 childScope = scope
                 scope.top = 'child'
                 scope.child = 'child'
-                scope.$watch 'top', ->
+                @.watch 'top', ->
                     count2++
-                scope.$watch '$parent.top', ->
+                @.watch '$parent.top', ->
                     count3++
 
     dom = ttDOM """
@@ -28,14 +29,15 @@ Test('hook-scope-0', 'hook-scope-0').run ($test, alight) ->
         </i>
     """
 
-    rootScope = alight.Scope()
+    rootCD = alight.ChangeDetector()
+    rootScope = rootCD.scope
     rootScope.top = 'root'
-    rootScope.$watch 'top', ->
+    rootCD.watch 'top', ->
         count0++
-    rootScope.$watch 'child', ->
+    rootCD.watch 'child', ->
         count1++
 
-    alight.bind rootScope, dom
+    alight.bind rootCD, dom
     $test.equal ttGetText(dom), 'root=root child=child parent=root'
     $test.equal count0, 1
     $test.equal count1, 1
@@ -44,7 +46,7 @@ Test('hook-scope-0', 'hook-scope-0').run ($test, alight) ->
     $test.equal rootScope.child, undefined  # isolated scope
 
     rootScope.top = 'tip'
-    rootScope.$scan()
+    rootCD.scan()
 
     $test.equal ttGetText(dom), 'root=tip child=child parent=root'  # shows that a parent doesn't influence to a child
     $test.equal count0, 2
@@ -52,7 +54,7 @@ Test('hook-scope-0', 'hook-scope-0').run ($test, alight) ->
     $test.equal count2, 1
     $test.equal count3, 1
 
-    childScope.$scan()
+    childCD.scan()
     $test.equal ttGetText(dom), 'root=tip child=child parent=tip'
     $test.equal count0, 2
     $test.equal count1, 1
@@ -60,14 +62,14 @@ Test('hook-scope-0', 'hook-scope-0').run ($test, alight) ->
     $test.equal count3, 2
 
     childScope.$parent.top = 'fromChild'
-    childScope.$scan()
+    childCD.scan()
     $test.equal ttGetText(dom), 'root=tip child=child parent=fromChild'  # shows that a child doesn't influence to its parent
     $test.equal count0, 2
     $test.equal count1, 1
     $test.equal count2, 1
     $test.equal count3, 3
 
-    rootScope.$scan()
+    rootCD.scan()
     $test.equal ttGetText(dom), 'root=fromChild child=child parent=fromChild'
     $test.equal count0, 3
     $test.equal count1, 1
@@ -75,12 +77,12 @@ Test('hook-scope-0', 'hook-scope-0').run ($test, alight) ->
     $test.equal count3, 3
 
     countDestroy = 0
-    childScope.$watch '$destroy', ->
+    childCD.watch '$destroy', ->
         countDestroy++
     ,
         root: true
 
-    rootScope.$destroy()
+    rootCD.destroy()
 
     $test.equal countDestroy, 1
 

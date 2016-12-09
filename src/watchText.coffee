@@ -131,8 +131,7 @@ do ->
                 option.update = null
                 option.finally = null
 
-        scopeWrap cd, ->
-            dir env.setter, option.exp, scope, env
+        dir.call cd, env.setter, option.exp, scope, env
 
     watchText = (expression, callback, config) ->
         config = config or {}

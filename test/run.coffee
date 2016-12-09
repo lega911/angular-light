@@ -199,6 +199,6 @@ window.Test = do ->
         r =
             run: (fn) ->
                 run fn
-                run fn, 'scope'
+                #run fn, 'scope'
                 #run fn, 'basis'
         r

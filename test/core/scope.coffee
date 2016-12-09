@@ -204,7 +204,6 @@ Test 'isolated-scope-0'
     .run ($test, alight, timeout) ->
         if $test.basis
             return 'skip'
-        alight.option.injectScope = true
         $test.start 2
 
         el = ttDOM """
@@ -214,20 +213,20 @@ Test 'isolated-scope-0'
             </div>
         """
 
-        scope = alight.Scope()
-        scope.top = 'unix'
+        cd = alight.ChangeDetector()
+        cd.scope.top = 'unix'
 
         alight.d.al.test =
             scope: true
             link: (scope) ->
                 scope.child = 'linux'
-                scope.$setValue 'one', 'two'
+                @.setValue 'one', 'two'
 
-                timeout.add 10, ->
-                    scope.$setValue 'one', 'three'
-                    scope.$scan()
+                timeout.add 10, =>
+                    @.setValue 'one', 'three'
+                    @.scan()
 
-        alight.bind scope, el
+        alight.bind cd, el
 
         $test.equal ttGetText(el), 'root=unix-- child=-linux-two'
         timeout.add 20, ->

@@ -366,28 +366,28 @@ Test('async-filter-watch-text-0').run ($test, alight, timeout) ->
                         $test.close()
 
 
-Test('filter-json', 'filter-json').run ($test, alight) ->
+Test('filter-json').run ($test, alight) ->
     if not alight.filters.json
         return 'skip'
     $test.start 2
-    scope = alight.Scope()
-    scope.data =
+    cd = alight.ChangeDetector()
+    cd.scope.data =
         name: 'linux'
 
     result = ''
 
-    scope.$watch 'data | json', (value) ->
+    cd.watch 'data | json', (value) ->
         result = value
 
     getr = ->
         result.replace /\s/g, ''
 
-    scope.$scan()
+    cd.scan()
     $test.equal getr(), '{"name":"linux"}'
 
-    scope.$scan ->
-        scope.data.name = 'ubuntu'
-        scope.$scan ->
+    cd.scan ->
+        cd.scope.data.name = 'ubuntu'
+        cd.scan ->
             $test.equal getr(), '{"name":"ubuntu"}'
 
             $test.close()

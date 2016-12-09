@@ -171,28 +171,28 @@ Test('watch-text-5').run ($test, alight) ->
     scope = cd.scope
 
     count = 0
-    alight.core.cd_getRoot(scope).watch ->
+    cd.watch ->
         count++
         null
     , ->
 
     $test.equal count, 0
     $test.equal ttGetText(el), 'A-'
-    scope.$scan ->
+    cd.scan ->
         $test.equal count, 2
         $test.equal ttGetText(el), 'A-'
 
         scope.one = 'X'
-        scope.$scan ->
+        cd.scan ->
             $test.equal count, 3
             $test.equal ttGetText(el), 'X-'
 
             scope.two = 'Y'
-            scope.$scan ->
+            cd.scan ->
                 $test.equal count, 4
                 $test.equal ttGetText(el), 'X-Y'
 
-                scope.$scan ->
+                cd.scan ->
                     $test.equal count, 5
                     $test.equal ttGetText(el), 'X-Y'
                     $test.close()

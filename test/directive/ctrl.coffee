@@ -1,4 +1,4 @@
-
+###
 Test('al-ctrl').run ($test, alight) ->
     $test.start 9
 
@@ -67,7 +67,7 @@ Test('al-ctrl-1').run ($test, alight) ->
     $test.equal ttGetText(el), 'A1A B2B'
 
     $test.close()
-
+###
 
 Test('al-app-0').run ($test, alight) ->
     $test.start 2
@@ -77,17 +77,16 @@ Test('al-app-0').run ($test, alight) ->
                 </div>
                 """
 
-    alight.ctrl.main = class M
-        constructor: ->
-            @.val = 'linux'
-        method: ->
+    alight.ctrl.main = (scope) ->
+        scope.val = 'linux'
+        scope.method = ->
             'method ok'
 
     alight.d.al.test = (scope) ->
         $test.equal scope.val, 'linux'
         $test.equal scope.method(), 'method ok'
 
-    alight.bootstrap el.childNodes[0]
+    alight el.childNodes[0]
 
     $test.close()
 
@@ -113,7 +112,7 @@ Test('al-app-1').run ($test, alight) ->
 
     $test.close()
 
-
+###
 Test('al-ctrl-2').run ($test, alight) ->
     if $test.basis
         return 'skip'
@@ -152,3 +151,4 @@ Test('al-ctrl-2').run ($test, alight) ->
     $test.equal ttGetText(el), 'root=up child=down'
 
     $test.close()
+###

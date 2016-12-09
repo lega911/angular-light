@@ -168,7 +168,6 @@ Test 'root-scope-access-to-parent'
     .run ($test, alight) ->
         if $test.basis
             return 'skip'
-        alight.option.injectScope = true
         $test.start 2
 
         alight.d.al.test =
@@ -176,7 +175,7 @@ Test 'root-scope-access-to-parent'
             link: (scope, el, key, env) ->
                 env.parentChangeDetector.watch key, (value) ->
                     scope.title = value
-                    scope.$scan()
+                    env.changeDetector.scan()
 
         el = ttDOM """
             {{name}}
@@ -185,15 +184,15 @@ Test 'root-scope-access-to-parent'
             </div>
         """
 
-        scope = alight.Scope()
-        scope.name = 'linux'
+        cd = alight.ChangeDetector()
+        cd.scope.name = 'linux'
 
-        alight.bind scope, el
+        alight.bind cd, el
 
         $test.equal ttGetText(el), 'linux linux-'
 
-        scope.name = 'ubuntu'
-        scope.$scan()
+        cd.scope.name = 'ubuntu'
+        cd.scan()
         $test.equal ttGetText(el), 'ubuntu ubuntu-'
 
         $test.close()
@@ -245,7 +244,6 @@ Test 'binding-order-0'
     .run ($test, alight) ->
         if $test.basis
             return 'skip'
-        alight.option.injectScope = true
         $test.start 1
 
         el = ttDOM """
@@ -260,16 +258,16 @@ Test 'binding-order-0'
 
         alight.d.al.parent = (scope) ->
             order.push 'p0'
-            scope.$watch '$finishBinding', ->
+            @.watch '$finishBinding', ->
                 order.push 'p1'
 
         alight.d.al.child = (scope, el, _, env) ->
             $index = env.getValue '$index'
             order.push 'c0-' + $index
-            scope.$watch '$finishBinding', ->
+            @.watch '$finishBinding', ->
                 order.push 'c1-' + $index
 
-        scope = alight.bootstrap el,
+        alight.bootstrap el,
             list: [{}, {}]
 
         order = order.join ' '
@@ -337,13 +335,9 @@ Test('bind-complete-0').run ($test, alight) ->
 
     alight.d.al.one = (scope, el, _, env) ->
         env.stopBinding = true
-        cd = env.changeDetector
 
-        childScope = alight.Scope
-            childFromChangeDetector: cd
-        childScope.name = 'one'
-
-        childCD = alight.core.cd_getRoot childScope
+        childCD = env.changeDetector.new
+            name: 'one'
 
         $test.equal index++, 1
         $test.equal ttGetText(el), '1:{{name}} 2:{{name}} 3:{{name}} 4:{{name}} 5:{{name}}'
@@ -357,13 +351,9 @@ Test('bind-complete-0').run ($test, alight) ->
     alight.d.al.two = (scope, el, _, env) ->
         env.stopBinding = true
 
-        scope.$watch 'name', ->
-            cd = env.changeDetector
-            childScope = alight.Scope
-                childFromChangeDetector: cd
-            childScope.name = 'two'
-
-            childCD = alight.core.cd_getRoot childScope
+        @.watch 'name', ->
+            childCD = env.changeDetector.new
+                name: 'two'
 
             $test.equal index++, 2
             $test.equal ttGetText(el), '2:{{name}} 3:{{name}} 4:{{name}}', 2
@@ -377,14 +367,9 @@ Test('bind-complete-0').run ($test, alight) ->
     alight.d.al.three = (scope, el, _, env) ->
         env.stopBinding = true
 
-        scope.$watch 'name', ->
-            cd = env.changeDetector
-
-            childScope = alight.Scope
-                childFromChangeDetector: cd
-            childScope.name = 'three'
-
-            childCD = alight.core.cd_getRoot childScope
+        @.watch 'name', ->
+            childCD = env.changeDetector.new
+                name: 'three'
 
             $test.equal index++, 3
             $test.equal ttGetText(el), '3:{{name}}', 3
@@ -395,7 +380,7 @@ Test('bind-complete-0').run ($test, alight) ->
             $test.equal index++, 4
             $test.equal ttGetText(el), '3:three', 4
 
-    alight.bootstrap dom
+    alight dom
 
     $test.equal index++, 7
     $test.equal ttGetText(dom), '1:one 2:two 3:three 4:two 5:one'

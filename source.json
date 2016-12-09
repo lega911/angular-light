@@ -18,20 +18,16 @@
     "tag": ["core"]
 }, {
     "file": "ext/class-filter.es.js",
-    "tag": ["full"]
+    "tag": ["compatibility"]
 }, {
     "file": "changeDetector.coffee",
     "tag": ["core"]
-}, {
-    "file": "scope.coffee",
-    "otherwise": "scope.blank.es.js",
-    "tag": ["full"]
 }, {
     "file": "watchText.coffee",
     "tag": ["core"]
 }, {
     "file": "doublebinding.coffee",
-    "tag": ["full"]
+    "tag": ["compatibility"]
 }, {
     "file": "binding.coffee",
     "tag": ["core"]
@@ -84,7 +80,7 @@
     "tag": ["basis"]
 }, {
     "file": "directive/class.coffee",
-    "tag": ["full"]
+    "tag": ["compatibility"]
 }, {
     "file": "directive/src.coffee",
     "tag": ["compatibility"]
@@ -96,7 +92,7 @@
     "tag": ["basis"]
 }, {
     "file": "directive/bindonce.coffee",
-    "tag": ["full"]
+    "tag": ["compatibility"]
 }, {
     "file": "directive/stop.coffee",
     "tag": ["basis"]
@@ -159,7 +155,7 @@
     "tag": ["full"]
 }, {
     "file": "directive/ctrl.coffee",
-    "tag": ["full"]
+    "tag": ["compatibility"]
 }, {
     "file": "directive/attr.coffee",
     "tag": ["basis"]
@@ -198,7 +194,7 @@
     "tag": ["basis"]
 }, {
     "file": "text/textWatch.coffee",
-    "tag": ["full"]
+    "tag": ["compatibility"]
 }, {
     "file": "ext/component.es.js",
     "tag": ["basis"]

@@ -2,7 +2,6 @@
 Test('apply-binding-0').run ($test, alight) ->
     if $test.basis
         return 'skip'
-    alight.option.injectScope = true
     $test.start 12
     f$ = alight.f$
 
@@ -25,7 +24,7 @@ Test('apply-binding-0').run ($test, alight) ->
     $test.equal count, 1
     $test.equal f$_attr el, 'some-text', 'start:img.jpg:finish'
 
-    scope.$scan ->
+    cd.scan ->
         $test.equal el.className, ''
         $test.equal f$_attr el, 'src', 'some-img.jpg'
         $test.equal count, 1
@@ -33,7 +32,7 @@ Test('apply-binding-0').run ($test, alight) ->
 
         scope.redClass = true
         scope.link = 'other.png'
-        scope.$scan ->
+        cd.scan ->
             $test.equal el.className.trim(), 'red'
             $test.equal f$_attr el, 'src', 'some-other.png'
             $test.equal count, 1
@@ -45,7 +44,6 @@ Test('apply-binding-0').run ($test, alight) ->
 Test('bootstrap-el').run ($test, alight) ->
     if $test.basis
         return 'skip'
-    alight.option.injectScope = true
     $test.start 4
 
     el = ttDOM "<div>{{name}}</div>"
@@ -60,7 +58,7 @@ Test('bootstrap-el').run ($test, alight) ->
     $test.equal ttGetText(el), 'Some text'
 
     scope.click()
-    scope.$scan ->
+    cd.scan ->
         $test.equal scope.name, 'Hello'
         $test.equal ttGetText(el), 'Hello'
         $test.close()

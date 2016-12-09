@@ -63,8 +63,7 @@ alight.d.al.ctrl =
                         childEnv.changeDetector = childCD
                         childEnv.parentChangeDetector = env.changeDetector
 
-                        scopeWrap childCD, ->
-                            fn.call childScope, childScope, element, name, childEnv
+                        fn.call childScope, childScope, element, name, childEnv
                 catch e
                     error e, 'Error in controller: ' + name
                 alight.bind childCD, element,

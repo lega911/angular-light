@@ -11,27 +11,27 @@ Test('al-include').run ($test, alight, timeout) ->
                 option.success 'two-{{link}}'
         else option.error()
 
-    scope = alight.Scope()
-    scope.link = 'link1'
+    cd = alight.ChangeDetector()
+    cd.scope.link = 'link1'
 
     el = ttDOM """
         start
-        <div al-include="link"></div>
+        <div :html.url="link"></div>
         finish
     """
 
-    alight.bind scope, el
+    alight.bind cd, el
 
     $test.equal ttGetText(el), 'start finish'
     timeout.add 20, ->
         $test.equal ttGetText(el), 'start one-link1 finish'
 
-        scope.link = null
-        scope.$scan()
+        cd.scope.link = null
+        cd.scan()
         $test.equal ttGetText(el), 'start finish'
 
-        scope.link = 'link2'
-        scope.$scan()
+        cd.scope.link = 'link2'
+        cd.scan()
         timeout.add 20, ->
             $test.equal ttGetText(el), 'start two-link2 finish'
 

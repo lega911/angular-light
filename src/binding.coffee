@@ -185,11 +185,9 @@ do ->
                         console.warn "#{@.ns}-#{@.name} uses scope and init together, probably you need use link instead of init"
                 @.env.changeDetector = @.cd
 
-                that = @
-                scopeWrap @.cd, ->
-                    result = that.directive.init.call that.env, that.cd.scope, that.element, that.value, that.env
-                    if result and result.start
-                        result.start()
+                result = @.directive.init.call @.env, @.cd.scope, @.element, @.value, @.env
+                if result and result.start
+                    result.start()
             return
 
     ext.push
@@ -256,11 +254,9 @@ do ->
         fn: ->
             if @.directive.link
                 @.env.changeDetector = @.cd
-                that = @
-                scopeWrap @.cd, =>
-                    result = that.directive.link.call that.env, that.cd.scope, that.element, that.value, that.env
-                    if result and result.start
-                        result.start()
+                result = @.directive.link.call @.env, @.cd.scope, @.element, @.value, @.env
+                if result and result.start
+                    result.start()
             return
 
     ext.push
@@ -386,12 +382,12 @@ bindComment = (cd, element, option) ->
         throw "Comment directive not found: #{dirName}"
 
     directive = d.directive
-    env =
+
+    env = new Env
         element: element
-        attrName: dirName
-        attributes: []
-        skippedAttr: ->
-            []
+        attrName: d.attrName
+        attributes: list
+
     if alight.debug.directive
         console.log 'bind', d.attrName, value, d
     if alight.debug.doubleBinding
@@ -697,20 +693,16 @@ alight.nextTick = do ->
         timer = setTimeout exec, 0
 
 
-alight.bind = alight.applyBindings = (scope, element, option) ->
+alight.bind = (changeDetector, element, option) ->
+    if not changeDetector
+        throw 'No changeDetector'
+
     if not element
         throw 'No element'
 
-    if not scope
-        throw 'No Scope'
-
     option = option or {}
 
-    if scope instanceof alight.core.ChangeDetector
-        cd = scope
-    else
-        cd = option.changeDetector or cd_getActive(scope) or cd_getRoot(scope)
-    root = cd.root
+    root = changeDetector.root
 
     finishBinding = not root.finishBinding_lock
     if finishBinding
@@ -719,14 +711,13 @@ alight.bind = alight.applyBindings = (scope, element, option) ->
             directive: 0
             hook: 0
 
-    result = bindNode cd, element, option
+    result = bindNode changeDetector, element, option
 
     root.bindingResult.directive += result.directive
     root.bindingResult.hook += result.hook
 
-    cd.digest()
+    changeDetector.digest()
     if finishBinding
-        #cd.scan()
         root.finishBinding_lock = false
         lst = root.watchers.finishBinding.slice()
         root.watchers.finishBinding.length = 0
