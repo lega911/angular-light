@@ -8,15 +8,7 @@ alight.debug =
     watchText: false
     parser: false
     domOptimization: true
-    doubleBinding: 0
     fastBinding: true
-
-
-doubleBinding = do ->
-    if alight.core.DoubleBinding
-        return alight.core.DoubleBinding()
-    startDirective: ->
-    finishDirective: ->
 
 
 do ->
@@ -50,31 +42,6 @@ do ->
 
             @.name = name.replace /(-\w)/g, (m) ->
                 m.substring(1).toUpperCase()
-            return
-
-    ext.push
-        code: 'getScopeDirective'
-        fn: ->
-            if @.directive
-                return
-
-            $ns = @.cd.scope.$ns
-            if $ns and $ns.directives
-                path = $ns.directives[@.ns]
-                if path
-                    @.directive = path[@.name]
-                    if not @.directive
-                        if not $ns.inheritGlobal
-                            if @.ns is '$global'
-                                @.result = 'noNS'
-                            else
-                                @.result = 'noDirective'
-                            @.stop = true
-                            return
-                else
-                    if not $ns.inheritGlobal
-                        @.result = 'noNS'
-                        @.stop = true
             return
 
     ext.push
@@ -390,8 +357,6 @@ bindComment = (cd, element, option) ->
 
     if alight.debug.directive
         console.log 'bind', d.attrName, value, d
-    if alight.debug.doubleBinding
-        doubleBinding.startDirective element, d.attrName, value
     try
         directive.$init cd, element, value, env
     catch e
@@ -401,8 +366,6 @@ bindComment = (cd, element, option) ->
             cd: cd
             scope: cd.scope
             element: element
-    if alight.debug.doubleBinding
-        doubleBinding.finishDirective element, d.attrName
     if env.skipToElement
         return {
             directive: 1
@@ -558,8 +521,6 @@ bindElement = do ->
                 else
                     value = element.getAttribute d.attrName
                 if d.is_attr
-                    if alight.debug.doubleBinding
-                        doubleBinding.startDirective element, d.attrName, value, true
                     if attrBinding cd, element, value, d.attrName
                         fb.attr.push
                             attrName: d.attrName
@@ -576,8 +537,6 @@ bindElement = do ->
                         elementCanBeRemoved: config.elementCanBeRemoved
                     if alight.debug.directive
                         console.log 'bind', d.attrName, value, d
-                    if alight.debug.doubleBinding
-                        doubleBinding.startDirective element, d.attrName, value
 
                     try
                         if directive.$init(cd, element, value, env) is 'stopBinding'
@@ -598,9 +557,6 @@ bindElement = do ->
                             attrArgument: env.attrArgument
                     else
                         bindResult.directive++
-
-                    if alight.debug.doubleBinding
-                        doubleBinding.finishDirective element, d.attrName
 
                     if env.stopBinding
                         skipChildren = true
@@ -654,8 +610,6 @@ bindNode = (cd, element, option) ->
         result.skipToElement = r.skipToElement
         result.fb = r.fb
     else if element.nodeType is 3
-        if alight.debug.doubleBinding
-            doubleBinding.startDirective element, 'text', '', true
         text = bindText cd, element, option
         if text
             result.fb =

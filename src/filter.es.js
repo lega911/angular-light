@@ -1,15 +1,10 @@
 
 alight.core.getFilter = function(name, cd) {
-    var error = false;
-    var scope = cd.scope;
-    var filter = null;
-    if(scope.$ns && scope.$ns.filters) {
-        filter = scope.$ns.filters[name];
-        if(!filter && !scope.$ns.inheritGlobal) error = true
-    }
-    if(!filter && !error) filter = alight.filters[name];
-    if(!filter) throw 'Filter not found: ' + name;
-    return filter;
+    var filter = cd.locals[name];
+    if(filter && (f$.isFunction(filter) || filter.init || filter.fn)) return filter;
+    filter = alight.filters[name];
+    if(filter) return filter;
+    throw 'Filter not found: ' + name;
 }
 
 

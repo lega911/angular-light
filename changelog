@@ -1,4 +1,13 @@
 
+0.14
+----
+* Scope is removed
+* able to take filter from scope
+* $ns is removed
+* checking for double binding is removed
+
+
+
 0.13
 ----
 

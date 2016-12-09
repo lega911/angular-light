@@ -1,6 +1,6 @@
 
-Test('ns-0', 'ns-0').run ($test, alight) ->
-    $test.start 4
+Test('ns-0').run ($test, alight) ->
+    $test.start 3
     f$ = alight.f$
 
     # ut-test3
@@ -11,76 +11,31 @@ Test('ns-0', 'ns-0').run ($test, alight) ->
             test3: (scope, el, name) ->
                 el.textContent = name
 
-        alight.bootstrap el
+        alight el
         $test.equal ttGetText(el), 'linux'
 
-    # $ns.ut-test3
+    # local ut-test3
     do ->
         scope =
-            $ns:
-                directives:
-                    ut:
-                        uniqDirective: (scope, el, name) ->
-                            el.textContent = name
+            utTest3: (el, name) ->
+                el.textContent = name + '_loc'
 
-        try
-            alight.bootstrap ttDOM('<p ut-test3="linux"></p>'), scope
-            $test.error '$ns error'
-        catch e
-            $test.equal e, 'Directive not found: ut-test3'
-
-        el = ttDOM '<p ut-test3="linux"></p>'
-        alight.bootstrap el
-        $test.equal ttGetText(el), 'linux'
+        el = ttDOM '<p ut-test3!="$element, \'linux\'"></p>'
+        alight el, scope
+        $test.equal ttGetText(el), 'linux_loc'
 
     # filter
     do ->
         scope =
-            $ns:
-                filters:
-                    double: ->
-                        'linux'
+            double: ->
+                'linux'
 
         el = ttDOM '<p>{{x | double}}</p>'
 
-        alight.bootstrap el, scope
+        alight el, scope
         $test.equal ttGetText(el), 'linux'
 
         $test.close()
-
-
-Test('ns-1', 'ns-1').run ($test, alight) ->
-    $test.start 2
-    f$ = alight.f$
-
-    if not alight.d.al.text
-        alight.d.al.text = (scope, el, key) ->
-            this.watch key, (text) ->
-                el.innerText = text
-
-    tag = ttDOM '<p al-private="title"></p>:<p al-text="title"></p>'
-    makeScope = ->
-        title: 'title'
-        $ns:
-            directives:
-                al:
-                    private: (scope, el, name) ->
-                        el.textContent = name
-
-    try
-        alight.bootstrap tag, makeScope()
-    catch e
-        $test.equal e, 'Directive not found: al-text'
-
-
-    tag = ttDOM '<p al-private="title"></p>:<p al-text="title"></p>'
-
-    scope = makeScope()
-    scope.$ns.inheritGlobal = true
-    alight.bootstrap tag, scope
-
-    $test.equal ttGetText(tag), 'title:title'
-    $test.close()
 
 
 Test('$global-0').run ($test, alight) ->
