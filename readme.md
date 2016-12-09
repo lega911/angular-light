@@ -1,7 +1,7 @@
 ### Angular Light
 Web framework with MVC model. Angular.js + Knockout.js way.
 
-Visit [angularlight.org](http://angularlight.org/)
+Visit [angularlight.org](http://angularlight.org/), [Docs](http://angular-light.readthedocs.io/en/latest/docs0.html)
 
 [![Join the chat at https://gitter.im/lega911/angular-light](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/lega911/angular-light?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -22,19 +22,17 @@ Visit [angularlight.org](http://angularlight.org/)
 ### Example 1
 ``` html
 <div id="app">
-    <input al-value="data.name" type="text" />
-    {{data.name}} <br/>
-    <button al-click="click()">Set Hello</button>
+    <input al-value="name" type="text" />
+    {{name}} <br/>
+    <button al-on.click="click()">Set Hello</button>
 </div>
 ```
 
 ``` js
-alight.bootstrap('#app', {
-    data: {
-        name: 'Some text'
-    },
+alight('#app', {
+    name: 'Some text',
     click: function() {
-        this.data.name = 'Hello'
+        this.name = 'Hello'
     }
 });
 ```
