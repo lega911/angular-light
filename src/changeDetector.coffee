@@ -155,7 +155,7 @@ ChangeDetector::watch = (name, callback, option) ->
             isArray: true
 
     if option.init
-        console.warn 'watch.init is depticated'
+        console.warn 'watch.init is depricated'
 
     cd = @
     root = cd.root
