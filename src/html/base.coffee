@@ -76,8 +76,6 @@ alight.d.al.html =
                 if self.baseElement
                     self.activeElement = self.baseElement.cloneNode false
                     self.activeElement.innerHTML = html
-                    if self.domOptimization
-                        alight.utils.optmizeElement self.activeElement
 
                     self.insertDom self.topElement, self.activeElement
                     self.childCD = env.changeDetector.new()
@@ -87,8 +85,6 @@ alight.d.al.html =
                 else
                     t = document.createElement 'body'
                     t.innerHTML = html
-                    if self.domOptimization
-                        alight.utils.optmizeElement t
 
                     current = self.topElement
                     self.activeElement = []

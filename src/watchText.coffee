@@ -46,7 +46,7 @@ do ->
                     current.value += d.value
                 else
                     exp = d.list.join '|'
-                    wrapped = '{{' + exp + '}}'
+                    wrapped = alight.utils.pars_start_tag + exp + alight.utils.pars_finish_tag
                     lname = exp.match /^([^\w\d\s\$"'\(\u0410-\u044F\u0401\u0451]+)/
                     if lname
                         # directive

@@ -7,7 +7,6 @@ alight.debug =
     watch: false
     watchText: false
     parser: false
-    domOptimization: true
     fastBinding: true
 
 
@@ -655,6 +654,9 @@ alight.bind = (changeDetector, element, option) ->
         throw 'No element'
 
     option = option or {}
+
+    if alight.option.domOptimization and not option.noDomOptimization
+        alight.utils.optmizeElement element
 
     root = changeDetector.root
 

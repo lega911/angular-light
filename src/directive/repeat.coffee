@@ -104,6 +104,8 @@ alight.directives.al.repeat =
                     f$.remove element
                     if alight.option.removeAttribute
                         element.removeAttribute env.attrName
+                    if alight.option.domOptimization
+                        alight.utils.optmizeElement element
                 return
 
             makeChild: (item, index, list) ->
@@ -372,6 +374,7 @@ alight.directives.al.repeat =
                                 alight.bind it.cd, it.el,
                                     skip_attr: skippedAttrs
                                     elementCanBeRemoved: env.attrName
+                                    noDomOptimization: true
                             return
                     else
                         # method update for a single element
@@ -496,6 +499,7 @@ alight.directives.al.repeat =
                                     r = alight.bind it.cd, it.el,
                                         skip_attr: skippedAttrs
                                         elementCanBeRemoved: env.attrName
+                                        noDomOptimization: true
                                     if fastBinding is null
                                         fastBinding = alight.core.fastBinding(r) or false
                             return
