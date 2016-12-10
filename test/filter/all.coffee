@@ -97,12 +97,12 @@ Test('filter-async-0').run ($test, alight) ->
     result0 = []
     result1 = []
     result2 = []
-    alight.filters.get = class
-        constructor: (exp, scope, env) ->
+    alight.filters.get =
+        init: (scope, name, env) ->
             setters.push (value) ->
                 env.setValue value
-        onChange: (value) ->
-            async.push value
+            onChange: (value) ->
+                async.push value
 
     scope =
         value: 'one'
@@ -229,29 +229,28 @@ Test('filter-async-1').run ($test, alight) ->
     $test.close()
 
 
-Test('filter-async-2', 'filter-async-2').run ($test, alight, timeout) ->
+Test('filter-async-2').run ($test, alight, timeout) ->
     $test.start 14
 
     rdestroy = 0
 
-    alight.filters.foo = class FooFilter
-        constructor: (exp, scope, env) ->
-            that = @
-            @.value = null
+    alight.filters.foo =
+        init: (scope, name, env) ->
+            value = null
             active = true
             setter = ->
                 if not active
                     return
                 timeout.add 100, setter
-                that.setValue that.value
+                env.setValue value
             timeout.add 100, setter
 
             env.changeDetector.watch '$destroy', ->
                 rdestroy++
                 active = false
 
-        onChange: (input) ->
-            @.value = input
+            onChange: (input) ->
+                value = input
 
     scope =
         r: 'one'
@@ -305,12 +304,12 @@ Test('async-filter-watch-text-0').run ($test, alight, timeout) ->
         rfoo++
         value+':'+value
 
-    alight.filters.get = class
-        onChange: (value) ->
-            that = @
-            rasync++
-            timeout.add 10, ->
-                that.setValue value + ':async'
+    alight.filters.get =
+        init: (scope, name, env) ->
+            onChange: (value) ->
+                rasync++
+                timeout.add 10, ->
+                    env.setValue value + ':async'
 
     scope =
         value: 'one'
@@ -393,7 +392,7 @@ Test('filter-json').run ($test, alight) ->
             $test.close()
 
 
-Test('filter-async-3', 'filter-async-3').run ($test, alight, timeout) ->
+Test('filter-async-3').run ($test, alight, timeout) ->
     $test.start 25
 
     fooInited = 0
@@ -401,30 +400,29 @@ Test('filter-async-3', 'filter-async-3').run ($test, alight, timeout) ->
     fooChange = 0
     fooStop = 0
     fooDestroy = 0
-    alight.filters.foo = class FooFilter
-        constructor: (exp, scope, env) ->
-            that = @
+    alight.filters.foo =
+        init: (scope, name, env) ->
             fooInited++
-            @.active = true
-            @.value = 0
+            active = true
+            value = 0
             step = ->
                 fooStep++
-                that.value++
-                that.setValue '#' + that.value
-                if that.active
+                value++
+                env.setValue '#' + value
+                if active
                     timeout.add 100, step
             timeout.add 100, step
 
             env.changeDetector.watch '$destroy', ->
                 fooDestroy++
-                that.active = false
+                active = false
 
-        onChange: (input) ->
-            @.value = input
-            fooChange++
-        onStop: ->
-            @.active = false
-            fooStop++
+            onChange: (input) ->
+                value = input
+                fooChange++
+            onStop: ->
+                active = false
+                fooStop++
 
     c0 = 0
     v0 = null
@@ -479,12 +477,13 @@ Test('filter-async-4', 'filter-async-4').run ($test, alight, timeout) ->
 
     fooStop = 0
     count = 0
-    alight.filters.foo = ->
-        @.onChange = (input) ->
-            @.setValue '#' + input
-        @
-    alight.filters.foo::onStop = ->
-        fooStop++
+    alight.filters.foo =
+        init: (scope, name, env) ->
+            onChange: (input) ->
+                env.setValue '#' + input
+
+            onStop: ->
+                fooStop++
 
     cd = alight.ChangeDetector
         one: 5

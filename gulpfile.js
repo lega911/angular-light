@@ -25,7 +25,7 @@ gulp.task('config_basis', [], function(){
 });
 
 gulp.task('config_full', [], function(){
-    resultFile = 'alight_full.js';
+    resultFile = 'alight.js';
     resultTag = ['core', 'basis', 'full'];
 });
 
@@ -36,8 +36,10 @@ gulp.task('config_compatibility', [], function(){
 
 gulp.task('full', ['config_full', 'prepare', 'compress'], function(){});
 gulp.task('basis', ['config_basis', 'prepare', 'compress'], function(){});
-gulp.task('default', ['config_compatibility', 'prepare', 'compress'], function(){});
+gulp.task('compatibility', ['config_compatibility', 'prepare', 'compress'], function(){});
 gulp.task('core', ['config_core', 'prepare', 'compress'], function(){});
+
+gulp.task('default', ['full'], function(){});
 
 gulp.task('prepare', [], function(){
     var tags = {};

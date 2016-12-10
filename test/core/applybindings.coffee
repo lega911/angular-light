@@ -1,14 +1,12 @@
 
 Test('apply-binding-0').run ($test, alight) ->
-    if $test.basis
-        return 'skip'
     $test.start 12
     f$ = alight.f$
 
     el = document.createElement('div')
     f$_attr el, 'al-init', 'testInit()'
-    f$_attr el, 'al-css', 'red: redClass'
-    f$_attr el, 'al-src', 'some-{{link}}'
+    f$_attr el, ':class.red', 'redClass'
+    f$_attr el, ':src.tpl', 'some-{{link}}'
     f$_attr el, 'some-text', 'start:{{link}}:finish'
 
     count = 0

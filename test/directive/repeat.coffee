@@ -335,12 +335,12 @@ Test('repeat-store-to-0').run ($test, alight) ->
     $test.start 6
 
     setter = null
-    alight.filters.myfilter = class F
-        ext: true
-        constructor: (_, scope, env) ->
+    alight.filters.myfilter =
+        init: (scope, name, env) ->
             setter = (value) ->
                 env.setValue value
-            @.onChange = (value) ->
+
+            onChange: (value) ->
                 env.setValue makeResult
 
     dom = ttDOM '<div class="item" al-repeat="it in list | myfilter | storeTo filteredList"></div>'

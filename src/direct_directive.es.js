@@ -6,7 +6,7 @@ alight.hooks.attribute.unshift({
         let name = d[1].replace(/(-\w)/g, function(m) {
             return m.substring(1).toUpperCase()
         });
-        const fn = this.cd.locals[name] || alight.option.globalController && window[name];
+        const fn = this.cd.locals[name] || alight.ctrl[name] || alight.option.globalController && window[name];
         if(f$.isFunction(fn)) {
             this.directive = function(scope, element, value, env) {
                 const cd = env.changeDetector;

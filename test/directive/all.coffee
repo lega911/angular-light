@@ -3,7 +3,7 @@ Test('al-css-1').run ($test, alight) ->
 	$test.start 5
 
 	el = document.createElement 'div'
-	el.innerHTML = '<i class="aaa" al-css="bbb ccc ddd: active, fff eee: active2"></i>'
+	el.innerHTML = '<i class="aaa" :class.bbb.ccc.ddd="active" :class.fff.eee="active2"></i>'
 	tag = el.children[0]
 
 	cd = alight tag,
@@ -122,19 +122,18 @@ Test('restrict-m-2').run ($test, alight) ->
 Test('al-ctrl-0').run ($test, alight) ->
 	$test.start 3
 
-	dom = $ '<div al-ctrl="foo"><i al-getter></i></div>'
+	dom = $ '<div foo!><i al-getter></i></div>'
 	c0 = 0
 	c1 = 0
-
-	alight.ctrl.foo = (scope) ->
-		c0++
-		scope.value = 123
 
 	alight.d.al.getter = (scope) ->
 		c1++
 		$test.equal scope.value, 123
 
-	alight.bootstrap(dom[0])
+	alight dom[0],
+		foo: (scope) ->
+			c0++
+			scope.value = 123
 
 	$test.equal c0, 1
 	$test.equal c1, 1
@@ -186,7 +185,7 @@ Test('al-value-setter').run ($test, alight) ->
 	dom = $ '<div><input type="text" al-value="name[0]" /></div>'
 	input = dom.find('input')[0]
 
-	cd = alight.bootstrap input,
+	cd = alight input,
 		name: ['123']
 
 	$test.equal input.value, '123'
@@ -210,7 +209,7 @@ Test('al-value-setter').run ($test, alight) ->
 Test('al-text').run ($test, alight) ->
 	$test.start 2
 
-	el = ttDOM '<div al-text="name"></div>'
+	el = ttDOM '<div>{{name}}</div>'
 
 	cd = alight.bootstrap el,
 		name: 'one'
