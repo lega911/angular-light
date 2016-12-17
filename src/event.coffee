@@ -127,9 +127,9 @@ do ->
         ev =
             attrArgument: attrArgument
             throttle: null
-            throttleId: null
+            throttleTime: 0
             debounce: null
-            debounceTime: 0
+            debounceId: null
             initFn: null
             eventList: null
             stop: option.stop or false
@@ -239,16 +239,16 @@ do ->
         if ev.stop
             event.stopPropagation()
 
-        if ev.throttle
-            if ev.throttleId
-                clearTimeout ev.throttleId
-            ev.throttleId = setTimeout ->
-                ev.throttleId = null
+        if ev.debounce
+            if ev.debounceId
+                clearTimeout ev.debounceId
+            ev.debounceId = setTimeout ->
+                ev.debounceId = null
                 execute ev, event
-            , ev.throttle
-        else if ev.debounce
-            if ev.debounceTime < Date.now()
-                ev.debounceTime = Date.now() + ev.debounce
+            , ev.debounce
+        else if ev.throttle
+            if ev.throttleTime < Date.now()
+                ev.throttleTime = Date.now() + ev.throttle
                 execute ev, event
         else
             execute ev, event
