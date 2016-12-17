@@ -70,6 +70,10 @@ do ->
         env.fastBinding = true
         if not env.attrArgument
             return
+
+        if alight.option.removeAttribute
+            element.removeAttribute env.attrName
+
         eventName = env.attrArgument.split('.')[0]
         ev = makeEvent env.attrArgument, eventOption[eventName]
 

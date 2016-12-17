@@ -1,15 +1,4 @@
 
-# init
-alight.version = '{{{version}}}'
-alight.debug =
-    scan: 0
-    directive: false
-    watch: false
-    watchText: false
-    parser: false
-    fastBinding: true
-
-
 do ->
     alight.hooks.attribute = ext = []
 

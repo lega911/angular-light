@@ -37,6 +37,9 @@ do ->
         prop = props[attrName]
         isTemplate = d.indexOf('tpl') > 0
 
+        if alight.option.removeAttribute
+            element.removeAttribute env.attrName
+
         args =
             readOnly: true
 

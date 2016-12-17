@@ -38,7 +38,7 @@ compileText = (text) ->
 
 
 alight.core.fastBinding = (bindResult) ->
-    if not alight.debug.fastBinding
+    if not alight.option.fastBinding
         return
     if bindResult.directive or bindResult.hook or not bindResult.fb
         return

@@ -4,6 +4,7 @@
         var alight = function(element, data) {
             return alight.bootstrap(element, data);
         }
+        alight.version = '{{{version}}}';
         alight.filters = {};
         alight.text = {};
         alight.core = {};
@@ -11,7 +12,15 @@
         alight.option = {
             globalController: false,
             removeAttribute: true,
-            domOptimization: true
+            domOptimization: true,
+            fastBinding: true
+        };
+        alight.debug = {
+            scan: 0,
+            directive: false,
+            watch: false,
+            watchText: false,
+            parser: false
         };
         alight.ctrl = alight.controllers = {};
         alight.d = alight.directives = {
