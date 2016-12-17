@@ -50,12 +50,7 @@ ChangeDetector = (root, scope) ->
         any: []
         finishScan: []
 
-    if alight.option.injectScope and alight.Scope
-        alight.Scope
-            changeDetector: @
-            customScope: scope
-
-    @
+    return
 
 
 ChangeDetector::new = (scope, option) ->

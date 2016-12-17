@@ -104,8 +104,6 @@ alight.directives.al.repeat =
                     f$.remove element
                     if alight.option.removeAttribute
                         element.removeAttribute env.attrName
-                    if alight.option.domOptimization
-                        alight.utils.optmizeElement element
                 return
 
             makeChild: (item, index, list) ->
@@ -138,22 +136,20 @@ alight.directives.al.repeat =
                     nodes = []
                     index = 0
                     fastBinding = null
+                    version = 0
 
                     if self.trackExpression is '$index'
                         node_by_id = {}
                         node_get = (item) ->
-                            $id = index
-                            node_by_id[$id] or null
+                            node_by_id[index] or null
 
                         node_del = (node) ->
-                            $id = node.$id
-                            `if($id != null) delete node_by_id[$id]`
+                            `if(node.$id != null) delete node_by_id[node.$id]`
                             return
 
                         node_set = (item, node) ->
-                            $id = index
-                            node.$id = $id
-                            node_by_id[$id] = node
+                            node.$id = index
+                            node_by_id[index] = node
                             return
                     else
                         if self.trackExpression
@@ -381,33 +377,10 @@ alight.directives.al.repeat =
                         (input) ->
                             list = getResultList input
                             last_element = self.top_element
+                            version++
 
                             dom_inserts = []
                             nodes2 = []
-
-                            # find removed
-                            for node in nodes
-                                node.active = false
-                            for item, index in list
-                                node = node_get item
-                                if node
-                                    node.active = true
-
-                            dom_removes = []
-                            for node in nodes
-                                if node.active
-                                    continue
-                                if node.prev
-                                    node.prev.next = node.next
-                                if node.next
-                                    node.next.prev = node.prev
-                                node_del node
-                                node.CD.destroy()
-                                dom_removes.push node.element
-                                node.next = null
-                                node.prev = null
-                                node.element = null
-
                             applyList = []
                             # change positions and make new children
                             pid = null
@@ -428,7 +401,7 @@ alight.directives.al.repeat =
                                         # next loop
                                         prev_node = node
                                         last_element = node.element
-                                        node.active = true
+                                        node.version = version
                                         nodes2.push node
                                         continue
 
@@ -444,7 +417,7 @@ alight.directives.al.repeat =
                                     # next loop
                                     last_element = node.element
                                     prev_node = node
-                                    node.active = true
+                                    node.version = version
                                     nodes2.push node
                                     continue
 
@@ -464,7 +437,7 @@ alight.directives.al.repeat =
                                     element: element
                                     prev: prev_node
                                     next: null
-                                    active: true
+                                    version: version
                                     item: item
                                 last_element = element
 
@@ -483,6 +456,21 @@ alight.directives.al.repeat =
                                 # for next loop
                                 prev_node = node
                                 nodes2.push node
+
+                            dom_removes = []
+                            for node in nodes
+                                if node.version == version
+                                    continue
+                                if node.prev
+                                    node.prev.next = node.next
+                                if node.next
+                                    node.next.prev = node.prev
+                                node_del node
+                                node.CD.destroy()
+                                dom_removes.push node.element
+                                node.next = null
+                                node.prev = null
+                                node.element = null
 
                             nodes = nodes2
 
