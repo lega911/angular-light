@@ -72,6 +72,7 @@ Test('parsing', 'parsing').run ($test, alight) ->
     pars 'data.user[some?.data?[kk] + someKey].key[kk]= suffix', ['$$scope.data.user[(($$=$$scope.some,$$==null)?undefined:($$=$$.data,$$==null)?undefined:$$[$$scope.kk]) + $$scope.someKey].key[$$scope.kk]= $$scope.suffix']
     pars 'this.active=!active', ["$$scope.active=!$$scope.active"]
     pars 'x + 0.1', ["$$scope.x + 0.1"]
+    pars "$element._id=item.id", ['$element._id=$$scope.item.id'], { input:['$element'] }
 
     $test.close()
 

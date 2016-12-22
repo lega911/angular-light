@@ -282,6 +282,8 @@ do ->
                         sv = splitVariable d.value
                         if sv.firstPart is 'this'
                             name = '$$scope' + d.value.substring 4
+                        else if inputKeywords[sv.firstPart]
+                            name = d.value
                         else if sv.count < 2
                             name = '($$scope.$$root || $$scope).' + d.value
                         else
