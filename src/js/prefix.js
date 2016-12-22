@@ -13,6 +13,7 @@
             globalController: false,
             removeAttribute: true,
             domOptimization: true,
+            domOptimizationRemoveEmpty: true,
             fastBinding: true
         };
         alight.debug = {

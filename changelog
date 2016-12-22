@@ -6,6 +6,8 @@
 * $ns is removed
 * checking for double binding is removed
 * element variables, e.g. #input
+* alight.option.removeAttribute
+* improve dom-optimization
 
 
 0.13

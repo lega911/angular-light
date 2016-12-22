@@ -26,6 +26,9 @@
     "file": "watchText.coffee",
     "tag": ["core"]
 }, {
+    "file": "dom-optimization.coffee",
+    "tag": ["core"]
+}, {
     "file": "doublebinding.coffee",
     "tag": ["compatibility"]
 }, {

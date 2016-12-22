@@ -57,6 +57,7 @@ Test('fast-binding-0').run ($test, alight) ->
 
 Test('fast-binding-1').run ($test, alight) ->
     $test.start 3
+    alight.option.domOptimizationRemoveEmpty = false
 
     el = ttDOM """
         <div al-repeat="it in list">
