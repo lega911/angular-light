@@ -86,7 +86,7 @@ FastBinding = (bindResult) ->
                 path.length = deep + 1
                 path[deep] = it.index
                 walk it.fb, deep + 1
-        null
+        return
 
     walk bindResult.fb, 0
 
@@ -111,7 +111,7 @@ FastBinding::dir = (fnIndex, el) ->
     r = d.fb.call env, cd.scope, el, d.value, env
     if r and r.start
         r.start()
-    null
+    return
 
 FastBinding::fw = (text, fnIndex, element, attr) ->
     cd = @.currentCD

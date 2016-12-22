@@ -523,6 +523,7 @@ bindElement = do ->
                         attributes: list
                         stopBinding: false
                         elementCanBeRemoved: config.elementCanBeRemoved
+                        fbElement: config.fbElement
                     if alight.debug.directive
                         console.log 'bind', d.attrName, value, d
 
@@ -538,8 +539,12 @@ bindElement = do ->
                             element: element
 
                     if env.fastBinding
+                        if f$.isFunction env.fastBinding
+                            fastBinding =  env.fastBinding
+                        else
+                            fastBinding =  directive.init
                         fb.dir.push
-                            fb: directive.init
+                            fb: fastBinding
                             attrName: d.attrName
                             value: value
                             attrArgument: env.attrArgument
@@ -565,7 +570,10 @@ bindElement = do ->
                     if skipToElement is childElement
                         skipToElement = null
                     continue
-                r = bindNode cd, childElement
+                if config.fbElement
+                    childOption =
+                        fbElement: config.fbElement.childNodes
+                r = bindNode cd, childElement, childOption
                 bindResult.directive += r.directive
                 bindResult.hook += r.hook
                 skipToElement = r.skipToElement

@@ -29,7 +29,6 @@ do ->
         hidden: 'hidden'
 
     alight.d.al.attr = (scope, element, key, env) ->
-        env.fastBinding = true
         if not env.attrArgument
             return
         d = env.attrArgument.split '.'
@@ -39,48 +38,63 @@ do ->
 
         if alight.option.removeAttribute
             element.removeAttribute env.attrName
+            if env.fbElement
+                env.fbElement.removeAttribute env.attrName
 
         args =
             readOnly: true
+        setter = null
 
         if attrName is 'style'
             if not d[1]
                 throw 'Style is not declared'
             styleName = d[1].replace /(-\w)/g, (m) ->
                 m.substring(1).toUpperCase()
-            setter = (value) ->
+            setter = (element, value) ->
                 if not value?
                     value = ''
                 element.style[styleName] = value
         else if attrName is 'class' and d.length > 1
             isTemplate = false
             list = d.slice 1
-            setter = (value) ->
+            setter = (element, value) ->
                 if value
                     for c in list
                         f$.addClass element, c
                 else
                     for c in list
                         f$.removeClass element, c
+                return
         else if attrName is 'focus'
-            setter = (value) ->
+            setter = (element, value) ->
                 if value
                     element.focus()
                 else
                     element.blur()
         else
             if prop
-                setter = (value) ->
-                    if prop
-                        if value is undefined
-                            value = null
-                        if element[prop] isnt value
-                            element[prop] = value
+                setter = (element, value) ->
+                    if value is undefined
+                        value = null
+                    if element[prop] isnt value
+                        element[prop] = value
             else
                 args.element = element
                 args.elementAttr = attrName
 
-        if isTemplate
-            env.changeDetector.watchText key, setter, args
+        watch = if isTemplate then 'watchText' else 'watch'
+        if setter
+            fn = (scope, element, _, env) ->
+                env.changeDetector[watch] key, (value) ->
+                    setter element, value
+                , args
         else
-            env.changeDetector.watch key, setter, args
+            fn = (scope, element, _, env) ->
+                env.changeDetector[watch] key, null,
+                    readOnly: true
+                    element: element
+                    elementAttr: attrName
+
+        fn scope, element, key, env
+        env.fastBinding = fn
+        return

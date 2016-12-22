@@ -483,11 +483,19 @@ alight.directives.al.repeat =
                             for it in applyList
                                 if fastBinding
                                     fastBinding.bind it.cd, it.el
-                                else
+                                else if fastBinding is null
+                                    fbElement = self.base_element.cloneNode true
                                     r = alight.bind it.cd, it.el,
                                         skip_attr: skippedAttrs
                                         elementCanBeRemoved: env.attrName
                                         noDomOptimization: true
-                                    if fastBinding is null
-                                        fastBinding = alight.core.fastBinding(r) or false
+                                        fbElement: fbElement
+                                    fastBinding = alight.core.fastBinding(r) or false
+                                    if fastBinding
+                                        self.base_element = fbElement
+                                else
+                                    alight.bind it.cd, it.el,
+                                        skip_attr: skippedAttrs
+                                        elementCanBeRemoved: env.attrName
+                                        noDomOptimization: true
                             return
