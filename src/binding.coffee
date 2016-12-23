@@ -572,7 +572,7 @@ bindElement = do ->
                     continue
                 if config.fbElement
                     childOption =
-                        fbElement: config.fbElement.childNodes
+                        fbElement: config.fbElement.childNodes[index]
                 r = bindNode cd, childElement, childOption
                 bindResult.directive += r.directive
                 bindResult.hook += r.hook

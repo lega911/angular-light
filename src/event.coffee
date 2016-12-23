@@ -67,34 +67,42 @@ do ->
         result
 
     alight.d.al.on = (scope, element, expression, env) ->
-        env.fastBinding = true
         if not env.attrArgument
             return
 
         if alight.option.removeAttribute
             element.removeAttribute env.attrName
+            if env.fbElement
+                env.fbElement.removeAttribute env.attrName
 
         eventName = env.attrArgument.split('.')[0]
-        ev = makeEvent env.attrArgument, eventOption[eventName]
 
-        ev.scope = scope
-        ev.element = element
-        ev.expression = expression
-        ev.cd = cd = env.changeDetector
-        ev.fn = cd.compile expression,
+        evConstructor = ->
+        evConstructor:: = makeEvent env.attrArgument, eventOption[eventName]
+        evConstructor::fn = env.changeDetector.compile expression,
             no_return: true
             input: ['$event', '$element', '$value']
+        evConstructor::expression = expression
 
-        eventHandler = (e) ->
-            handler ev, e
+        env.fastBinding = (scope, element, expression, env) ->
+            ev = new evConstructor
 
-        for e in ev.eventList
-            f$.on element, e, eventHandler
-        if ev.initFn
-            ev.initFn scope, element, expression, env
-        cd.watch '$destroy', ->
+            ev.scope = scope
+            ev.element = element
+            ev.cd = cd = env.changeDetector
+            eventHandler = (e) ->
+                handler ev, e
+
             for e in ev.eventList
-                f$.off element, e, eventHandler
+                f$.on element, e, eventHandler
+            if ev.initFn
+                ev.initFn scope, element, expression, env
+            cd.watch '$destroy', ->
+                for e in ev.eventList
+                    f$.off element, e, eventHandler
+                return
+            return
+        env.fastBinding scope, element, expression, env
         return
 
     keyCodes =

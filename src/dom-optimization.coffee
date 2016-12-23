@@ -1,4 +1,4 @@
-_optimizeLineElements = {TR: 1, TD: 1}
+_optimizeLineElements = {TR: 1, TD: 1, LI: 1}
 
 alight.utils.optmizeElement = (element, noRemove) ->
     if element.nodeType is 1
