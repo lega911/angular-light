@@ -110,11 +110,8 @@ do ->
             watch.refresh()
             cd.scan()
 
-        f$.on element, 'input', onChangeDOM
-        f$.on element, 'change', onChangeDOM
-        cd.watch '$destroy', ->
-            f$.off element, 'input', onChangeDOM
-            f$.off element, 'change', onChangeDOM
+        env.on element, 'input', onChangeDOM
+        env.on element, 'change', onChangeDOM
 
         alight.bind cd, element,
             skip_attr: env.skippedAttr()

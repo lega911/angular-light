@@ -363,3 +363,39 @@ Test('scan-skip-watch', 'scan-skip-watch').run ($test, alight) ->
     $test.equal count, 3
 
     $test.close()
+
+
+Test('on-0').run ($test, alight) ->
+    $test.start 8
+
+    el = ttDOM '<span #span @myevent="count++"></span>'
+    scope =
+        count: 0
+        count2: 0
+
+    cd = alight el, scope
+    cd.on scope.span, 'event2', ->
+        scope.count2++
+
+    $test.equal scope.count, 0
+    $test.equal scope.count2, 0
+
+    scope.span.dispatchEvent new CustomEvent('myevent')
+
+    $test.equal scope.count, 1
+    $test.equal scope.count2, 0
+
+    scope.span.dispatchEvent new CustomEvent('event2')
+
+    $test.equal scope.count, 1
+    $test.equal scope.count2, 1
+
+    cd.destroy()
+
+    scope.span.dispatchEvent new CustomEvent('myevent')
+    scope.span.dispatchEvent new CustomEvent('event2')
+
+    $test.equal scope.count, 1
+    $test.equal scope.count2, 1
+
+    $test.close()

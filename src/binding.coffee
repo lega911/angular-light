@@ -389,6 +389,9 @@ Env::skippedAttr = ->
 Env::scan = (option) ->
     @.changeDetector.scan option
 
+Env::on = (element, eventname, callback) ->
+    @.changeDetector.on element, eventname, callback
+
 Env::watch = (name, callback, option) ->
     @.changeDetector.watch name, callback, option
 

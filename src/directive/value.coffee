@@ -8,11 +8,8 @@ alight.d.al.value = (scope, element, variable, env) ->
         env.scan()
         return
 
-    f$.on element, 'input', updateModel
-    f$.on element, 'change', updateModel
-    env.watch '$destroy', ->
-        f$.off element, 'input', updateModel
-        f$.off element, 'change', updateModel
+    env.on element, 'input', updateModel
+    env.on element, 'change', updateModel
 
     watch = env.watch variable, (value) ->
         value ?= ''

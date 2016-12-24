@@ -90,17 +90,12 @@ do ->
             ev.scope = scope
             ev.element = element
             ev.cd = cd = env.changeDetector
-            eventHandler = (e) ->
-                handler ev, e
 
             for e in ev.eventList
-                f$.on element, e, eventHandler
+                cd.on element, e, (e) ->
+                    handler ev, e
             if ev.initFn
                 ev.initFn scope, element, expression, env
-            cd.watch '$destroy', ->
-                for e in ev.eventList
-                    f$.off element, e, eventHandler
-                return
             return
         env.fastBinding scope, element, expression, env
         return

@@ -49,6 +49,7 @@ ChangeDetector = (root, scope) ->
     @.rwatchers =
         any: []
         finishScan: []
+        elEvents: []
 
     return
 
@@ -102,6 +103,10 @@ ChangeDetector::destroy = ->
         removeItem root.watchers.finishScan, wa
     cd.rwatchers.finishScan.length = 0
 
+    for i in @.rwatchers.elEvents
+        f$.off i[0], i[1], i[2]
+    @.rwatchers.elEvents.length = 0
+
     if root.topCD is cd
         root.topCD = null
         root.destroy()
@@ -126,8 +131,33 @@ watchAny = (cd, key, callback) ->
     }
 
 
-###
+# on(element, eventName, callback)
+# on(eventName, callback)
 
+ChangeDetector::on = (element, eventName, callback) ->
+    f$.on element, eventName, callback
+    @.rwatchers.elEvents.push [element, eventName, callback]
+
+
+innerEvents =
+    $any: (cd, callback) ->
+        return watchAny cd, 'any', callback
+    $finishScan: (cd, callback) ->
+        return watchAny cd, 'finishScan', callback
+    $finishScanOnce: (cd, callback) ->
+        cd.root.watchers.finishScanOnce.push callback
+        return
+    $onScanOnce: (cd, callback) ->
+        cd.root.watchers.onScanOnce.push callback
+        return
+    $destroy: (cd, callback) ->
+        cd.destroy_callbacks.push callback
+        return
+    $finishBinding: (cd, callback) ->
+        cd.root.watchers.finishBinding.push callback
+        return
+
+###
     option:
         isArray
         readOnly
@@ -136,14 +166,15 @@ watchAny = (cd, key, callback) ->
         onStop
 
         watchText
-
-
-
 ###
 
 watchInitValue = ->
 
 ChangeDetector::watch = (name, callback, option) ->
+    ie = innerEvents[name]
+    if ie
+        return ie @, callback
+
     option = option or {}
     if option is true
         option =
@@ -168,18 +199,6 @@ ChangeDetector::watch = (name, callback, option) ->
             name = name[2..]
             option.oneTime = true
         key = name
-        if key is '$any'
-            return watchAny cd, 'any', callback
-        if key is '$finishScan'
-            return watchAny cd, 'finishScan', callback
-        if key is '$finishScanOnce'
-            return root.watchers.finishScanOnce.push callback
-        if key is '$onScanOnce'
-            return root.watchers.onScanOnce.push callback
-        if key is '$destroy'
-            return cd.destroy_callbacks.push callback
-        if key is '$finishBinding'
-            return root.watchers.finishBinding.push callback
         if option.deep
             key = 'd#' + key
         else if option.isArray
