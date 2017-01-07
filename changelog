@@ -8,6 +8,7 @@
 * element variables, e.g. #input
 * alight.option.removeAttribute
 * improve dom-optimization
+* support zone.js, https://github.com/angular/zone.js
 
 
 0.13

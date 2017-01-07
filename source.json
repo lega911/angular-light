@@ -35,6 +35,9 @@
     "file": "binding.coffee",
     "tag": ["core"]
 }, {
+    "file": "zone.es.js",
+    "tag": ["core"]
+}, {
     "file": "bootstrap.es.js",
     "tag": ["core"]
 }, {

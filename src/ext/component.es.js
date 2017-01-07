@@ -87,7 +87,7 @@ alight.component('rating', (scope, element, env) => {
         });
 
         try {
-          const option = constructor(scope, element, env) || {};
+          const option = constructor.call(childCD, scope, element, env) || {};
         } catch (e) {
           alight.exceptionHandler(e, 'Error in component <' + attrName + '>: ', {
             element: element,

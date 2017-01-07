@@ -473,6 +473,8 @@ ChangeDetector::digest = ->
 ChangeDetector::scan = (cfg) ->
     root = @.root
     cfg = cfg or {}
+    if alight.option.zone and not cfg.zone
+        return
     if f$.isFunction cfg
         cfg =
             callback: cfg
