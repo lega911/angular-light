@@ -9,6 +9,7 @@
 * alight.option.removeAttribute
 * improve dom-optimization
 * support zone.js, https://github.com/angular/zone.js
+* event modifiers: once, self, empty expression
 
 
 0.13

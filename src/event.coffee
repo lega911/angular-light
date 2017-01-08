@@ -36,6 +36,14 @@ do ->
     setKeyModifier 'meta', 'metaKey'
     setKeyModifier 'shift', 'shiftKey'
 
+    alight.hooks.eventModifier.self = (event, env) ->
+        if event.target isnt env.element
+            env.stop = true
+
+    alight.hooks.eventModifier.once =
+        beforeExec: (event, env) ->
+            env.unbind()
+
     formatModifier = (modifier, filterByEvents) ->
         result = {}
         if typeof(modifier) is 'string'
@@ -60,6 +68,9 @@ do ->
             result.fn = modifier
         else if modifier.fn
             result.fn = modifier.fn
+
+        if modifier.beforeExec
+            result.beforeExec = modifier.beforeExec
 
         if modifier.init
             result.init = modifier.init
@@ -92,11 +103,20 @@ do ->
             ev.element = element
             ev.cd = cd = env.changeDetector
 
+            callback = (e) ->
+                handler ev, e
+
             for e in ev.eventList
-                cd.on element, e, (e) ->
-                    handler ev, e
+                f$.on element, e, callback
             if ev.initFn
                 ev.initFn scope, element, expression, env
+
+            ev.unbind = ->
+                for e in ev.eventList
+                    f$.off element, e, callback
+                return
+
+            env.changeDetector.watch '$destroy', ev.unbind
             return
         env.fastBinding scope, element, expression, env
         return
@@ -144,6 +164,12 @@ do ->
             prevent: option.prevent or false
             scan: true
             modifiers: []
+            # filterByKey
+            # unbind
+            # fn
+            # cd
+            # scope
+            # element
 
         args = attrArgument.split '.'
         eventName = args[0]
@@ -215,6 +241,9 @@ do ->
             element.value
 
     execute = (ev, event) ->
+        for modifier in ev.modifiers
+            if modifier.beforeExec
+                modifier.beforeExec event, ev
         if ev.fn
             try
                 ev.fn ev.cd.locals, event, ev.element, getValue ev, event
@@ -236,12 +265,15 @@ do ->
                 return
 
         if ev.modifiers.length
-            env =
-                stop: false
+            EV = ->
+            EV:: = ev
+            env = new EV
+            env.stop = false
             for modifier in ev.modifiers
-                modifier.fn event, env
-                if env.stop
-                    return
+                if modifier.fn
+                    modifier.fn event, env
+                    if env.stop
+                        return
 
         if ev.prevent
             event.preventDefault()
