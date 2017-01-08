@@ -33,6 +33,10 @@
         return (o && Object.prototype.toString.call(o) === '[object Object]')
     };
 
+    f$.isPromise = function(p) {
+        return p && window.Promise && p instanceof window.Promise;
+    };
+
     f$.isElement = function(el) {
         return el instanceof HTMLElement
     };

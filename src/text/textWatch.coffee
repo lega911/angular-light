@@ -11,12 +11,9 @@ alight.text['&'] = (callback, expression, scope, env) ->
     cd.watch d[0], (value) ->
         result = fn scope, value
 
-        if window.Promise
-            if result instanceof Promise
-                result.then (value) ->
-                    callback value
-                    cd.scan()
-            else
-                callback result
+        if f$.isPromise result
+            result.then (value) ->
+                callback value
+                cd.scan()
         else
             callback result

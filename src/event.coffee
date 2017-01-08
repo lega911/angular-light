@@ -79,9 +79,10 @@ do ->
 
         evConstructor = ->
         evConstructor:: = makeEvent env.attrArgument, eventOption[eventName]
-        evConstructor::fn = env.changeDetector.compile expression,
-            no_return: true
-            input: ['$event', '$element', '$value']
+        if expression
+            evConstructor::fn = env.changeDetector.compile expression,
+                no_return: true
+                input: ['$event', '$element', '$value']
         evConstructor::expression = expression
 
         env.fastBinding = (scope, element, expression, env) ->
@@ -214,16 +215,17 @@ do ->
             element.value
 
     execute = (ev, event) ->
-        try
-            ev.fn ev.cd.locals, event, ev.element, getValue ev, event
-        catch error
-            alight.exceptionHandler error, "Error in event: #{ev.attrArgument} = #{ev.expression}",
-                attr: ev.attrArgument
-                exp: ev.expression
-                scope: ev.scope
-                cd: ev.cd
-                element: ev.element
-                event: event
+        if ev.fn
+            try
+                ev.fn ev.cd.locals, event, ev.element, getValue ev, event
+            catch error
+                alight.exceptionHandler error, "Error in event: #{ev.attrArgument} = #{ev.expression}",
+                    attr: ev.attrArgument
+                    exp: ev.expression
+                    scope: ev.scope
+                    cd: ev.cd
+                    element: ev.element
+                    event: event
         if ev.scan
             ev.cd.scan()
         return

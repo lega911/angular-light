@@ -34,7 +34,7 @@ function makeSimpleFilter(filter, option) {
                     planned = false;
                     if(active) {
                         var result = filter.apply(null, values);
-                        if(window.Promise && result instanceof Promise) {
+                        if(f$.isPromise(result)) {
                             result.then(function(value) {
                                 callback(value);
                                 cd.scan();
@@ -52,7 +52,7 @@ function makeSimpleFilter(filter, option) {
     } else {
         var handler = function() {
             var result = filter(values[0]);
-            if(window.Promise && result instanceof Promise) {
+            if(f$.isPromise(result)) {
                 result.then(function(value) {
                     callback(value);
                     cd.scan();
