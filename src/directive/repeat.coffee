@@ -137,6 +137,7 @@ alight.directives.al.repeat =
                     index = 0
                     fastBinding = null
                     version = 0
+                    skippedAttrs = env.skippedAttr()
 
                     if self.trackExpression is '$index'
                         node_by_id = {}
@@ -365,7 +366,6 @@ alight.directives.al.repeat =
                             dom_inserts.length = 0
 
                             #applying
-                            skippedAttrs = env.skippedAttr()
                             for it in applyList
                                 alight.bind it.cd, it.el,
                                     skip_attr: skippedAttrs
@@ -422,11 +422,22 @@ alight.directives.al.repeat =
                                     continue
 
                                 childCD = self.makeChild item_value, index, list
-
                                 element = self.base_element.cloneNode true
-                                applyList.push
-                                    cd: childCD
-                                    el: element
+
+                                if fastBinding is null
+                                    fbElement = self.base_element.cloneNode true
+                                    r = alight.bind childCD, element,
+                                        skip_attr: skippedAttrs
+                                        elementCanBeRemoved: env.attrName
+                                        noDomOptimization: true
+                                        fbElement: fbElement
+                                    fastBinding = alight.core.fastBinding(r) or false
+                                    if fastBinding
+                                        self.base_element = fbElement
+                                else
+                                    applyList.push
+                                        cd: childCD
+                                        el: element
 
                                 dom_inserts.push
                                     element: element
@@ -479,20 +490,9 @@ alight.directives.al.repeat =
                             dom_inserts.length = 0
 
                             #applying
-                            skippedAttrs = env.skippedAttr()
                             for it in applyList
                                 if fastBinding
                                     fastBinding.bind it.cd, it.el
-                                else if fastBinding is null
-                                    fbElement = self.base_element.cloneNode true
-                                    r = alight.bind it.cd, it.el,
-                                        skip_attr: skippedAttrs
-                                        elementCanBeRemoved: env.attrName
-                                        noDomOptimization: true
-                                        fbElement: fbElement
-                                    fastBinding = alight.core.fastBinding(r) or false
-                                    if fastBinding
-                                        self.base_element = fbElement
                                 else
                                     alight.bind it.cd, it.el,
                                         skip_attr: skippedAttrs
