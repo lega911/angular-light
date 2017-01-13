@@ -75,7 +75,7 @@
     "file": "directive/value.coffee",
     "tag": ["basis"]
 }, {
-    "file": "directive/checked.coffee",
+    "file": "directive/checked.es.js",
     "tag": ["basis"]
 }, {
     "file": "directive/if.coffee",

@@ -10,6 +10,7 @@
 * improve dom-optimization
 * support zone.js, https://github.com/angular/zone.js
 * event modifiers: once, self, empty expression
+* al-checked: value as array, true-value, false-value
 
 
 0.13
