@@ -108,6 +108,7 @@ FastBinding::dir = (fnIndex, el) ->
         attrName: d.attrName
         attrArgument: d.attrArgument
         changeDetector: cd
+        fbData: d.fbData
     r = d.fb.call env, cd.scope, el, d.value, env
     if r and r.start
         r.start()

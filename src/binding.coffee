@@ -543,14 +543,15 @@ bindElement = do ->
 
                     if env.fastBinding
                         if f$.isFunction env.fastBinding
-                            fastBinding =  env.fastBinding
+                            fastBinding = env.fastBinding
                         else
-                            fastBinding =  directive.init
+                            fastBinding = directive.init
                         fb.dir.push
                             fb: fastBinding
                             attrName: d.attrName
                             value: value
                             attrArgument: env.attrArgument
+                            fbData: env.fbData
                     else
                         bindResult.directive++
 

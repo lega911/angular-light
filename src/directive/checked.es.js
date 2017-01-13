@@ -1,79 +1,114 @@
 
 alight.d.al.checked = function(scope, element, name, env) {
-    env.fastBinding = true;
+    let fbData = env.fbData = {
+        opt: {},
+        watch: []
+    };
 
-    let updateDOM, watch, opt = {};
+    function eattr(attrName) {
+        let result = env.takeAttr(attrName);
+        if(alight.option.removeAttribute) {
+            element.removeAttribute(attrName);
+            if(env.fbElement) env.fbElement.removeAttribute(attrName);
+        }
+        return result;
+    }
 
     function takeAttr(name, attrName) {
-        let text = env.takeAttr(attrName);
+        let text = eattr(attrName);
         if(text) {
-            opt[name] = text;
+            fbData.opt[name] = text;
             return true;
         } else {
-            let exp = env.takeAttr(':' + attrName) || env.takeAttr('al-attr.' + attrName);
+            let exp = eattr(':' + attrName) || eattr('al-attr.' + attrName);
             if(exp) {
-                env.watch(exp, (value) => {
-                    opt[name] = value;
-                    updateDOM();
-                });
+                fbData.watch.push([exp, name]);
                 return true;
             }
         }
     }
 
+    function applyOpt(opt, env, updateDOM) {
+        for(let k in env.fbData.opt) {
+            opt[k] = env.fbData.opt[k];
+        }
+
+        for(let w of env.fbData.watch) {
+            let name = w[1];
+            env.watch(w[0], (value) => {
+                opt[name] = value;
+                updateDOM();
+            });
+        }
+    }
+
     if(takeAttr('value', 'value')) {
-        let array = null;
-        updateDOM = function() {
-            element.checked = array && array.indexOf(opt.value) >= 0;
-            return '$scanNoChanges';
-        };
+        env.fastBinding = function(scope, element, name, env) {
+            let watch, array = null;
 
-        watch = env.watch(name, (input) => {
-            array = input;
-            if(!Array.isArray(array)) array = null;
-            updateDOM();
-        }, {isArray: true});
+            function updateDOM() {
+                element.checked = array && array.indexOf(opt.value) >= 0;
+                return '$scanNoChanges';
+            };
 
-        env.on(element, 'change', () => {
-            if(!array) {
-                array = [];
-                env.setValue(name, array);
-            }
+            let opt = {};
+            applyOpt(opt, env, updateDOM);
 
-            if(element.checked) {
-                if(array.indexOf(opt.value) < 0) array.push(opt.value);
-            } else {
-                let i = array.indexOf(opt.value);
-                if(i >= 0) array.splice(i, 1);
-            }
-            watch.refresh();
-            env.scan();
-            return
-        });
+            watch = env.watch(name, (input) => {
+                array = input;
+                if(!Array.isArray(array)) array = null;
+                updateDOM();
+            }, {isArray: true});
+
+            env.on(element, 'change', () => {
+                if(!array) {
+                    array = [];
+                    env.setValue(name, array);
+                }
+
+                if(element.checked) {
+                    if(array.indexOf(opt.value) < 0) array.push(opt.value);
+                } else {
+                    let i = array.indexOf(opt.value);
+                    if(i >= 0) array.splice(i, 1);
+                }
+                watch.refresh();
+                env.scan();
+                return
+            });
+        }
     } else {
-        let value;
-        opt.true = true;
-        opt.false = false;
-
         takeAttr('true', 'true-value');
         takeAttr('false', 'false-value');
 
-        updateDOM = function() {
-            element.checked = value === opt.true;
-            return '$scanNoChanges';
-        };
+        env.fastBinding = function(scope, element, name, env) {
+            let value, watch;
+            let opt = {
+                true: true,
+                false: false
+            };
 
-        watch = env.watch(name, (input) => {
-            value = input;
-            updateDOM();
-        });
+            function updateDOM() {
+                element.checked = value === opt.true;
+                return '$scanNoChanges';
+            };
 
-        env.on(element, 'change', () => {
-            value = element.checked?opt.true:opt.false;
-            env.setValue(name, value);
-            watch.refresh();
-            env.scan();
-            return
-        });
+            applyOpt(opt, env, updateDOM);
+
+            watch = env.watch(name, (input) => {
+                value = input;
+                updateDOM();
+            });
+
+            env.on(element, 'change', () => {
+                value = element.checked?opt.true:opt.false;
+                env.setValue(name, value);
+                watch.refresh();
+                env.scan();
+                return
+            });
+        }
     }
+
+    env.fastBinding(scope, element, name, env);
 }
