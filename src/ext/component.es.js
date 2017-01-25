@@ -20,9 +20,16 @@ alight.component('rating', (scope, element, env) => {
 
   const f$ = alight.f$;
 
+  function toCamelCase(name) {
+    return name.replace(/(-\w)/g, (m) => {
+        return m.substring(1).toUpperCase()
+    })
+  };
+
   function makeWatch({listener, childCD, name, parentName, parentCD}) {
     let fn;
     let watchOption = {};
+    name = toCamelCase(name);
     if(listener && listener !== true) {
       if(f$.isFunction(listener)) {
         fn = listener;
@@ -44,7 +51,7 @@ alight.component('rating', (scope, element, env) => {
       }
     }
     parentCD.watch(parentName, fn, watchOption);
-  }
+  };
 
   alight.component = function(attrName, constructor) {
     let parts = attrName.match(/^(\w+)[\-](.+)$/)
@@ -56,9 +63,7 @@ alight.component('rating', (scope, element, env) => {
       ns = '$global'
       name = attrName
     }
-    name = name.replace(/(-\w)/g, (m) => {
-        return m.substring(1).toUpperCase()
-    })
+    name = toCamelCase(name);
 
     if(!alight.d[ns]) alight.d[ns] = {};
     alight.d[ns][name] = {
@@ -98,7 +103,10 @@ alight.component('rating', (scope, element, env) => {
         }
 
         if(option.onStart) {
-          childCD.watch('$finishBinding', option.onStart);
+          childCD.watch('$finishBinding', () => {
+            option.onStart();
+            childCD.scan();
+          });
         }
 
         // bind props
