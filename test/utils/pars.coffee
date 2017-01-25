@@ -73,6 +73,8 @@ Test('parsing', 'parsing').run ($test, alight) ->
     pars 'this.active=!active', ["$$scope.active=!$$scope.active"]
     pars 'x + 0.1', ["$$scope.x + 0.1"]
     pars "$element._id=item.id", ['$element._id=$$scope.item.id'], { input:['$element'] }
+    pars 'this.path.variable', ["$$scope.path.variable"]
+    pars 'this.path', ["$$scope.path"]
 
     $test.close()
 

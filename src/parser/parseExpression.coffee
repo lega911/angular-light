@@ -246,6 +246,10 @@ do ->
             firstPart = getFirstPart variable
             isReserved = reserved[firstPart] or inputKeywords[firstPart]
 
+            if firstPart is 'this'
+                variable = '$$scope' + variable.slice 4
+                isReserved = true
+
             parts = variable.split '?'
             if parts.length is 1
                 if isReserved
