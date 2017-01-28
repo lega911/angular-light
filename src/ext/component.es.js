@@ -71,7 +71,6 @@ alight.component('rating', (scope, element, env) => {
       stopBinding: true,
       priority: alight.priority.$component,
       init: function(_parentScope, element, _value, parentEnv) {
-        parentEnv.fastBinding = true;
         const scope = {
           $sendEvent: function(eventName, value) {
             let event = new CustomEvent(eventName);
@@ -124,7 +123,7 @@ alight.component('rating', (scope, element, env) => {
         // option api
         if(option.api) {
           let propValue = env.takeAttr(':api');
-          if(propValue) parentCD.locals[propValue] = option.api;
+          if(propValue) parentCD.setValue(propValue, option.api);
         }
 
         function watchProp(key, listener) {
