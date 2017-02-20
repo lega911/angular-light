@@ -97,6 +97,16 @@ function makeFilterChain(cd, ce, prevCallback, option) {
     if(option.isArray) watchMode = 'array'
     else if(option.deep) watchMode = 'deep';
 
+    if(!prevCallback) {
+        let watchObject = {
+            el: option.element,
+            ea: option.elementAttr
+        };
+        prevCallback = function(value) {
+            execWatchObject(cd.scope, watchObject, value);
+        }
+    }
+
     var chain = alight.utils.parsFilter(ce.filter);
     var onStop = [];
 

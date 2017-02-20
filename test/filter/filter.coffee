@@ -159,3 +159,22 @@ Test('filter-filter-2').run ($test, alight) ->
                 cd.scan ->
                     $test.equal result(), 63
                     $test.close()
+
+
+Test('filter-in-class').run ($test, alight) ->
+    $test.start 2
+    el = ttDOM('<div :class="color | invert"></div>').children[0]
+
+    scope =
+        color: 'der'
+        invert: (value) ->
+            value.split('').reverse().join('')
+    cd = alight el, scope
+
+    $test.equal el.className, 'red'
+
+    scope.color = 'eulb'
+    cd.scan()
+    $test.equal el.className, 'blue'
+
+    $test.close()
