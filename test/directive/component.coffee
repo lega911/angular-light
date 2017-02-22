@@ -21,7 +21,7 @@ Test('component-0').run ($test, alight, timeout) ->
 Test('component-1').run ($test, alight, timeout) ->
     $test.start 1
 
-    el = ttDOM '''<comp :api="comp" :title="linux" name="OS"></comp>'''
+    el = ttDOM '''<comp #comp :title="linux" name="OS"></comp>'''
 
     alight.component 'comp', (scope) ->
         template: '{{name}}+{{title}}'

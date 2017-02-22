@@ -120,10 +120,14 @@ alight.component('rating', (scope, element, env) => {
           if(!parentDestroyed) parentCD.destroy();  // child of parentCD
         })
 
-        // option api
-        if(option.api) {
-          let propValue = env.takeAttr(':api');
-          if(propValue) parentCD.setValue(propValue, option.api);
+        // api
+        for(let attr of element.attributes) {
+          if(attr.name[0] !== '#') continue;
+          let name = attr.name.slice(1);
+          if(!name) continue;
+          if(option.api) parentCD.setValue(name, option.api)
+          else parentCD.setValue(name, scope)
+          break;
         }
 
         function watchProp(key, listener) {

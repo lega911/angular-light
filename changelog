@@ -11,6 +11,7 @@
 * support zone.js, https://github.com/angular/zone.js
 * event modifiers: once, self, empty expression
 * al-checked: value as array, true-value, false-value
+* component: to publish api using #variable instead of :api, if api is not exists then scope will be published
 
 
 0.13
