@@ -2,14 +2,16 @@
 (function(){
     f$.before = function(base, elm) {
         var parent = base.parentNode;
-        parent.insertBefore(elm, base)
+        if(parent) parent.insertBefore(elm, base)
     };
 
     f$.after = function(base, elm) {
         var parent = base.parentNode;
-        var n = base.nextSibling;
-        if(n) parent.insertBefore(elm, n)
-        else parent.appendChild(elm)
+	if(parent)
+            var n = base.nextSibling;
+            if(n) parent.insertBefore(elm, n)
+            else parent.appendChild(elm)
+        }
     };
 
     f$.remove = function(elm) {
