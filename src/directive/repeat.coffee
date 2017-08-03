@@ -13,7 +13,7 @@
     "(key, value) in object | filter orderBy:key,reverse"
 ###
 
-alight.directives.al.repeat =
+alight.d.al.repeat = alight.d.al.for =
     restrict: 'AM'
     init: (parentScope, element, exp, env) ->  # Change Detector
         if env.elementCanBeRemoved

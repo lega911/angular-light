@@ -45,6 +45,7 @@
                 model: 25,
                 radio: 25,
                 repeat: 1000,
+                'for': 1000,
                 select: 20,
                 stop: -10,
                 value: 20,
