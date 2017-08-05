@@ -1,4 +1,10 @@
 
+1.0
+---
+* al-for (alias of al-repeat)
+* unification a-value, al-checkbox and other into al-model
+
+
 0.14
 ----
 * Scope is removed

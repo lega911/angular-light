@@ -36,7 +36,7 @@
     "tag": ["core"]
 }, {
     "file": "zone.es.js",
-    "tag": ["core"]
+    "tag": ["full"]
 }, {
     "file": "bootstrap.es.js",
     "tag": ["core"]
@@ -73,10 +73,10 @@
     "tag": ["compatibility"]
 }, {
     "file": "directive/value.coffee",
-    "tag": ["basis"]
+    "tag": ["compatibility"]
 }, {
     "file": "directive/checked.es.js",
-    "tag": ["basis"]
+    "tag": ["compatibility"]
 }, {
     "file": "directive/if.coffee",
     "tag": ["basis"]
@@ -152,7 +152,7 @@
     "description": "modificator 'inline' for al-html"
 }, {
     "file": "directive/radio.coffee",
-    "tag": ["full"]
+    "tag": ["compatibility"]
 }, {
     "file": "directive/showHide.coffee",
     "tag": ["compatibility"]
@@ -161,7 +161,7 @@
     "tag": ["compatibility"]
 }, {
     "file": "directive/select.coffee",
-    "tag": ["full"]
+    "tag": ["compatibility"]
 }, {
     "file": "directive/ctrl.coffee",
     "tag": ["compatibility"]
@@ -169,8 +169,8 @@
     "file": "directive/attr.coffee",
     "tag": ["basis"]
 }, {
-    "file": "directive/model.coffee",
-    "tag": ["full"]
+    "file": "directive/model.es.js",
+    "tag": ["basis"]
 }, {
     "file": "filter/slice.coffee",
     "tag": ["full"]
