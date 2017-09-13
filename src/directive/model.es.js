@@ -17,6 +17,24 @@
         };
     };
 
+    function radioHandler(scope, element, name, env) {
+        let value, watch;
+
+        let key = env.takeAttr('al-value')
+        if(key) value = env.eval(key)
+        else value = env.takeAttr('value');
+
+        env.on(element, 'change', (e) => {
+            env.setValue(name, value);
+            watch.refresh();
+            env.scan();
+        });
+
+        watch = env.watch(name, (newValue) => {
+            element.checked = value === newValue;
+        }, {readOnly: true});
+    };
+
     let textHandler = makeHandler(
         (element) => element.value,
         (element, value) => {
@@ -44,7 +62,7 @@
         'range': numberHandler,
         'number': numberHandler,
         'checkbox': null,
-        'radio': null,
+        'radio': radioHandler,
         'date': dateHandler,
         'time': numberHandler,
         //'datetime': dateHandler,
