@@ -41,7 +41,7 @@
 
             handler(scope, element, value, env);
         } else if(elName === 'select') {
-
+            selectHandler(scope, element, value, env);
         } else { // component?
 
         }
@@ -196,6 +196,73 @@
         }
 
         env.fastBinding(scope, element, name, env);
-    }
+    };
 
+    function selectHandler(scope, element, name, env) {
+        let cd = env.new();
+
+        let value = null;
+        let values = {};
+        let index = 0;
+
+        cd.$select = {
+            add: (value) => {
+                index++;
+                values[index] = value;
+                updateValue();
+                return index;
+            },
+            remove: (index) => {
+                delete values[index];
+                updateValue();
+            }
+        };
+
+        env.on(element, 'change', () => {
+            value = event.target.value;
+            if(index) value = values[value];
+            env.setValue(name, value);
+            watch.refresh();
+            env.scan();
+        });
+
+        function updateValue() {
+            for(let i in values) {
+                if(values[i] === value) {
+                    element.value = i;
+                    return
+                }
+            }
+            element.selectedIndex = -1;
+        };
+
+        let watch = env.watch(name, (newValue) => {
+            value = newValue;
+            if(index) updateValue();
+            else element.value = value;
+        });
+        env.bind(cd);
+    };
+
+    alight.d.al.model.selectHandler = (scope, element, name, env) => {
+        let lvl = 4;
+        let $select = null;
+        let p = env.changeDetector;
+        while(lvl-- > 0) {
+            if(p.$select) {
+                $select = p.$select;
+                break;
+            }
+            p = p.parent;
+        }
+        if(!$select) throw 'Select model not found';
+
+        let value = env.getValue(name);
+        let index = $select.add(value);
+        element.value = index;
+
+        env.watch('$destroy', () => {
+            $select.remove(index);
+        });
+    };
 }

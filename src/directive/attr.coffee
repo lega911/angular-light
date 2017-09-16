@@ -31,6 +31,9 @@ do ->
     alight.d.al.attr = (scope, element, key, env) ->
         if not env.attrArgument
             return
+        if element.nodeName.toLowerCase() is 'option' and env.attrArgument is 'value'
+            return alight.d.al.model.selectHandler scope, element, key, env
+
         d = env.attrArgument.split '.'
         attrName = d[0]
         prop = props[attrName]
