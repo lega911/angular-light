@@ -130,7 +130,13 @@ alight.component('rating', (scope, element, env) => {
           break;
         }
 
+        let modelAttr = element.attributes['al-model'];
+
         function watchProp(key, listener) {
+          if(key === '$model') {
+            makeWatch({childCD, parentCD, listener, name: '$model', parentName: modelAttr.value});
+            modelAttr = null;
+          } else {
             let name = ':' + key;
             let value = env.takeAttr(name);
             if(!value) {
@@ -139,14 +145,17 @@ alight.component('rating', (scope, element, env) => {
               listener = 'copy';
             }
             makeWatch({childCD, listener, name: key, parentName: value, parentCD});
+          }
         }
 
         // option props
         if(option.props) {
           if(Array.isArray(option.props))
-            for(let key of option.props) watchProp(key, true)
+            for(let key of option.props)
+              watchProp(key, true);
           else
-            for(let key in option.props) watchProp(key, option.props[key])
+            for(let key in option.props)
+              watchProp(key, option.props[key]);
         } else {
           // auto props
           for(let attr of element.attributes) {
@@ -159,6 +168,8 @@ alight.component('rating', (scope, element, env) => {
             makeWatch({childCD, name: parts[1], parentName: propValue, parentCD});
           }
         }
+
+        if(modelAttr) watchProp('$model');
 
         var scanned = false;
         parentCD.watch('$onScanOnce', () => scanned = true);

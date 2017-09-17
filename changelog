@@ -3,6 +3,7 @@
 ---
 * al-for (alias of al-repeat)
 * unification al-value, al-checkbox and other into al-model
+* al-model for component, property $model and input event
 
 
 0.14

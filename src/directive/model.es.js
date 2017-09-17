@@ -42,11 +42,10 @@
             handler(scope, element, value, env);
         } else if(elName === 'select') {
             selectHandler(scope, element, value, env);
-        } else { // component?
-
+        } else {
+            componentHandler(scope, element, value, env);
         }
-
-    }
+    };
 
 
     function makeHandler(getter, watchFn) {
@@ -265,4 +264,13 @@
             $select.remove(index);
         });
     };
+
+
+    function componentHandler(scope, element, name, env) {
+        env.on(element, 'input', (e) => {
+            if(!e.component) return;
+            env.setValue(name, e.value);
+            env.scan();
+        });
+    }
 }
