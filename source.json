@@ -17,6 +17,9 @@
     "file": "filter.es.js",
     "tag": ["core"]
 }, {
+    "file": "namespace.es.js",
+    "tag": ["core"]
+}, {
     "file": "ext/class-filter.es.js",
     "tag": ["compatibility"]
 }, {
