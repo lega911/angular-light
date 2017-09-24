@@ -34,7 +34,7 @@
     };
 
     f$.isPromise = function(p) {
-        return p && window.Promise && p instanceof window.Promise;
+        return p && f$.isFunction(p.then);
     };
 
     f$.isElement = function(el) {
