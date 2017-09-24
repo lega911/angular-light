@@ -4,6 +4,8 @@
 * al-for (alias of al-repeat)
 * unification al-value, al-checkbox and other into al-model
 * al-model for component, property $model and input event
+* al-ifnot was removed
+* al-if, al-else-if, al-else
 
 
 0.14

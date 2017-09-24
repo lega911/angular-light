@@ -78,7 +78,7 @@
     "file": "directive/checked.es.js",
     "tag": ["compatibility"]
 }, {
-    "file": "directive/if.coffee",
+    "file": "directive/if.es.js",
     "tag": ["basis"]
 }, {
     "file": "directive/repeat.coffee",
