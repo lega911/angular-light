@@ -69,13 +69,13 @@
     "tag": ["ext"],
     "description": "Angular 2 style for attributes and events"
 }, {
-    "file": "directive/click.coffee",
+    "file": "directive/compatibility/click.coffee",
     "tag": ["compatibility"]
 }, {
-    "file": "directive/value.coffee",
+    "file": "directive/compatibility/value.coffee",
     "tag": ["compatibility"]
 }, {
-    "file": "directive/checked.es.js",
+    "file": "directive/compatibility/checked.es.js",
     "tag": ["compatibility"]
 }, {
     "file": "directive/if.es.js",
@@ -88,43 +88,43 @@
     "file": "directive/init.coffee",
     "tag": ["basis"]
 }, {
-    "file": "directive/class.coffee",
+    "file": "directive/compatibility/class.coffee",
     "tag": ["compatibility"]
 }, {
-    "file": "directive/src.coffee",
+    "file": "directive/compatibility/src.coffee",
     "tag": ["compatibility"]
 }, {
-    "file": "directive/text.coffee",
+    "file": "directive/compatibility/text.coffee",
     "tag": ["compatibility"]
 }, {
     "file": "directive/app.coffee",
     "tag": ["basis"]
 }, {
-    "file": "directive/bindonce.coffee",
+    "file": "directive/compatibility/bindonce.coffee",
     "tag": ["compatibility"]
 }, {
     "file": "directive/stop.coffee",
     "tag": ["basis"]
 }, {
-    "file": "directive/include.coffee",
+    "file": "directive/compatibility/include.coffee",
     "tag": ["compatibility"]
 }, {
     "file": "directive/cloak.coffee",
     "tag": ["basis"]
 }, {
-    "file": "directive/enable.coffee",
+    "file": "directive/compatibility/enable.coffee",
     "tag": ["compatibility"]
 }, {
-    "file": "directive/focused.coffee",
+    "file": "directive/compatibility/focused.coffee",
     "tag": ["compatibility"]
 }, {
-    "file": "directive/readonly.coffee",
+    "file": "directive/compatibility/readonly.coffee",
     "tag": ["compatibility"]
 }, {
-    "file": "directive/submit.coffee",
+    "file": "directive/compatibility/submit.coffee",
     "tag": ["compatibility"]
 }, {
-    "file": "directive/event.coffee",
+    "file": "directive/compatibility/event.coffee",
     "tag": ["compatibility"]
 }, {
     "file": "html/base.coffee",
@@ -151,19 +151,19 @@
     "require": "html/base.coffee",
     "description": "modificator 'inline' for al-html"
 }, {
-    "file": "directive/radio.coffee",
+    "file": "directive/compatibility/radio.coffee",
     "tag": ["compatibility"]
 }, {
-    "file": "directive/showHide.coffee",
+    "file": "directive/compatibility/showHide.coffee",
     "tag": ["compatibility"]
 }, {
-    "file": "directive/style.coffee",
+    "file": "directive/compatibility/style.coffee",
     "tag": ["compatibility"]
 }, {
-    "file": "directive/select.coffee",
+    "file": "directive/compatibility/select.coffee",
     "tag": ["compatibility"]
 }, {
-    "file": "directive/ctrl.coffee",
+    "file": "directive/compatibility/ctrl.coffee",
     "tag": ["compatibility"]
 }, {
     "file": "directive/attr.coffee",
