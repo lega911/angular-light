@@ -6,6 +6,7 @@
 * al-model for component, property $model and input event
 * al-ifnot was removed
 * al-if, al-else-if, al-else
+* component: env.sendEvent
 
 
 0.14
