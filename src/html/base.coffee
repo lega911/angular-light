@@ -54,6 +54,7 @@ alight.d.al.html =
                 if element.nodeType is 8
                     self.baseElement = null
                     self.topElement = element
+                    env.watch '$destroy', self.removeBlock
                 else
                     self.baseElement = element
                     self.topElement = document.createComment " #{env.attrName}: #{inputName} "

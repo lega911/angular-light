@@ -341,6 +341,7 @@ bindComment = (cd, element, option) ->
     env = new Env
         element: element
         attrName: d.attrName
+        attrArgument: d.attrArgument or null
         attributes: list
 
     if alight.debug.directive
